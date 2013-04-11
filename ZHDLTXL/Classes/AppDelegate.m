@@ -21,6 +21,9 @@
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     
+    self.uuid = [[UIDevice currentDevice] uniqueDeviceIdentifier];
+    
+    
     RootViewController *rootVC = [[RootViewController alloc] init];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:rootVC];
     self.window.rootViewController = nav;
@@ -58,5 +61,51 @@
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+
+
+
+
+- (void)doShowAlertWithText:(NSString *)text imageByName:(NSString *)image {
+    HUD = [[MBProgressHUD alloc] initWithView:self.window];
+	[self.window addSubview:HUD];
+	
+    if (image && [image length] > 0) {
+        HUD.customView = [[[UIImageView alloc] initWithImage:[UIImage imageByName:image]] autorelease];
+    } else {
+        HUD.customView = nil;
+    }
+	
+    // Set custom view mode
+    HUD.mode = MBProgressHUDModeCustomView;
+	HUD.userInteractionEnabled = NO;
+    HUD.labelText = text ? text : @"出错了";
+	
+    [HUD show:YES];
+	[HUD hide:YES afterDelay:2];
+}
+
+- (void)showWithCustomAlertViewWithText:(NSString *)text andImageName:(NSString *)image {
+	
+    if (HUD && HUD.superview) {
+        
+        if ([text isEqualToString:kNetworkErrorMessage]) {
+            //当网络出问题时，不要不停的提示
+            return;
+        }
+        
+        [HUD removeFromSuperview];
+        [HUD release];
+        HUD = nil;
+    }
+    
+    [self doShowAlertWithText:text imageByName:image];
+}
+
+
+
+
+
+
+
 
 @end

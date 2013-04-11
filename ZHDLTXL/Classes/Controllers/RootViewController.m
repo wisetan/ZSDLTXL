@@ -39,6 +39,13 @@
 {
     [super viewDidLoad];
     
+    //location manager
+    self.locationManager = [[[CLLocationManager alloc] init] autorelease];
+    self.locationManager.delegate = self;
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+    self.locationManager.distanceFilter = 1000.f;
+    [self.locationManager startUpdatingLocation];
+    
     //contact array
     self.contactArray = [[NSMutableArray alloc] initWithCapacity:10];
     
@@ -98,10 +105,7 @@
     [self.view addSubview:self.contactTableView];
     
     //contactHimView
-    self.contactHimView = [[ContactHimView alloc] initWithFrame:CGRectMake(0, 0, 256, 56)];
-    [self.view addSubview:self.contactHimView];
-    self.contactHimView.center = CGPointMake(self.contactTableView.center.x + 320, self.contactTableView.center.y);
-    self.contactHimView.delegate = self;
+//    [self addContactHimView];
     
     //left area barbutton
     self.areaButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -120,6 +124,8 @@
     UIImageView *areaIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"location_icon.png"]];
     areaIcon.frame = CGRectMake(7, 3, 28, 28);
     areaIcon.userInteractionEnabled = YES;
+    UITapGestureRecognizer *tapOnIcon = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnLocationIcon)];
+    [areaIcon addGestureRecognizer:tapOnIcon];
     [self.areaButton addSubview:areaIcon];
     
     UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.areaButton];
@@ -142,7 +148,19 @@
     UIBarButtonItem *rBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.friendButton];
     [self.navigationItem setRightBarButtonItem:rBarButton];
     
-    
+}
+
+- (void)addContactHimView
+{
+    self.contactHimView = [[ContactHimView alloc] initWithFrame:CGRectMake(0, 0, 256, 56)];
+    [self.view addSubview:self.contactHimView];
+    self.contactHimView.center = CGPointMake(self.contactTableView.center.x + 320, self.contactTableView.center.y);
+    self.contactHimView.delegate = self;
+}
+
+- (void)tapOnLocationIcon
+{
+    [self selectArea:nil];
 }
 
 - (void)login:(UIButton *)sender
@@ -277,6 +295,13 @@
     ChatViewController *chatVC = [[ChatViewController alloc] init];
     [self.navigationController pushViewController:chatVC animated:YES];
     [chatVC release];
+}
+
+#pragma mark - CLLocation manager delegate
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    
 }
 
 

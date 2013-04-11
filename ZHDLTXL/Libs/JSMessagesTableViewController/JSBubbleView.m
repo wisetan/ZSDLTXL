@@ -42,11 +42,13 @@
 #define kPaddingTop 4.0f
 #define kPaddingBottom 8.0f
 #define kBubblePaddingRight 35.0f
+#define KBubblePaddingRightCustom 20.f
 
 @interface JSBubbleView()
 
 - (void)setup;
 - (BOOL)styleIsOutgoing;
+- (BOOL)styleIsCustom;
 
 @end
 
@@ -94,21 +96,62 @@
 	CGRect bubbleFrame = CGRectMake(([self styleIsOutgoing] ? self.frame.size.width - bubbleSize.width : 0.0f),
                                     kMarginTop,
                                     bubbleSize.width,
-                                    bubbleSize.height+40);
+                                    bubbleSize.height+10.f);
+    
+    if (self.style == JSBubbleMessageStyleOutgoingCustom) {
+        bubbleFrame = CGRectMake(self.frame.size.width-bubbleSize.width-37.f, kMarginTop, bubbleSize.width, bubbleSize.height+10.f);
+    }
+    else if(self.style == JSBubbleMessageStyleIncomingCustom) {
+        bubbleFrame = CGRectMake(37.f+6.f, kMarginTop, bubbleSize.width, bubbleSize.height+10.f);
+    }
     
 	[image drawInRect:bubbleFrame];
 	
 	CGSize textSize = [JSBubbleView textSizeForText:self.text];
 	CGFloat textX = (CGFloat)image.leftCapWidth - 3.0f + ([self styleIsOutgoing] ? bubbleFrame.origin.x : 0.0f);
+    
+    if (self.style == JSBubbleMessageStyleOutgoingCustom) {
+        textX = (CGFloat)image.leftCapWidth - 3.f + bubbleFrame.origin.x;
+    }
+    else if(self.style == JSBubbleMessageStyleIncomingCustom) {
+        textX = (CGFloat)image.leftCapWidth - 3.f + bubbleFrame.origin.x;
+    }
+    
+//    CGRect textFrame = CGRectMake(textX,
+//                                  kPaddingTop + kMarginTop,
+//                                  textSize.width,
+//                                  textSize.height);
     CGRect textFrame = CGRectMake(textX,
-                                  kPaddingTop + kMarginTop,
+                                  16.f,
                                   textSize.width,
                                   textSize.height);
     
-	[self.text drawInRect:textFrame
-                 withFont:[JSBubbleView font]
-            lineBreakMode:NSLineBreakByWordWrapping
-                alignment:NSTextAlignmentLeft];
+    
+    if ([self styleIsCustom]) {
+        UIFont *font = [UIFont systemFontOfSize:16];
+        if (self.style == JSBubbleMessageStyleIncomingCustom) {
+            [[UIColor colorWithRed:136.f/255.f green:136.f/255.f blue:136.f/255.f alpha:1.f] setFill];
+            [self.text drawInRect:textFrame
+                         withFont:font
+                    lineBreakMode:NSLineBreakByWordWrapping
+                        alignment:NSTextAlignmentLeft];
+        }
+        else if(self.style == JSBubbleMessageStyleOutgoingCustom){
+            [[UIColor colorWithRed:73.f/255.f green:73.f/255.f blue:73.f/255.f alpha:1.f] setFill];
+            [self.text drawInRect:textFrame
+                         withFont:font
+                    lineBreakMode:NSLineBreakByWordWrapping
+                        alignment:NSTextAlignmentLeft];
+        }
+       
+    }
+    else{
+        [self.text drawInRect:textFrame
+                     withFont:[JSBubbleView font]
+                lineBreakMode:NSLineBreakByWordWrapping
+                    alignment:NSTextAlignmentLeft];
+    }
+	
 }
 
 #pragma mark - Bubble view
@@ -118,6 +161,12 @@
             || self.style == JSBubbleMessageStyleOutgoingDefaultGreen
             || self.style == JSBubbleMessageStyleOutgoingSquare
             || self.style == JSBubbleMessageStyleOutgoingCustom);
+}
+
+- (BOOL)styleIsCustom
+{
+    return (self.style == JSBubbleMessageStyleOutgoingCustom
+            || self.style == JSBubbleMessageStyleIncomingCustom);
 }
 
 + (UIImage *)bubbleImageForStyle:(JSBubbleMessageStyle)style
@@ -139,11 +188,12 @@
             return [[UIImage imageNamed:@"bubbleSquareOutgoing"] stretchableImageWithLeftCapWidth:15 topCapHeight:15];
             break;
         case JSBubbleMessageStyleIncomingCustom:
-//            return [[UIImage imageNamed:@"talk_bg.png"] stretchableImageWithLeftCapWidth:26 topCapHeight:24];
-            return [[UIImage imageNamed:@"talk_bg.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(60, 30, 20, 30) resizingMode:UIImageResizingModeStretch];
+//            return [[UIImage imageNamed:@"messageBubbleIncomingCustom.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(33, 20, 38, 26) resizingMode:UIImageResizingModeStretch];
+            return [UIImage stretchableImage:@"messageBubbleIncomingCustom.png" leftCap:20 topCap:34];
             break;
         case JSBubbleMessageStyleOutgoingCustom:
-            return [[UIImage imageNamed:@"retalk_bg.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(60, 30, 20, 30) resizingMode:UIImageResizingModeStretch];
+//            return [[UIImage imageNamed:@"messageBubbleOutgoingCustom.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 20, 30, 0) resizingMode:UIImageResizingModeStretch];
+            return [UIImage stretchableImage:@"messageBubbleOutgoingCustom.png" leftCap:20 topCap:34];
             break;
     }
     

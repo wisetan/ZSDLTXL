@@ -15,4 +15,8 @@
 @property (nonatomic, retain) NSMutableDictionary *areaDict;
 @property (nonatomic, retain) NSMutableArray *provinceNameArray;
 
+@property (nonatomic, retain) NSMutableArray *provinceArray;
+@property (nonatomic, retain) NSMutableArray *cityArray;
+@property (nonatomic, retain) NSMutableDictionary *areaInfoDict;
+
 @end

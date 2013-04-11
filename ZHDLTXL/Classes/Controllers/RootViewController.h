@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "ContactHimView.h"
+#import <CoreLocation/CoreLocation.h>
 
-@interface RootViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ContactHimViewDelegate>
+@interface RootViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ContactHimViewDelegate, CLLocationManagerDelegate>
 
 @property (nonatomic, retain) UIImageView *bottomImageView;
 @property (nonatomic, retain) UIButton *loginButton;
@@ -21,5 +22,6 @@
 @property (nonatomic, retain) Contact *currentContact;
 @property (nonatomic, retain) ContactHimView *contactHimView;
 @property (nonatomic, assign) NSInteger currentCellButtonIndex;
+@property (nonatomic, retain) CLLocationManager *locationManager;
 
 @end

@@ -7,6 +7,7 @@
 //
 
 #import "LoginViewController.h"
+#import "RegistViewController.h"
 
 enum textFieldTag
 {
@@ -78,12 +79,26 @@ enum textFieldTag
 
 - (void)login:(UIButton *)sender
 {
+    if (self.usernameTextfield.text.length == 0) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"错误" message:@"用户名不能为空" delegate:self cancelButtonTitle:@"确认" otherButtonTitles: nil];
+        [alert show];
+        return;
+    }
+    else if (self.passwordTextfield.text.length == 0) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"错误" message:@"密码不能为空" delegate:self cancelButtonTitle:@"确认" otherButtonTitles: nil];
+        [alert show];
+        return;
+    }
+    
     NSLog(@"login");
 }
 
 - (void)regist:(UIButton *)sender
 {
     NSLog(@"regist");
+    RegistViewController *registVC = [[RegistViewController alloc] init];
+    [self.navigationController pushViewController:registVC animated:YES];
+    [registVC release];
 }
 
 #pragma mark - text field delegate

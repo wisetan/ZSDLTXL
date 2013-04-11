@@ -37,6 +37,8 @@
 #import "JSBubbleView.h"
 
 #define DATE_LABEL_HEIGHT 12.0f
+#define HEAD_ICON_WIDTH 37.f
+#define HEAD_ICON_HEIGHT 37.d
 
 @interface JSBubbleMessageCell : UITableViewCell
 
@@ -48,5 +50,7 @@
 #pragma mark - Message Cell
 - (void)setMessage:(NSString *)msg;
 - (void)setTimestamp:(NSDate *)date;
+@property (nonatomic, retain) UIImageView *headIcon;
+@property (nonatomic, retain) NSString *headIconName;
 
 @end

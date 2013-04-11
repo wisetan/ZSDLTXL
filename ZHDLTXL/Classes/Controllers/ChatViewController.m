@@ -110,7 +110,8 @@
 
 - (JSMessagesViewTimestampPolicy)timestampPolicyForMessagesView
 {
-    return JSMessagesViewTimestampPolicyEveryThree;
+//    return JSMessagesViewTimestampPolicyEveryThree;
+    return JSMessagesViewTimestampPolicyCustom;
 }
 
 - (BOOL)hasTimestampForRowAtIndexPath:(NSIndexPath *)indexPath

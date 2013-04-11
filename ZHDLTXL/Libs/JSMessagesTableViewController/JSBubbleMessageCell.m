@@ -59,12 +59,17 @@
     self.accessoryType = UITableViewCellAccessoryNone;
     self.accessoryView = nil;
     
-    self.imageView.image = [UIImage imageNamed:@"AC_talk_icon.png"];
+    self.imageView.image = nil;
     self.imageView.hidden = YES;
     self.textLabel.text = nil;
     self.textLabel.hidden = YES;
     self.detailTextLabel.text = nil;
     self.detailTextLabel.hidden = YES;
+    
+    //custom by Liu Yue
+    self.headIconName = @"AC_talk_icon.png";
+    self.headIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:self.headIconName]];
+    self.headIcon.frame = CGRectMake(5, 10, 37, 37);
 }
 
 - (void)configureTimestampLabel
@@ -106,6 +111,14 @@
     
     [self.contentView addSubview:self.bubbleView];
     [self.contentView sendSubviewToBack:self.bubbleView];
+    if (style == JSBubbleMessageStyleIncomingCustom) {
+        self.headIcon.frame = CGRectMake(5, 10, 37, 37);
+    }
+    else if(style == JSBubbleMessageStyleOutgoingCustom){
+        self.headIcon.frame = CGRectMake(320-37, 10, 37, 37);
+    }
+    
+    [self.contentView addSubview:self.headIcon];
 }
 
 - (id)initWithBubbleStyle:(JSBubbleMessageStyle)style hasTimestamp:(BOOL)hasTimestamp reuseIdentifier:(NSString *)reuseIdentifier
