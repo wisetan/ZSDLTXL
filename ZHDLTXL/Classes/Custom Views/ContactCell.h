@@ -12,6 +12,6 @@
 @interface ContactCell : UITableViewCell
 @property (retain, nonatomic) IBOutlet UIImageView *headIcon;
 @property (retain, nonatomic) IBOutlet UILabel *nameLabel;
-@property (retain, nonatomic) IBOutlet CellButton *contactButton;
+//@property (retain, nonatomic) IBOutlet CellButton *contactButton;
 
 @end

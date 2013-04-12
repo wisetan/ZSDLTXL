@@ -1,0 +1,138 @@
+//
+//  ScrollHeader.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-26.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "ScrollHeader.h"
+
+#define kTimeInterval 5
+@implementation ScrollHeader
+
+@synthesize delegate;
+@synthesize mScrollView;
+@synthesize mPageControl;
+@synthesize datasourceArray;
+@synthesize autoScrollEnable;
+@synthesize timer;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.mScrollView = [[[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, frame.size.height)] autorelease];
+        self.mScrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"default_bg_info"]];
+        self.mScrollView.pagingEnabled = YES;
+        self.mScrollView.contentSize = CGSizeMake(320, frame.size.height);
+        [self addSubview:self.mScrollView];
+        
+        self.mPageControl = [[[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 100, 25)] autorelease];
+        self.mPageControl.center = CGPointMake(self.center.x, self.frame.size.height - 25/2.0);
+        
+        [self addSubview:self.mPageControl];
+        
+    }
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)frame autoScrollEnable:(BOOL)canAutoScroll
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.mScrollView = [[[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, frame.size.height)] autorelease];
+        self.mScrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"default_bg_info"]];
+        [self addSubview:self.mScrollView];
+        self.mScrollView.showsHorizontalScrollIndicator = NO;
+        self.mPageControl = [[[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 100, 25)] autorelease];
+        self.mPageControl.center = CGPointMake(self.center.x, self.frame.size.height - 25/2.0 );
+        [self addSubview:self.mPageControl];
+        
+        self.autoScrollEnable = canAutoScroll;
+    }
+    return self;
+}
+
+- (void)switchAction {
+    if (mScrollView.isDragging) {
+        return;
+    }
+    
+    if (mPageControl.currentPage < [datasourceArray count] - 1) {
+        mPageControl.currentPage++;
+    } else {
+        mPageControl.currentPage = 0;
+    }
+    
+    
+    [mScrollView setContentOffset:CGPointMake(mPageControl.currentPage*320, 0) animated:YES];
+}
+
+- (void)reloadData {
+    for (EGOImageButton *buttonView in [mScrollView subviews]) {
+        if ([buttonView isKindOfClass:[EGOImageButton class]]) {
+            [buttonView cancelImageLoad];
+            [buttonView removeFromSuperview];
+        }
+    }
+    
+    self.mPageControl.numberOfPages = [self.datasourceArray count];
+    mScrollView.contentSize = CGSizeMake([datasourceArray count]*320, mScrollView.frame.size.height);
+    mScrollView.pagingEnabled = YES;
+    for (int i = 0; i < [datasourceArray count]; i++) {
+        EGOImageButton *advImageView = [[[EGOImageButton alloc] initWithPlaceholderImage:nil] autorelease];
+        advImageView.adjustsImageWhenHighlighted = NO;
+        advImageView.frame = CGRectMake(i*320, 0, 320, mScrollView.frame.size.height);
+        advImageView.tag = i;
+        [mScrollView addSubview:advImageView];
+        
+        NSDictionary *dict = [datasourceArray objectAtIndex:i];
+        NSString *url = [dict objForKey:@"url"];
+        advImageView.imageURL = [url isValid] ? [NSURL URLWithString:url] : nil;
+        if ([url isValid]) {
+            [advImageView addTarget:self action:@selector(clickAdv:) forControlEvents:UIControlEventTouchUpInside];
+        }
+    }    
+}
+
+- (void)clickAdv:(EGOImageButton *)sender {
+    NSInteger index = sender.tag;
+    if ([delegate respondsToSelector:@selector(clickScrollHeader:atIndex:)]) {
+        [delegate clickScrollHeader:self atIndex:index];
+    }
+}
+
+- (void)setDatasourceArray:(NSMutableArray *)mDatasourceArray {
+    [datasourceArray autorelease];
+    datasourceArray = [mDatasourceArray retain];
+    [self reloadData];
+    
+    if (self.timer && [self.timer isValid]) {
+        [self.timer invalidate];
+        self.timer = nil;
+    }
+    
+    if (self.autoScrollEnable) {
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:kTimeInterval target:self selector:@selector(switchAction) userInfo:nil repeats:YES];
+    }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    CGPoint point = scrollView.contentOffset;
+    NSInteger pageindex = point.x/320;
+    self.mPageControl.currentPage = pageindex;
+}
+
+- (void)dealloc
+{
+    if ([self.timer isValid]) {
+        [self.timer invalidate];
+    }
+    self.timer = nil;
+    self.mScrollView = nil;
+    self.mPageControl = nil;
+    self.datasourceArray = nil;
+    [super dealloc];
+}
+@end

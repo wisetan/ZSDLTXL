@@ -1,0 +1,75 @@
+//
+//  CalloutAnnotation.h
+//  CustomCalloutSample
+//
+//  Created by tochi on 11/05/17.
+//  Copyright 2011 aguuu,Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <MapKit/MapKit.h>
+
+typedef enum {
+    CLICK_STATUS_NONE = 0,
+    CLICK_STATUS_AVATAR = 1,
+    CLICK_STATUS_CONTENT = 2
+} CLICK_STATUS;
+
+typedef enum {
+    INFO_TYPE_ZHAOSHANG = 0,
+    INFO_TYPE_DAILI
+} INFO_TYPE;
+
+typedef enum {
+    CATEGORY_TYPE_PERSON = 0,
+    CATEGORY_TYPE_HOTSPOT,
+    CATEGORY_TYPE_HOSPITAL,
+    CATEGORY_TYPE_DRUGSTORE
+} CATEGORY_TYPE;
+
+typedef enum {
+    AUTH_TYPE_COMPANY = 0,
+    AUTH_TYPE_Person  = 1
+} AUTH_TYPE;
+
+typedef enum {
+    ADV_TYPE_NONE = 0,
+    ADV_TYPE_CLASS1 = 1,
+    ADV_TYPE_CLASS2 = 2
+} ADV_TYPE;
+
+@class PinAnnotation;
+
+@interface CalloutAnnotation : NSObject <MKAnnotation>
+{
+
+    NSString *myTitle;
+    NSString *mySubTitle;
+    NSString *mid;
+    NSString *hotSpotUserId;
+    CLLocationCoordinate2D coordinate_;
+    CLICK_STATUS clickStatus;
+    ADV_TYPE advType;
+    NSString *avatarUrl;
+    INFO_TYPE infoType;
+    PinAnnotation *refPinAnnotation;
+    AUTH_TYPE authType;
+    CATEGORY_TYPE cateType;
+}
+
+@property (nonatomic, assign) AUTH_TYPE authType;
+@property (nonatomic, assign) CATEGORY_TYPE cateType;
+@property (nonatomic, assign) PinAnnotation *refPinAnnotation;
+@property (nonatomic, assign) INFO_TYPE infoType;
+@property (nonatomic, assign) ADV_TYPE advType;
+@property (nonatomic, assign) CLICK_STATUS clickStatus;
+@property (nonatomic, assign) CLLocationCoordinate2D coordinate;
+@property (nonatomic, copy)   NSString *myTitle;
+@property (nonatomic, copy)   NSString *mySubTitle;
+@property (nonatomic, copy)   NSString *avatarUrl;
+@property (nonatomic, copy)   NSString *mid;
+@property (nonatomic, copy)   NSString *hotSpotUserId;
+- (NSString *)title;
+- (id)initWithPinAnnotaion:(PinAnnotation *)pinAnnotation;
+
+@end

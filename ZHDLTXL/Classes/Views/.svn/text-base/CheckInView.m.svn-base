@@ -1,0 +1,279 @@
+//
+//  CheckInView.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-5-2.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "CheckInView.h"
+#import "UIActionSheet+MKBlockAdditions.h"
+
+@implementation CheckInView
+
+@synthesize labCompanyName;
+@synthesize labCheckInLocation;
+@synthesize locationList;
+@synthesize btnModify;
+@synthesize btnOk;
+@synthesize btnCancel;
+@synthesize bgImageView;
+@synthesize btnHistory;
+@synthesize delegate;
+@synthesize mNewAddress;
+@synthesize currentSelectedDict;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)startToCheckin {
+    NSString *userId = [PersistenceHelper dataForKey:@"userid"];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getPunchcardPlace.json", @"path", userId, @"userid", [kAppDelegate lastLat], @"lat", [kAppDelegate lastLon], @"lon", nil];
+    
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+        [MBProgressHUD hideHUDForView:self.superview animated:YES];
+        if ([GET_RETURNCODE(json) isEqualToString:@"0"]) {
+//            NSLog(@"json : %@", json);
+            isCheckinAvalible = YES;
+            self.locationList = [json objForKey:@"PunchcardList"];
+            @try {
+                NSString *locationString = [[self.locationList objectAtIndex:0] objForKey:@"name"];
+                labCheckInLocation.text = locationString;
+                self.currentSelectedDict = [self.locationList objectAtIndex:0];
+            }
+            @catch (NSException *exception) {
+                
+            }            
+            
+            [self layoutViews];
+        } else {
+            if ([delegate respondsToSelector:@selector(checkinDidFailed)]) {
+                [delegate checkinDidFailed];
+            }
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:kErrorIcon];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:self.superview animated:YES];
+        if ([delegate respondsToSelector:@selector(checkinDidFailed)]) {
+            [delegate checkinDidFailed];
+        }
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];    
+}
+
+- (void)awakeFromNib {
+    [self startToCheckin];
+    self.bgImageView.image = [UIImage stretchableImage:@"bg_checkin" leftCap:0 topCap:10];
+    self.frame = CGRectMake(0, -232, 320, 232);
+}
+
+- (IBAction)modifyLocationAction:(id)sender {
+    if (!isCheckinAvalible) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"正在请求考勤服务，请稍后" andImageName:nil];
+        [self startToCheckin];
+        return;
+    }
+    NSMutableArray *buttonsArray = [NSMutableArray array];
+    [buttonsArray addObject:@"手动修改考勤地址"];
+    for (NSDictionary *dict in self.locationList) {
+        NSString *buttonName = [dict objForKey:@"name"];
+        if ([buttonName isValid]) {
+            [buttonsArray addObject:buttonName];
+        }
+    }
+    
+    [UIActionSheet actionSheetWithTitle:@"附近地点"
+                                message:nil
+                                buttons:buttonsArray 
+                             showInView:[[kAppDelegate leveyTabBarController] tabBar]
+                              onDismiss:^(int buttonIndex) {
+                                  @try {
+                                      if (buttonIndex == 0) {
+                                          //自己修改
+                                          CustomAlertView *alertView = [[CustomAlertView alloc] 
+                                                                        initWithTitle:@"提示" 
+                                                                        content:@"请输入新的地址"
+                                                                        delegate:self 
+                                                                        cancelButtonTitle:@"取消" 
+                                                                        okButton:@"确认"];
+                                          [alertView show];
+                                          [alertView release];
+
+                                      } else {
+                                          //采用推荐地点打卡
+                                          @try {
+                                              NSDictionary *dict = [self.locationList objectAtIndex:(buttonIndex - 1)];
+                                              self.currentSelectedDict = dict;
+                                              self.labCheckInLocation.text = [dict objForKey:@"name"];
+                                              [self layoutViews];
+                                              self.mNewAddress = nil;
+                                          }
+                                          @catch (NSException *exception) {
+                                              
+                                          }      
+                                      }
+                                  }
+                                  @catch (NSException *exception) {
+                                    
+                                  }
+                              } 
+                               onCancel:^{
+                               }];
+
+}
+
+- (void)doCheckInActionWithLocationDict:(NSDictionary *)locationDict newAddress:(NSString *)address {
+    NSString *locationId = [locationDict objForKey:@"id"];
+    NSString *name = [locationDict objForKey:@"name"];
+    NSString *userid = [PersistenceHelper dataForKey:@"userid"];
+    NSString *lat = [kAppDelegate lastLat];
+    NSString *lon = [kAppDelegate lastLon];
+    NSDictionary *dict = nil;
+    if (address == nil) {
+        //采用推荐地点打卡
+        dict = [NSDictionary dictionaryWithObjectsAndKeys:@"addPunchcard.json", @"path", locationId, @"id", userid, @"userid", name, @"name", lat, @"lat", lon, @"lon", nil];
+    } else {
+        //自己修改地址打卡
+        dict = [NSDictionary dictionaryWithObjectsAndKeys:@"addPunchcard.json", @"path", userid, @"userid", @"", @"id", [address removeSpace], @"name", lat, @"lat", lon, @"lon", nil];
+    }
+    
+    [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {        
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        if ([GET_RETURNCODE(json) isEqualToString:@"0"]) {
+            [kAppDelegate startCheckinTimer];
+            [kAppDelegate setAlreadyCheckin:YES];
+            NSString *time = [json objForKey:@"punchcardTime"];
+            NSString *message = [NSString stringWithFormat:@"考勤时间:%@", time];
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"考勤成功" 
+                                                                message:message 
+                                                               delegate:nil 
+                                                      cancelButtonTitle:@"知道了" 
+                                                      otherButtonTitles:nil];
+            [alertView show];
+            [alertView release];
+            [self cancelAction:nil];
+            [kAppDelegate playMusicForType:1];
+        } else {
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+    }];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"确认"]) {
+        
+        NSString *address = [((CustomAlertView *)alertView).textField.text removeSpaceAndNewLine];
+        if (![[address removeSpace] isValid]) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"新地址名无效" andImageName:nil];
+            return;
+        }
+        
+        self.mNewAddress = address;
+        self.labCheckInLocation.text = address;
+        [self layoutViews];
+    }
+}
+
+- (void)layoutViews {
+    
+    self.labCompanyName.text = [PersistenceHelper dataForKey:@"companyname"];
+    
+    self.labCheckInLocation.frame = CGRectMake(71, 93, 210, 0);
+    [self.labCheckInLocation sizeToFit];
+    
+    CGFloat offset = 93.0f;
+    offset += (self.labCheckInLocation.frame.size.height == 0 ? 20 : labCheckInLocation.frame.size.height) + 10;
+    self.btnModify.frame = CGRectMake(btnModify.frame.origin.x, offset, btnModify.frame.size.width, btnModify.frame.size.height);
+    self.btnOk.frame = CGRectMake(btnOk.frame.origin.x, offset, btnOk.frame.size.width, btnOk.frame.size.height);
+    self.btnHistory.frame = CGRectMake(btnHistory.frame.origin.x, offset, btnHistory.frame.size.width, btnHistory.frame.size.height);
+    offset += 38.0f + 20;
+    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, 320, offset);
+    self.bgImageView.frame = CGRectMake(0, 0, 320, self.frame.size.height);
+
+    [UIView animateWithDuration:0.3 animations:^{
+        self.center = CGPointMake(160, self.frame.size.height/2.0f);
+    }];
+}
+
+- (IBAction)confirmAction:(id)sender {
+    if ([kAppDelegate alreadyCheckin]) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"3分钟之内不能连续考勤" andImageName:nil];
+        return;
+    }
+    
+    if (!isCheckinAvalible) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"正在请求考勤服务，请稍后" andImageName:nil];
+        [self startToCheckin];
+        return;
+    }
+//    NSLog(@"locationList : %@", self.locationList);
+    NSDictionary *dict = nil;
+    @try {
+        if (self.currentSelectedDict) {
+            dict = self.currentSelectedDict;
+        } else {
+            dict = [self.locationList objectAtIndex:0];
+        }
+    }
+    @catch (NSException *exception) {
+        if (self.mNewAddress == nil) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"暂无考勤地址信息，请先选择修改地点" andImageName:nil];            
+        } else {
+            [self doCheckInActionWithLocationDict:dict newAddress:self.mNewAddress];
+        }
+        
+        return;
+    }
+
+    @try {
+        if (dict && [dict isKindOfClass:[NSDictionary class]]) {
+            if ([self.mNewAddress isValid]) {
+                [self doCheckInActionWithLocationDict:dict newAddress:self.mNewAddress];
+            } else {
+                [self doCheckInActionWithLocationDict:dict newAddress:nil];
+            }
+        }
+    }
+    @catch (NSException *exception) {
+        NSLog(@"exception : %@", exception);
+    }
+}
+
+- (IBAction)cancelAction:(id)sender {
+    [UIView animateWithDuration:0.3 animations:^{
+        self.center = CGPointMake(160, -self.frame.size.height/2.0f);
+    } completion:^(BOOL finished) {
+        [self removeFromSuperview];
+    }];
+}
+
+- (IBAction)checkinHistoryAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(checkinHistoryOnClick)]) {
+        [delegate checkinHistoryOnClick];
+    }
+}
+
+- (void)dealloc {
+    [currentSelectedDict release];
+    [mNewAddress release];
+    [locationList release];
+    [labCompanyName release];
+    [labCheckInLocation release];
+    [btnModify release];
+    [btnOk release];
+    [btnCancel release];
+    [bgImageView release];
+    [btnHistory release];
+    [super dealloc];
+}
+@end

@@ -15,5 +15,7 @@
 - (NSString *)removeSpace;
 - (NSString *)trimTagCode;
 - (NSString *)removeSpaceAndNewLine;
+- (BOOL)isMobileNumber;
+- (BOOL)isValidEmail;
 - (BOOL)isValid;
 @end

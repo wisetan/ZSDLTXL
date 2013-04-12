@@ -1,0 +1,13 @@
+//
+//  HospitalMapController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-16.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "MapController.h"
+
+@interface HospitalMapController : MapController
+
+@end

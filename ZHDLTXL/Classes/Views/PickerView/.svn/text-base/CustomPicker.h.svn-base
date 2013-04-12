@@ -1,0 +1,44 @@
+//
+//  CustomPicker.h
+//  LeheV2
+//
+//  Created by zhangluyi on 11-7-20.
+//  Copyright 2011年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol CustomPickerDelegate;
+
+@interface CustomPicker : UIView<UIPickerViewDelegate, UIPickerViewDataSource> {
+    UIToolbar *toolbar;
+    UIPickerView *picker;
+    NSArray *pickerArray;
+    id<CustomPickerDelegate> customDelegate;
+    NSInteger selectedIndex;
+    UIView *bgView;
+	UILabel *labelTitle;
+}
+
+@property (nonatomic, retain) UIView *bgView;
+@property (nonatomic, assign) NSInteger selectedIndex;
+@property (nonatomic, assign) id<CustomPickerDelegate> customDelegate;
+@property (nonatomic, retain) NSArray *pickerArray;
+@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
+@property (nonatomic, retain) IBOutlet UIPickerView *picker;
+@property (nonatomic, retain) IBOutlet UILabel *labelTitle;
+
+- (IBAction)cancelAction:(id)sender;
+- (IBAction)confirmAction:(id)sender;
+
+- (void)pushIn;
+- (void)pushOut;
+
+@end
+
+
+@protocol CustomPickerDelegate <NSObject>
+@optional
+- (void)picker:(CustomPicker *)picker didSelectedRowAtIndex:(NSInteger)index;
+- (void)picker:(CustomPicker *)picker didSelectedWithDict:(NSDictionary *)dict;
+@end

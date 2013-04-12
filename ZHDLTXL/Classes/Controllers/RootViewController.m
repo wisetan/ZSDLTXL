@@ -14,8 +14,11 @@
 #import "SendMessageViewController.h"
 #import "SendEmailViewController.h"
 #import "ChatViewController.h"
+#import "HomepageViewController.h"
 
 @interface RootViewController ()
+
+@property (nonatomic, retain) NSMutableArray *sectionTitleArray;
 
 @end
 
@@ -39,6 +42,14 @@
 {
     [super viewDidLoad];
     
+//    NSLog(@"sections: %@", [[UILocalizedIndexedCollation currentCollation] sectionTitles]);
+//    [[UILocalizedIndexedCollation currentCollation] sectionForObject:nil collationStringSelector:@selector(123)];
+    NSString *testString = @"我";
+    char c = indexTitleOfString([testString characterAtIndex:0]);
+    NSLog(@"%@ index: %c", testString, c);
+    
+    [self addObserver];
+    
     //location manager
     self.locationManager = [[[CLLocationManager alloc] init] autorelease];
     self.locationManager.delegate = self;
@@ -47,7 +58,8 @@
     [self.locationManager startUpdatingLocation];
     
     //contact array
-    self.contactArray = [[NSMutableArray alloc] initWithCapacity:10];
+    self.contactArray = [[NSMutableArray alloc] init];
+    self.contactDictSortByAlpha = [NSMutableDictionary new];
     
     //nav bar image
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
@@ -65,12 +77,21 @@
     self.loginButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.loginButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
     [self.loginButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
-    [self.loginButton addTarget:self action:@selector(login:) forControlEvents:UIControlEventTouchUpInside];
+
     self.loginButton.frame = CGRectMake(5, 5, 101, 34);
     [self.loginButton setTitle:@"登录" forState:UIControlStateNormal];
     [self.loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     UILabel *loginLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)];
-    loginLabel.text = @"登录";
+    
+    if (self.hasRegisted) {
+        loginLabel.text = @"我的主页";
+        [self.loginButton addTarget:self action:@selector(showMyHomepage:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    else{
+        [self.loginButton addTarget:self action:@selector(login:) forControlEvents:UIControlEventTouchUpInside];
+        loginLabel.text = @"登录";
+    }
+    
     [loginLabel setFont:[UIFont systemFontOfSize:16]];
     loginLabel.backgroundColor = [UIColor clearColor];
     loginLabel.textColor = [UIColor whiteColor];
@@ -101,6 +122,14 @@
     self.contactTableView.dataSource = self;
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapOnTableView:)];
     [self.contactTableView addGestureRecognizer:tap];
+    
+    self.sectionTitleArray = [[NSMutableArray new] autorelease];
+    for (char c='A'; c<='Z'; c++) {
+        [self.sectionTitleArray addObject:[NSString stringWithFormat:@"%c", c]];
+    }
+    [self.sectionTitleArray addObject:[NSString stringWithFormat:@"%c", '#']];
+    
+    
     
     [self.view addSubview:self.contactTableView];
     
@@ -163,6 +192,52 @@
     [self selectArea:nil];
 }
 
+- (NSString *)getProvinceIdOfCity:(NSString *)city
+{
+//    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
+//    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
+//    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
+//    
+//    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
+//    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
+//        //        NSLog(@"%@", proDict);
+//        ProvinceInfo *province = [[ProvinceInfo alloc] init];
+//        province.centerlon = [proDict objectForKey:@"centerlon"];
+//        province.centerlat = [proDict objectForKey:@"centerlat"];
+//        province.provinceid = [proDict objectForKey:@"provinceid"];
+//        province.provincename = [proDict objectForKey:@"provincename"];
+//        province.radius = [proDict objectForKey:@"radius"];
+//        //        [province setValuesForKeysWithDictionary:proDict];
+//        [self.provinceArray addObject:province];
+//        
+//        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
+//        NSMutableArray *cityArrayTmp = [[NSMutableArray alloc] init];
+//        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+//            //            NSLog(@"city: %@", cityDict);
+//            CityInfo *city = [[CityInfo alloc] init];
+//            [city setValuesForKeysWithDictionary:cityDict];
+//            [cityArrayTmp addObject:city];
+//        }];
+//        
+//        [self.areaInfoDict setObject:cityArrayTmp forKey:province.provinceid];
+//        [cityArrayTmp release];
+//        
+//    }];
+}
+
+- (NSString *)getCityIdOfCity:(NSString *)city
+{
+    
+}
+
+- (void)getInvestmentUserList
+{
+    //parameter: provinceid, cityid, userid(用来取备注), 
+    
+    
+    
+}
+
 - (void)login:(UIButton *)sender
 {
     NSLog(@"login");
@@ -176,6 +251,11 @@
     
     [self.navigationController pushViewController:loginVC animated:YES];
     [loginVC release];
+}
+
+- (void)showMyHomepage:(UIButton *)sender
+{
+    NSLog(@"我得主页");
 }
 
 - (void)select:(UIButton *)sender
@@ -199,17 +279,30 @@
 #pragma mark - table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+//    return [self.indexArray count];
+    return [[self.contactDictSortByAlpha allKeys] count];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 10;
+    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+    NSInteger count = [[self.contactDictSortByAlpha objectForKey:indexKey] count];
+    return count;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return 51.f;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+}
+
+- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
+{
+    return [[UILocalizedIndexedCollation currentCollation] sectionTitles];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -221,11 +314,20 @@
     }
     cell.selectionStyle = UITableViewCellEditingStyleNone;
     cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
-    cell.nameLabel.text = @"姓名";
-    [cell.contactButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
-    [cell.contactButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
-    cell.contactButton.index = indexPath.row;
-    [cell.contactButton addTarget:self action:@selector(contactHim:) forControlEvents:UIControlEventTouchUpInside];
+    
+    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+    
+    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
+        
+        cell.nameLabel.text = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+    }
+    
+    
+//    cell.nameLabel.text = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+//    [cell.contactButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+//    [cell.contactButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
+//    cell.contactButton.index = indexPath.row;
+//    [cell.contactButton addTarget:self action:@selector(contactHim:) forControlEvents:UIControlEventTouchUpInside];
     
 //    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapOnCellButton:)];
 //    [cell.contactButton addGestureRecognizer:tap];
@@ -233,6 +335,24 @@
 
     return cell;
 }
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] == 0) {
+        return 0.f;
+    }
+    return UITableViewAutomaticDimension;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    HomepageViewController *homeVC = [[HomepageViewController alloc] init];
+    [self.navigationController pushViewController:homeVC animated:YES];
+    [homeVC release];
+}
+
 
 - (void)contactHim:(CellButton *)sender
 {
@@ -297,14 +417,41 @@
     [chatVC release];
 }
 
-#pragma mark - CLLocation manager delegate
 
-- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+#pragma mark - notification
+
+- (void)addObserver
 {
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(cityChanged:) name:kCityChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(investmentUserListRefreshed:) name:kInvestmentUserListRefreshed object:nil];
 }
 
+- (void)cityChanged:(NSNotification *)noti
+{
+    NSString *newCity = (NSString *)[noti object];
+    self.currentCity = newCity;
+}
 
+- (void)investmentUserListRefreshed:(NSNotification *)noti
+{
+//    NSLog(@"__func__: %@", noti);
+    [self.contactArray removeAllObjects];
+    [self.contactArray addObjectsFromArray:[noti object]];
+    //按字母分组
+    UILocalizedIndexedCollation *theCollation = [UILocalizedIndexedCollation currentCollation];
+    for (NSString *indexKey in [theCollation sectionTitles]) {
+        NSMutableArray *contactArrayTmp = [NSMutableArray new];
+        [self.contactDictSortByAlpha setObject:contactArrayTmp forKey:indexKey];
+        [contactArrayTmp release];
+    }
+        
+    [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+        NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
+        [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact.username];
+    }];
+    
+    [self.contactTableView reloadData];
+}
 
 - (void)didReceiveMemoryWarning
 {

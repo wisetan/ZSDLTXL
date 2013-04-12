@@ -1,0 +1,43 @@
+//
+//  HotCommentsHeaderView.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-21.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@class DLStarRatingControl;
+@protocol HotCommentsHeaderDelegate;
+@interface HotCommentsHeaderView : UIView {
+    DLStarRatingControl *ratingView;
+    UILabel *labName;
+    EGOImageView *avatar;
+    UILabel *labSubTitle;
+    UILabel *labContent;
+    BOOL hasThumbnail;
+    UILabel *labReply;
+    UILabel *labTime;
+    id<HotCommentsHeaderDelegate> delegate;
+}
+
+@property (retain, nonatomic) IBOutlet DLStarRatingControl *ratingView;
+@property (retain, nonatomic) IBOutlet UILabel *labName;
+@property (retain, nonatomic) IBOutlet UILabel *labReply;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (retain, nonatomic) IBOutlet UILabel *labSubTitle;
+@property (retain, nonatomic) IBOutlet UILabel *labContent;
+@property (retain, nonatomic) IBOutlet EGOImageButton *thumbnail;
+@property (assign, nonatomic) BOOL hasThumbnail;
+@property (retain, nonatomic) IBOutlet UILabel *labTime;
+@property (retain, nonatomic) IBOutlet UIImageView *bgImageView;
+@property (assign, nonatomic) id<HotCommentsHeaderDelegate> delegate;
+
++ (CGFloat)heightWithContent:(NSString *)content hasThumbnail:(BOOL)hasThumbnail;
+
+@end
+
+@protocol HotCommentsHeaderDelegate <NSObject>
+- (void)avatarOnClick;
+- (void)thumbnailOnClick;
+@end

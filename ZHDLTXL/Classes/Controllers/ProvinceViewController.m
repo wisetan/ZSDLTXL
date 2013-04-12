@@ -189,12 +189,12 @@
 {
     CityViewController *cityVC = [[[CityViewController alloc] init] autorelease];
 //    cityVC.cityArray = [self.areaDict objectForKey:[self.provinceNameArray objectAtIndex:sender.index]];
-    NSMutableArray *cityNameArr = [[NSMutableArray alloc] init];
+    NSMutableArray *cityArr = [[NSMutableArray alloc] init];
     NSString *provinceId = [[self.provinceArray objectAtIndex:sender.index] provinceid];
     [[self.areaInfoDict objectForKey:provinceId] enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
-        [cityNameArr addObject:city.cityname];
+        [cityArr addObject:city];
     }];
-    cityVC.cityArray = cityNameArr;
+    cityVC.cityArray = cityArr;
     
     [self.navigationController pushViewController:cityVC animated:YES];
 }

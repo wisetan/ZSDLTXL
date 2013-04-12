@@ -1,0 +1,72 @@
+//
+//  CalloutAnnotation.m
+//  CustomCalloutSample
+//
+//  Created by tochi on 11/05/17.
+//  Copyright 2011 aguuu,Inc. All rights reserved.
+//
+
+#import "CalloutAnnotation.h"
+#import "PinAnnotation.h"
+
+@implementation CalloutAnnotation
+
+@synthesize cateType;
+@synthesize myTitle;
+@synthesize coordinate = coordinate_;
+@synthesize clickStatus;
+@synthesize advType;
+@synthesize mySubTitle;
+@synthesize avatarUrl;
+@synthesize infoType;
+@synthesize refPinAnnotation;
+@synthesize authType;
+@synthesize mid;
+@synthesize hotSpotUserId;
+
+- (NSString *)title {
+    return nil;
+}
+
+- (NSString *)subtitle {
+    return nil;
+}
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        clickStatus = CLICK_STATUS_NONE;
+    }
+    return self;
+}
+
+- (id)initWithPinAnnotaion:(PinAnnotation *)pinAnnotation {
+    self = [super init];
+    if (self) {
+        self.mid = pinAnnotation.mid;
+        self.cateType = pinAnnotation.cateType;
+        self.hotSpotUserId = pinAnnotation.hotSpotUserId;
+        self.myTitle = pinAnnotation.myTitle;
+        self.coordinate = pinAnnotation.coordinate;
+        self.clickStatus = CLICK_STATUS_NONE;
+        self.advType = pinAnnotation.advType;
+        self.mySubTitle = pinAnnotation.mySubTitle;
+        self.avatarUrl = pinAnnotation.avatarUrl;
+        self.infoType = pinAnnotation.infoType;
+        self.refPinAnnotation = pinAnnotation;
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    self.hotSpotUserId = nil;
+    self.mid        = nil;
+    self.avatarUrl  = nil;
+    self.myTitle    = nil;
+    self.mySubTitle = nil;
+    [super dealloc];
+}
+@end
+

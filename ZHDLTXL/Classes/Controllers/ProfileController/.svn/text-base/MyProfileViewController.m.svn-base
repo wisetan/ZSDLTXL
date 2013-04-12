@@ -1,0 +1,496 @@
+//
+//  MyProfileViewController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "MyProfileViewController.h"
+#import "UIActionSheet+MKBlockAdditions.h"
+#import "UIImage+Resizing.h"
+#import "FocusViewController.h"
+#import "MyFansViewController.h"
+#import "PersonHotSpotController.h"
+#import "FollowHotSpotController.h"
+#import "FavoriteViewController.h"
+#import "MyInfoController.h"
+
+@interface MyProfileViewController ()
+
+@end
+
+@implementation MyProfileViewController
+@synthesize isFullScreen;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        self.profileType = PROFILE_TYPE_MINE;
+        self.itemArray = [NSArray arrayWithObjects:@"我的关注" ,@"我的粉丝" ,@"我的动态", @"我的跟帖", @"我的收藏", @"我的消息", nil];
+        self.title = @"我的主页";
+        
+    }
+    return self;
+}
+
+- (void)resetNavigationBar {
+    if (self.navigationController.navigationBar.frame.origin.y != 0) {
+        self.navigationController.navigationBar.frame = CGRectMake(0, 0, 320, 44);
+    }
+}
+
+- (void)newMessageAction:(NSNotification *)notifaction {
+    NSDictionary *info = [notifaction userInfo];
+    UITableViewCell *cell = [self.mTableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]];
+    NSString *count = [[info objForKey:@"messagecount"] stringValue];
+    cell.detailTextLabel.text = count;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshAction) name:@"kNotifactionLoginSuccess" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(newMessageAction:) name:kEventNewMessage object:nil];
+    self.mTableView.sectionHeaderHeight = 5;
+    self.mTableView.sectionFooterHeight = 5;
+    if (isFullScreen) {
+        self.mTableView.frame = CGRectMake(0, 0, 320, 460-44);
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        button.frame = CGRectMake(0, 0, 40, 40);
+        [button addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
+        button.showsTouchWhenHighlighted = YES;
+        [button setImage:[UIImage imageByName:@"icon_nav_back"] forState:UIControlStateNormal];
+        UIBarButtonItem *button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
+        self.navigationItem.leftBarButtonItem = button1;
+    }
+    //add refreshActivityIndicator bar
+    reloadButton = [[[DAReloadActivityButton alloc] init] autorelease];
+    reloadButton.frame = CGRectMake(0, 0, 40, 40);
+    [reloadButton addTarget:self action:@selector(refreshAction) forControlEvents:UIControlEventTouchUpInside];
+    reloadButton.showsTouchWhenHighlighted = YES;
+    [reloadButton setImage:[UIImage imageByName:@"icon_nav_refresh"] forState:UIControlStateNormal];
+    UIBarButtonItem *button1 = [[[UIBarButtonItem alloc] initWithCustomView:reloadButton] autorelease];
+    self.navigationItem.rightBarButtonItem = button1;
+    
+    UIView *footerView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)] autorelease];
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    [button setBackgroundImage:[UIImage imageByName:@"validation"] forState:UIControlStateNormal];
+    [button setTitle:@"注 销" forState:UIControlStateNormal];
+    button.frame = CGRectMake(0, 0, 300, 40);
+    button.center = CGPointMake(160, 25);
+    [button addTarget:self action:@selector(logoutAction) forControlEvents:UIControlEventTouchUpInside];
+    [footerView addSubview:button];
+    
+    self.mTableView.tableFooterView = footerView;
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"bg_mask"]];
+    self.mTableView.backgroundColor = [UIColor clearColor];
+
+    [self refreshAction];
+}
+
+- (void)backAction {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)refreshAction {
+    if ([reloadButton isAnimating]) {
+        [reloadButton stopAnimating];
+    }
+    [reloadButton startAnimating];
+    
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [self sendRequest];
+}
+
+- (void)sendRequest {
+    NSString *myUid = [[PersistenceHelper dataForKey:@"userid"] stringValue];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getPersonalDetail.json" , @"path", myUid, @"userid", nil];
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([reloadButton isAnimating]) {
+            [reloadButton stopAnimating];
+        }
+        
+        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            self.profileDict = [[[json objForKey:@"UserDetail"] mutableCopy] autorelease];
+//            NSString *phone = [[profileDict objForKey:@"tel"] stringValue];
+//            if ([phone isValid]) {
+//                [PersistenceHelper setData:phone forKey:@"myphone"];
+//            }
+            NSString *name = [profileDict objForKey:@"username"];
+            if ([name isValid]) {
+                NSString *titleName = [NSString stringWithFormat:@"%@的主页", name];
+                self.title = titleName;
+                self.tabBarItem.title = @"我的主页";
+            }
+            [self.mTableView reloadData];            
+        } else {
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([reloadButton isAnimating]) {
+            [reloadButton stopAnimating];
+        }
+    }];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 4;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (void)viewDidUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"kNotifactionLoginSuccess" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kEventNewMessage object:nil];
+
+    [kAppDelegate setPickedPhotoImage:nil];
+    [super viewDidUnload];
+}
+
+- (void)logoutAction {
+    [PersistenceHelper setData:@"" forKey:@"name"];
+    [PersistenceHelper setData:@"" forKey:@"password"];
+    [PersistenceHelper setData:@"" forKey:@"autoLogin"];
+    [PersistenceHelper setData:@"" forKey:@"userid"];
+    [kAppDelegate setUserId:nil];
+    [kAppDelegate startToLoginWithAnimation:YES];
+}
+
+- (void)changeAvatar {
+    NSArray *array = nil;
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        array = [NSArray arrayWithObjects:@"拍照", @"用户相册", nil];
+    } else {
+        array = [NSArray arrayWithObjects:@"用户相册", nil];
+    }
+    
+    [UIActionSheet actionSheetWithTitle:@"请选择图片来源" 
+                                message:nil 
+                                buttons:array 
+                             showInView:self.view 
+                              onDismiss:^(int buttonIndex) {
+                                  UIImagePickerController *imagePicker = [[[UIImagePickerController alloc] init] autorelease];
+                                  imagePicker.allowsEditing = YES;
+                                  imagePicker.delegate = self;
+                                  if ([[array objectAtIndex:buttonIndex] isEqualToString:@"拍照"]) {
+                                      imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+                                  } else {
+                                      imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+                                  }
+                                  [self presentModalViewController:imagePicker animated:YES];
+                              }
+                               onCancel:^{
+                                   
+                               }];
+}
+
+-(void)maximDidFinishChange {
+    [self refreshAction];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissModalViewControllerAnimated:YES];
+    [[kAppDelegate leveyTabBarController] hidesTabBar:NO animated:YES];
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    [kAppDelegate setPickedPhotoImage:nil];
+    UIImage *pickedImage = [info objectForKey:UIImagePickerControllerEditedImage];
+    if (pickedImage == nil) {
+        pickedImage = [info objectForKey:UIImagePickerControllerOriginalImage];
+    }
+        
+    if (pickedImage) {
+        UIImage *scaledImage = [self postProcessImage:pickedImage width:kDefaultIamgeScale];
+        [kAppDelegate setPickedPhotoImage:scaledImage];
+
+        NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+        NSString *oriAvatarUrl = [self.profileDict objForKey:@"picturelinkurl"];
+        if (oriAvatarUrl == nil) {
+            oriAvatarUrl = @"";
+        } else {
+            oriAvatarUrl = [oriAvatarUrl lastPathComponent];
+        }
+        
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+        hud.labelText = @"正在更新头像";
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"addAndUpdateUserPic.json", @"path", myUid, @"userid", oriAvatarUrl, @"imageurl", nil];
+        [DreamFactoryClient postWithParameters:dict image:scaledImage success:^(id response) {
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
+            if ([[[(NSDictionary *)response objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+                [kAppDelegate showWithCustomAlertViewWithText:@"更新头像成功" andImageName:nil];
+                [self refreshAction];
+                [kAppDelegate setPickedPhotoImage:nil];
+            }
+        } failure:^{
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
+        }];
+    }
+
+    [self dismissModalViewControllerAnimated:YES];
+    [[kAppDelegate leveyTabBarController] hidesTabBar:NO animated:YES];
+}
+
+-(UIImage *)postProcessImage:(UIImage *)_capturedImage width:(float)width
+{
+	UIImageOrientation orient = _capturedImage.imageOrientation;
+	CGSize newSize;
+	if (orient == UIImageOrientationRight || orient == UIImageOrientationLeft) 
+	{
+		float ratio = _capturedImage.size.height/_capturedImage.size.width;
+		if( ratio > 1 )
+			newSize = CGSizeMake(width, width*ratio);
+		else 
+			newSize = CGSizeMake(width/ratio, width);
+	}
+	else 
+	{
+		float ratio = _capturedImage.size.width/_capturedImage.size.height;
+		if( ratio > 1 )
+			newSize = CGSizeMake(width*ratio, width);
+		else 
+			newSize = CGSizeMake(width, width/ratio);
+	}	
+	
+	UIImage *newImg = [UIImage imageWithSize:_capturedImage scaledToSize:newSize];
+    UIImage *scaledImage = [newImg cropToSize:CGSizeMake(width, width) usingMode:NYXCropModeCenter];
+    
+    return scaledImage;
+}
+
+- (void)updateCountForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    [[(CrossButtonCell *)cell labFocusCount] setText:[[self.profileDict objForKey:@"attentioncount"] stringValue]];
+
+    [[(CrossButtonCell *)cell labFansCount] setText:[[self.profileDict objForKey:@"fanscount"] stringValue]];
+
+    [[(CrossButtonCell *)cell labDynamicCount] setText:[[self.profileDict objForKey:@"hotspotcount"] stringValue]];
+    
+    [[(CrossButtonCell *)cell labCollectionCount] setText:[[self.profileDict objForKey:@"collectcount"] stringValue]];
+    //messagecount
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [self.mTableView deselectRowAtIndexPath:indexPath animated:NO];
+    if (indexPath.section == 2) {
+        MyInfoController *myInfo = [[[MyInfoController alloc] initWithNibName:@"MyInfoController" bundle:nil] autorelease];
+        [self.navigationController pushViewController:myInfo animated:YES];
+    }
+}
+
+- (void)modifyCard {
+    ModifyCardController *modify = [[[ModifyCardController alloc] initWithNibName:@"ModifyCardController" bundle:nil] autorelease];
+    if (self.profileDict && [[self.profileDict allKeys] count] > 0) {
+        modify.currentData = [self dictForProfileInfo];
+        modify.delegate = self;
+        [self.navigationController pushViewController:modify animated:YES];
+    }
+}
+
+- (void)CardDidFinishedModify {
+    [self refreshAction];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.section) {
+        case 0:
+        {
+            return 108;
+        }
+        case 1:
+        {
+            return 90;
+        }
+        case 2:
+        {
+            return 44; 
+        }        
+        case 3:
+        {
+            return [PersonalCardCell heightForDict:[self dictForProfileInfo]]; 
+        }        
+            
+        default:
+            break;
+    }
+    return 44;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *kHeaderMine = @"PersonalHeaderCell";
+    static NSString *kCrossCell  = @"CrossButtonCell";
+    static NSString *kCommonCell = @"kCommonCell";
+    static NSString *kCardCell   = @"kCardCell";
+    UITableViewCell *cell = nil;
+    switch (indexPath.section) {
+        case 0:
+        {
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell = [tableView dequeueReusableCellWithIdentifier:kHeaderMine];
+            if (cell == nil) {
+                NSArray *nib = [[NSBundle mainBundle] loadNibNamed:kHeaderMine owner:self options:nil];
+                cell = (PersonalHeaderCell *)[nib objectAtIndex:0];
+                ((PersonalHeaderCell *)cell).avatar.placeholderImage = [UIImage imageByName:@"default_avatar"];
+                ((PersonalHeaderCell *)cell).avatar.delegate = self;
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+            }
+            
+            [(PersonalHeaderCell *)cell setDelegate:self];
+            break;
+        }
+        case 1:
+        {
+            cell = [tableView dequeueReusableCellWithIdentifier:kCrossCell];
+            if (cell == nil) {
+                NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"CrossButtonCell" owner:self options:nil];
+                cell = (CrossButtonCell *)[nib objectAtIndex:0];
+                [(CrossButtonCell *)cell setDelegate:self];
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+            }
+            break;
+        }
+        case 2:
+        {
+            cell.selectionStyle = UITableViewCellSelectionStyleGray;
+            cell = [tableView dequeueReusableCellWithIdentifier:kCommonCell];
+            if (cell == nil) {
+                cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kCommonCell] autorelease]; 
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+            }
+            break;
+        }
+        case 3:
+        {
+            cell.selectionStyle = UITableViewCellSelectionStyleGray;
+            cell = [tableView dequeueReusableCellWithIdentifier:kCardCell];
+            if (cell == nil) {
+                NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"PersonalCardCell" owner:self options:nil];
+                cell = (PersonalCardCell *)[nib objectAtIndex:0];
+                [(PersonalCardCell *)cell setDelegate:self];
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+            }
+            break;
+        }
+            
+        default:
+            break;
+    }
+    [self configureCell:cell atIndexPath:indexPath];
+    return cell;
+}
+
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.section) {
+        case 0:
+        {
+            PersonalHeaderCell *headerCell = (PersonalHeaderCell *)cell;            
+            headerCell.labName.text = [profileDict objForKey:@"autograph"];
+            
+            NSString *url = [self.profileDict objForKey:@"picturelinkurl"];
+            headerCell.avatar.imageURL = [url isValid] ? [NSURL URLWithString:url] : nil;
+            headerCell.ratingCount = [[profileDict objForKey:@"attention"] intValue];
+            NSString *myuid = [PersistenceHelper dataForKey:@"userid"];
+            headerCell.labBaotongId.text = myuid;
+            break;
+        }
+            
+        case 1:
+        {            
+            //更新我的关注、粉丝、热点、跟帖数量
+            [self updateCountForCell:cell atIndexPath:indexPath];            
+            break;
+        }
+        case 2:
+        {
+            cell.textLabel.text = @"我的消息";
+            cell.detailTextLabel.text = [[self.profileDict objForKey:@"messagecount"] stringValue];
+            cell.textLabel.textColor = RGBCOLOR(90, 90, 90);
+            cell.textLabel.backgroundColor = [UIColor clearColor];
+            cell.detailTextLabel.backgroundColor = [UIColor clearColor];
+            cell.detailTextLabel.textColor = [UIColor redColor];
+            cell.detailTextLabel.font = [UIFont boldSystemFontOfSize:17];
+            cell.textLabel.highlightedTextColor = RGBCOLOR(90, 90, 90);
+            cell.detailTextLabel.highlightedTextColor = [UIColor redColor];
+            break;
+        }
+        case 3:
+        {            
+            NSString *myuid = [PersistenceHelper dataForKey:@"userid"];
+            [(PersonalCardCell *)cell setUid:myuid];
+            [(PersonalCardCell *)cell updateCardWithInfoDict:[self dictForProfileInfo]];
+            if (self.profileType != PROFILE_TYPE_MINE) {
+                [(PersonalCardCell *)cell showModifyButton:NO];
+            }
+            
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+- (void)crossClickedAtIndex:(NSInteger)index {
+    switch (index) {
+        case 0:
+        {
+            // 关注
+            FocusViewController *focus = [[[FocusViewController alloc] initWithNibName:@"FocusViewController" bundle:nil] autorelease];
+            [self.navigationController pushViewController:focus animated:YES];
+
+            break;
+        }
+        case 1:
+        {
+            //粉丝
+            MyFansViewController *fans = [[[MyFansViewController alloc] initWithNibName:@"MyFansViewController" bundle:nil] autorelease];
+            
+            [self.navigationController pushViewController:fans animated:YES];
+
+            break;
+        }
+        case 2:
+        {
+            //动态
+            PersonHotSpotController *hotSpot = [[[PersonHotSpotController alloc] initWithNibName:@"PersonHotSpotController" bundle:nil] autorelease];
+            [self.navigationController pushViewController:hotSpot animated:YES];
+
+            break;
+        }
+        case 3:
+        {
+            //收藏
+            FavoriteViewController *favor = [[[FavoriteViewController alloc] initWithNibName:@"FavoriteViewController" bundle:nil] autorelease];
+            [self.navigationController pushViewController:favor animated:YES];
+
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+    if ([viewController isKindOfClass:[MyProfileViewController class]]) {
+        [self refreshAction];
+        [[kAppDelegate leveyTabBarController] hidesTabBar:NO animated:YES];
+    } else {
+        [[kAppDelegate leveyTabBarController] hidesTabBar:YES animated:YES];
+    }
+}
+
+- (void)imageViewLoadedImage:(EGOImageView*)imageView {
+    imageView.image = [imageView.image roundedCornerImage:10 borderSize:2];
+}
+
+//- (void)imageViewFailedToLoadImage:(EGOImageView*)imageView error:(NSError*)error {
+//   
+//}
+
+@end

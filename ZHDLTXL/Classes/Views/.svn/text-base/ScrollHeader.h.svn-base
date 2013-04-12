@@ -1,0 +1,26 @@
+//
+//  ScrollHeader.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-26.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@protocol ScrollHeaderDelegate;
+@interface ScrollHeader : UIView<UIScrollViewDelegate>
+@property (retain, nonatomic) UIScrollView *mScrollView;
+@property (retain, nonatomic) UIPageControl *mPageControl;
+@property (retain, nonatomic) NSArray *datasourceArray;
+@property (assign, nonatomic) id<ScrollHeaderDelegate> delegate;
+@property (assign, nonatomic) BOOL autoScrollEnable;
+@property (retain, nonatomic) NSTimer *timer;
+
+- (id)initWithFrame:(CGRect)frame autoScrollEnable:(BOOL)canAutoScroll;
+
+@end
+
+@protocol ScrollHeaderDelegate <NSObject>
+@optional
+- (void)clickScrollHeader:(ScrollHeader *)header atIndex:(NSInteger)index;
+@end

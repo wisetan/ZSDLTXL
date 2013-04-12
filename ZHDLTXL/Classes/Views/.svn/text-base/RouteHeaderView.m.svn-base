@@ -1,0 +1,43 @@
+//
+//  RouteHeaderView.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-5-14.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "RouteHeaderView.h"
+
+@implementation RouteHeaderView
+
+@synthesize labTitle;
+@synthesize delegate;
+@synthesize icon;
+@synthesize mapButton;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+//- (void)awakeFromNib {
+//    self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"bg_route_Header"]];
+//}
+
+- (IBAction)routeAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(routeOnClick)]) {
+        [delegate routeOnClick];
+    }
+}
+
+- (void)dealloc {
+    [labTitle release];
+    [icon release];
+    [mapButton release];
+    [super dealloc];
+}
+@end

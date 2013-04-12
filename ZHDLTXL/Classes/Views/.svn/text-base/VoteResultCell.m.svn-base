@@ -1,0 +1,34 @@
+//
+//  VoteResultCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-10.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "VoteResultCell.h"
+
+@implementation VoteResultCell
+@synthesize labContent;
+@synthesize mProgressBar;
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    self.mProgressBar = [[[ADVPercentProgressBar alloc] initWithFrame:CGRectMake(8, 19, 270, 28) andProgressBarColor:ADVProgressBarRed] autorelease];
+    [self.contentView addSubview:self.mProgressBar];
+}
+
+- (void)dealloc {
+    [mProgressBar release];
+    [labContent release];
+    [super dealloc];
+}
+@end

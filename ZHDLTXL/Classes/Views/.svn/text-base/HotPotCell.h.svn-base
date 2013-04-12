@@ -1,0 +1,52 @@
+//
+//  HotPotCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-1.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol HotPotCellDelegate;
+@class DLStarRatingControl;
+@interface HotPotCell : UITableViewCell {
+    NSIndexPath *indexPath;
+    DLStarRatingControl *ratingView;
+    UILabel *labName;
+    EGOImageView *avatar;
+    UILabel *labSubTitle;
+    UILabel *labContent;
+    EGOImageView *thumbnail;
+    id<HotPotCellDelegate> delegate;
+    BOOL hasThumbnail;
+    UILabel *labReply;
+    UILabel *labTime;
+    NSInteger ratingCount;
+}
+
+@property (assign, nonatomic) NSInteger ratingCount;
+@property (retain, nonatomic) NSIndexPath *indexPath;
+@property (retain, nonatomic) IBOutlet DLStarRatingControl *ratingView;
+@property (retain, nonatomic) IBOutlet UILabel *labName;
+@property (retain, nonatomic) IBOutlet UILabel *labReply;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (retain, nonatomic) IBOutlet UILabel *labSubTitle;
+@property (retain, nonatomic) IBOutlet UILabel *labContent;
+@property (retain, nonatomic) IBOutlet EGOImageView *thumbnail;
+@property (assign, nonatomic) id<HotPotCellDelegate> delegate;
+@property (assign, nonatomic) BOOL hasThumbnail;
+@property (retain, nonatomic) IBOutlet UILabel *labTime;
+@property (retain, nonatomic) IBOutlet UIButton *btnThumbnail;
+
+
+//- (void)clear;
++ (CGFloat)heightForCellWithContent:(NSString *)content hasThumbnail:(BOOL)hasThumbnail;
+
+@end
+
+@protocol HotPotCellDelegate <NSObject>
+@required
+- (void)cell:(UITableViewCell *)cell avatarClickedAtIndexPath:(NSIndexPath *)indexPath;
+- (void)cell:(UITableViewCell *)cell thumbnailClickedAtIndexPath:(NSIndexPath *)indexPath;
+@end

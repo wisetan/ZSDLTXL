@@ -29,7 +29,7 @@
 - (void)dealloc {
     [_headIcon release];
     [_nameLabel release];
-    [_contactButton release];
+//    [_contactButton release];
     [super dealloc];
 }
 @end

@@ -1,0 +1,41 @@
+//
+//  InputMaskView.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-24.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "InputMaskView.h"
+
+@implementation InputMaskView
+
+@synthesize focusButton;
+@synthesize delegate;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (IBAction)writeAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(startToWriteMessage)]) {
+        [delegate startToWriteMessage];
+    }
+}
+
+- (IBAction)focusAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(startToFocus)]) {
+        [delegate startToFocus];
+    }
+}
+
+- (void)dealloc {
+    [focusButton release];
+    [super dealloc];
+}
+@end

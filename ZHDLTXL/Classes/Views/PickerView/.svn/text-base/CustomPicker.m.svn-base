@@ -1,0 +1,122 @@
+//
+//  CustomPicker.m
+//  LeheV2
+//
+//  Created by zhangluyi on 11-7-20.
+//  Copyright 2011年 __MyCompanyName__. All rights reserved.
+//
+
+#import "CustomPicker.h"
+#import <QuartzCore/QuartzCore.h>
+#import "Const.h"
+
+@implementation CustomPicker
+@synthesize toolbar;
+@synthesize picker;
+@synthesize pickerArray;
+@synthesize customDelegate;
+@synthesize selectedIndex;
+@synthesize bgView;
+@synthesize labelTitle;
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
+    return 1;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
+    return [[pickerArray objectAtIndex:component] count];
+}
+
+- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
+    return [self.pickerArray objectAtIndex:row];
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
+    selectedIndex = row;
+}
+
+- (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view {
+    UILabel *label = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 40)] autorelease];
+    label.backgroundColor = [UIColor clearColor];
+    label.numberOfLines = 2;
+    label.lineBreakMode = UILineBreakModeTailTruncation;
+    label.font = [UIFont boldSystemFontOfSize:14];
+    label.minimumFontSize = 10;
+    label.text = [pickerArray objectAtIndex:row];
+    return label;
+}
+
+- (void)dealloc
+{
+    [bgView release];
+    [pickerArray release];
+    [toolbar release];
+    [picker release];
+	[labelTitle release];
+    [super dealloc];
+}
+
+- (void)pickerAnimation:(BOOL)direction {    
+    
+    CATransition *animation = [CATransition animation];
+	[animation setDelegate:self];
+	[animation setDuration:0.4];
+	[animation setType:kCATransitionPush];
+
+    if (direction) {
+        [animation setSubtype:kCATransitionFromTop];
+    } else {
+        [animation setSubtype:kCATransitionFromBottom];
+    }
+	[animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+	[animation setValue:@"sliding" forKey:@"LeheAnimation"];
+	[[self layer] addAnimation:animation forKey:nil];
+}
+
+- (void)pushIn {
+    
+    [self.picker selectRow:selectedIndex inComponent:0 animated:NO];
+    
+    if (self.bgView == nil) {
+        self.bgView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 480)] autorelease];
+        self.bgView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5];
+        [self.superview insertSubview:bgView belowSubview:self];
+        self.bgView.alpha = 0;
+    }
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        self.bgView.alpha = 1;
+    }];
+    
+    [self pickerAnimation:YES];
+    self.hidden = NO;
+}
+
+- (void)pushOut {
+    self.bgView.hidden = YES;
+    [self pickerAnimation:NO];
+    self.hidden = YES;
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    CATransition *transition = (CATransition *)anim;
+    if (transition.subtype == kCATransitionFromTop) {
+        //Push in : Do nothing
+    } else if (transition.subtype == kCATransitionFromBottom) {
+        //Push out : remove from superview
+//        [self removeFromSuperview];
+    }
+}
+
+- (IBAction)cancelAction:(id)sender {
+    [self pushOut];
+}
+
+- (IBAction)confirmAction:(id)sender {
+    if ([customDelegate respondsToSelector:@selector(picker:didSelectedWithDict:atRow:)]) {
+        [customDelegate picker:self didSelectedRowAtIndex:selectedIndex];
+    }
+    
+    [self pushOut];
+}
+@end

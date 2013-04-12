@@ -1,0 +1,25 @@
+//
+//  RouteHeaderView.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-5-14.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@protocol RouteHeaderDelegate;
+@interface RouteHeaderView : UIView {
+    id<RouteHeaderDelegate> delegate;
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *labTitle;
+@property (assign, nonatomic) id<RouteHeaderDelegate> delegate;
+@property (retain, nonatomic) IBOutlet UIImageView *icon;
+@property (retain, nonatomic) IBOutlet UIButton *mapButton;
+@end
+
+@protocol RouteHeaderDelegate <NSObject>
+
+- (void)routeOnClick;
+
+@end

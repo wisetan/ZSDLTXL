@@ -1,0 +1,35 @@
+//
+//  PersonalCardCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol PersonalCardDelegate;
+
+@interface PersonalCardCell : UITableViewCell {
+    NSMutableArray *arrLabels;
+    id<PersonalCardDelegate> delegate;
+}
+
+@property (nonatomic, assign) id<PersonalCardDelegate> delegate;
+@property (nonatomic, retain) NSMutableArray *arrLabels;
+@property (retain, nonatomic) IBOutlet UIButton *modifyButton;
+@property (retain, nonatomic) IBOutlet UILabel *labCardTitle;
+@property (copy, nonatomic)   NSString *uid;
+
+- (IBAction)modifyAction:(id)sender;
+- (void)updateCardWithInfoDict:(NSDictionary *)dict; //更新同时返回高度
++ (CGFloat)heightForDict:(NSDictionary *)dict;
+- (void)showModifyButton:(BOOL)willShow;
+
+@end
+
+@protocol PersonalCardDelegate <NSObject>
+
+- (void)modifyCard;
+
+@end

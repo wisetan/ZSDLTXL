@@ -9,6 +9,9 @@
 #import "RegistViewController.h"
 #import "DreamFactoryClient.h"
 
+#define CELL_COLUM  2
+#define CELL_ROW    5
+
 @interface RegistViewController ()
 
 @end
@@ -50,12 +53,12 @@
     
     self.registInfo = [NSMutableArray arrayWithCapacity:2];
     NSMutableArray *array0 = [NSMutableArray arrayWithCapacity:4];
-    for (int j = 0; j < 4; j++) {
+    for (int j = 0; j < CELL_ROW; j++) {
         [array0 addObject:@""];
     }
     [self.registInfo addObject:array0];
     NSMutableArray *array1 = [NSMutableArray arrayWithCapacity:2];
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < CELL_COLUM; j++) {
         [array1 addObject:@""];
     }
     [self.registInfo addObject:array1];
@@ -74,12 +77,12 @@
     UIBarButtonItem *button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
     self.navigationItem.leftBarButtonItem = button1;
 
-    self.leftArray = [NSArray arrayWithObjects:[NSArray arrayWithObjects:@"用户名", @"密码", @"确认密码", nil], nil];
-    self.rightArray = [NSArray arrayWithObjects:[NSArray arrayWithObjects:@"昵称不能为纯数字且不得少于2个字符", @"密码不得少于6个字符", @"请再次输入密码", nil], nil];
+    self.leftArray = [NSArray arrayWithObjects:[NSArray arrayWithObjects:@"手机号", @"密码", @"确认密码",@"真实姓名", @"邮箱", nil], nil];
+    self.rightArray = [NSArray arrayWithObjects:[NSArray arrayWithObjects:@"必填", @"密码不得少于6个字符", @"请再次输入密码", @"可选", @"必填", nil], nil];
 
     //right item
     button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.frame = CGRectMake(0, 0, 40, 40);
+    button.frame = CGRectMake(0, 0, 30, 30);
     [button addTarget:self action:@selector(submitAction) forControlEvents:UIControlEventTouchUpInside];
     button.showsTouchWhenHighlighted = YES;
     [button setImage:[UIImage imageByName:@"icon_confirm"] forState:UIControlStateNormal];
@@ -144,29 +147,41 @@
 - (void)submitAction {
     NSInteger ret = 0;
     
-    NSString *userName = [[self.registInfo objectAtIndex:0] objectAtIndex:0];
-    if (![userName isValid]) {
-        [kAppDelegate showWithCustomAlertViewWithText:@"请输入用户名" andImageName:kErrorIcon];
+    NSString *telNum = [[self.registInfo objectAtIndex:0] objectAtIndex:0];
+    if (![telNum isValid] || ![telNum isMobileNumber]) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的手机号" andImageName:kErrorIcon];
         ret += 1;
-    } else {
-        if ([userName length] < 2) {
-            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不得少于2个字符" andImageName:kErrorIcon];
-            ret += 1;
-        }
-        if ([Utility isNumberString:userName]) {
-            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不能全为数字" andImageName:kErrorIcon];
-            ret += 1;                
-        }
+        return;
     }
+    
+    
+    
+    
+//    NSString *userName = [[self.registInfo objectAtIndex:0] objectAtIndex:1];
+//    if (![userName isValid]) {
+//        [kAppDelegate showWithCustomAlertViewWithText:@"请输入用户名" andImageName:kErrorIcon];
+//        ret += 1;
+//    } else {
+//        if ([userName length] < 2) {
+//            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不得少于2个字符" andImageName:kErrorIcon];
+//            ret += 1;
+//        }
+//        if ([Utility isNumberString:userName]) {
+//            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不能全为数字" andImageName:kErrorIcon];
+//            ret += 1;                
+//        }
+//    }
     
     NSString *password = [[self.registInfo objectAtIndex:0] objectAtIndex:1];
     if (![password isValid]) {
         [kAppDelegate showWithCustomAlertViewWithText:@"请输入密码" andImageName:kErrorIcon];
         ret += 1;
+        return;
     } else {
         if ([password length] < 6) {
             [kAppDelegate showWithCustomAlertViewWithText:@"密码不得小于6位" andImageName:kErrorIcon];
             ret += 1;
+            return;
         }
     }
 
@@ -174,19 +189,49 @@
     if (![rePassword isValid]) {
         [kAppDelegate showWithCustomAlertViewWithText:@"请再次输入密码" andImageName:kErrorIcon];
         ret += 1;
+        return;
     } else {
         if (![rePassword isEqualToString:password]) {
             ret += 1;
+            return;
         }
     }
-
+    
+    NSString *realName = [[self.registInfo objectAtIndex:0] objectAtIndex:3];
+    if (![realName isValid]) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"请输入用户名" andImageName:kErrorIcon];
+        ret += 1;
+        return;
+    } else {
+        if ([realName length] < 2) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不得少于2个字符" andImageName:kErrorIcon];
+            ret += 1;
+            return;
+        }
+        if ([Utility isNumberString:realName]) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不能全为数字" andImageName:kErrorIcon];
+            ret += 1;
+            return;
+        }
+    }
+    
+    NSString *email = [[self.registInfo objectAtIndex:0] objectAtIndex:4];
+    if (![email isValid] || ![email isValidEmail]) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的邮件格式" andImageName:kErrorIcon];
+        ret += 1;
+        return;
+    }
+    
     if (ret != 0) {
         return;
     }
     
     MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
     hub.labelText = @"正在提交注册";
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"", @"verificationCode", userName, @"nickname", [password md5], @"passwd", @"", @"mail", @"", @"tel", @"addUser.json", @"path", nil];
+//    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"", @"verificationCode", userName, @"nickname", [password md5], @"passwd", @"", @"mail", @"", @"tel", @"addUser.json", @"path", nil];
+    
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:telNum, @"tel", password, @"passwd", realName, @"name", email, @"mail", kAppDelegate.uuid, @"uuid", @"addInvestmentUser.json", @"path", nil];
+
     
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
@@ -195,10 +240,12 @@
             NSString *uid = [[json objForKey:@"Userid"] stringValue];
             [kAppDelegate setUserId:uid];
             [PersistenceHelper setData:@"YES" forKey:@"autoLogin"]; //注册时默认自动登陆
-            [PersistenceHelper setData:uid forKey:@"userid"];
-            [PersistenceHelper setData:userName forKey:@"name"];
-            [PersistenceHelper setData:[password md5] forKey:@"password"];
-            [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:kRegistSucceed object:nil];
+            [PersistenceHelper setData:uid forKey:@"userid"];   //宝通号
+            [PersistenceHelper setData:telNum forKey:@"telnum"];
+            [PersistenceHelper setData:password forKey:@"password"];
+            [self.navigationController popToRootViewControllerAnimated:YES];
+            kAppDelegate.userId = uid;
+//            [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:kRegistSucceed object:nil];
         } else {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
@@ -239,6 +286,13 @@
         cell.rightTextField.secureTextEntry = YES;
     } else {
         cell.rightTextField.secureTextEntry = NO;
+    }
+    
+    if (indexPath.section == 0 && indexPath.row == 0) {
+        cell.rightTextField.keyboardType = UIKeyboardTypeNumberPad;
+    }
+    if (indexPath.section == 0 && indexPath.row == 4) {
+        cell.rightTextField.keyboardType = UIKeyboardTypeEmailAddress;
     }
     cell.rightTextField.placeholder = [[self.rightArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
     cell.isEditable = YES;

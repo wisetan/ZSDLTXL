@@ -1,0 +1,36 @@
+//
+//  MyAnnotation.h
+//  MapKitTest
+//
+//  Created by zhangluyi on 11-4-25.
+//  Copyright 2011 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import <MapKit/MapKit.h>
+
+typedef enum {
+    ANNOTATION_TYPE_ZHAOSHANG = 0,
+    ANNOTATION_TYPE_DIALI
+} ANNOTATION_TYPE;
+
+@interface MyAnnotation : NSObject<MKAnnotation> {
+    NSString *myTitle;
+    NSString *mySubTitle;
+    ANNOTATION_TYPE type;
+    NSString *uid;
+	NSString *avator;
+    double lat;
+    double lon;
+    CLLocationCoordinate2D coordinate;
+}
+
+@property (nonatomic, readonly) CLLocationCoordinate2D coordinate;
+@property (retain, nonatomic) NSString *myTitle;
+@property (retain, nonatomic) NSString *mySubTitle;
+@property (assign, nonatomic) ANNOTATION_TYPE type;
+@property (nonatomic, retain) NSString *uid;
+@property (nonatomic, retain) NSString *avator;
+@property (nonatomic, assign) double lat;
+@property (nonatomic, assign) double lon;
+@end

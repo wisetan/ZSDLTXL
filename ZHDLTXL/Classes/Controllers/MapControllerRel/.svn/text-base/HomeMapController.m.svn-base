@@ -1,0 +1,211 @@
+//
+//  HomeMapController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-16.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "HomeMapController.h"
+#import "OthersProfileViewController.h"
+#import "HotCommentsViewController.h"
+#import "YaodianHotSpotController.h"
+
+@interface HomeMapController ()
+- (void)updateAnnotation;
+@end
+
+@implementation HomeMapController
+
+@synthesize delegate;
+@synthesize datasourceArray;
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self updateAnnotation];
+}
+
+- (void)clearAnnotation {
+    NSMutableArray *delArray = [NSMutableArray array];
+    for (id annotation in mMapView.annotations) {
+        if (![annotation isKindOfClass:[MKUserLocation class]]) {
+            [delArray addObject:annotation];
+        }
+    }
+    [self.mMapView removeAnnotations:delArray];
+}
+
+- (void)updateAnnotation {
+
+    [self clearAnnotation];
+    NSInteger maxindex = 0;
+    if ([datasourceArray count] > 40) {
+        maxindex = 40;
+    } else {
+        maxindex = [datasourceArray count];
+    }
+    
+    if (maxindex == 0) {
+        return;
+    }
+
+    if (mapType == MAP_TYPE_PERSON) {
+        // Add annotations on the MapView.
+        PinAnnotation *pinAnnotation;
+        CLLocationCoordinate2D coordinate;
+        for (int i = 0; i < maxindex; i++) {
+            NSDictionary *location = [datasourceArray objectAtIndex:i];
+            if ([location isKindOfClass:[NSDictionary class]]) {
+                coordinate.latitude  = [[location objectForKey:@"lat"] doubleValue];
+                coordinate.longitude = [[location objectForKey:@"lon"] doubleValue];
+                
+                pinAnnotation = [[[PinAnnotation alloc] init] autorelease];
+                pinAnnotation.cateType = CATEGORY_TYPE_PERSON;
+                pinAnnotation.myTitle = [location objForKey:@"username"];
+                pinAnnotation.mid = [location objForKey:@"userid"];
+                pinAnnotation.mySubTitle = [location objForKey:@"autograph"];
+                pinAnnotation.avatarUrl = [location objForKey:@"picturelinkurl"];
+                pinAnnotation.clickStatus = CLICK_STATUS_NONE;        
+                pinAnnotation.coordinate = coordinate;
+                [self.mMapView addAnnotation:pinAnnotation];            
+            }
+        }   
+    } 
+    
+    if (mapType == MAP_TYPE_HOT) {
+        PinAnnotation *pinAnnotation;
+        CLLocationCoordinate2D coordinate;
+        for (int i = 0; i < maxindex; i++) {
+            NSDictionary *location = [datasourceArray objectAtIndex:i];
+            if ([location isKindOfClass:[NSDictionary class]]) {
+                coordinate.latitude  = [[location objectForKey:@"lat"] doubleValue];
+                coordinate.longitude = [[location objectForKey:@"lon"] doubleValue];
+                
+                pinAnnotation = [[[PinAnnotation alloc] init] autorelease];
+                pinAnnotation.cateType = CATEGORY_TYPE_HOTSPOT;
+                pinAnnotation.myTitle = [location objForKey:@"username"];
+                pinAnnotation.mySubTitle = [location objForKey:@"content"];
+                pinAnnotation.hotSpotUserId = [location objForKey:@"userid"];
+                pinAnnotation.avatarUrl = [location objForKey:@"userpictureurl"];
+                pinAnnotation.mid = [location objForKey:@"hotspotid"];
+                pinAnnotation.coordinate = coordinate;
+                [self.mMapView addAnnotation:pinAnnotation];            
+            }
+        }           
+    }
+    
+    if (mapType == MAP_TYPE_HOSPITAL || mapType == MAP_TYPE_DRUGSTORE) {
+        PinAnnotation *pinAnnotation;
+        CLLocationCoordinate2D coordinate;
+        for (int i = 0; i < maxindex; i++) {
+            NSDictionary *location = [datasourceArray objectAtIndex:i];
+            if ([location isKindOfClass:[NSDictionary class]]) {
+                coordinate.latitude  = [[location objectForKey:@"lat"] doubleValue];
+                coordinate.longitude = [[location objectForKey:@"lon"] doubleValue];
+                pinAnnotation = [[[PinAnnotation alloc] init] autorelease];
+                if (mapType == MAP_TYPE_HOSPITAL) {
+                    pinAnnotation.cateType = CATEGORY_TYPE_HOSPITAL;
+                    pinAnnotation.mid = [[location objForKey:@"hospitalid"] stringValue];
+                } else {
+                    pinAnnotation.cateType = CATEGORY_TYPE_DRUGSTORE;
+                    pinAnnotation.mid = [[location objForKey:@"drugstoreid"] stringValue];
+                }
+                pinAnnotation.myTitle = [location objForKey:@"name"];
+                pinAnnotation.mySubTitle = [location objForKey:@"address"];
+                pinAnnotation.coordinate = coordinate;
+                [self.mMapView addAnnotation:pinAnnotation];            
+            }
+        }           
+    }
+}
+
+- (void)clickAnnotationView:(MKAnnotationView *)annotationView {
+//    NSLog(@"click : %@", annotationView);
+    CalloutAnnotation *annotation = annotationView.annotation;
+    switch (mapType) {
+        case MAP_TYPE_PERSON:
+        {
+            NSString *userName = annotation.myTitle;
+            NSString *userId = annotation.mid;
+            OthersProfileViewController *otherProfile = [[[OthersProfileViewController alloc] initWithUserId:userId userName:userName] autorelease];
+            if ([delegate respondsToSelector:@selector(mapPushView:withType:)]) {
+                [delegate mapPushView:otherProfile withType:MAP_TYPE_PERSON];
+            }
+            
+            break;
+        }
+        case MAP_TYPE_HOT:
+        {
+            HotCommentsViewController *hotComments = [[[HotCommentsViewController alloc] initWithNibName:@"HotCommentsViewController" bundle:nil] autorelease];
+            
+            hotComments.hotspotId = annotation.mid;
+            hotComments.userId = annotation.hotSpotUserId;
+            
+            for (NSDictionary *dict in self.datasourceArray) {
+                NSString *hotspotId = [[dict objForKey:@"hotspotid"] stringValue];
+                if ([hotspotId isValid] && [hotspotId isEqualToString:hotComments.hotspotId]) {
+                    hotComments.hotDict = dict;
+                    break;
+                }
+            }
+            
+            if ([delegate respondsToSelector:@selector(mapPushView:withType:)]) {
+                [delegate mapPushView:hotComments withType:MAP_TYPE_HOT];
+            }
+
+            break;
+        }
+        case MAP_TYPE_HOSPITAL:
+        {
+            NSString *hospitalId = annotation.mid;
+            NSString *hospitalName = annotation.myTitle;
+            HospitalHotSpotController *hospitalHot = [[[HospitalHotSpotController alloc] initWithHospitalId:hospitalId andTitle:hospitalName] autorelease];
+            hospitalHot.lat = annotation.coordinate.latitude;
+            hospitalHot.lon = annotation.coordinate.longitude;
+
+            if ([delegate respondsToSelector:@selector(mapPushView:withType:)]) {
+                [delegate mapPushView:hospitalHot withType:MAP_TYPE_HOSPITAL];
+            }
+
+            break;
+        }
+        case MAP_TYPE_DRUGSTORE:
+        {
+            NSString *drugstoreId = annotation.mid;
+            NSString *drugstoreName = annotation.myTitle;
+            CGFloat lat = annotation.coordinate.latitude;
+            CGFloat lon = annotation.coordinate.longitude;
+            
+            YaodianHotSpotController *yaodianHot = [[[YaodianHotSpotController alloc] initWithYaoDianId:drugstoreId andTitle:drugstoreName lat:lat lon:lon] autorelease];
+            if ([delegate respondsToSelector:@selector(mapPushView:withType:)]) {
+                [delegate mapPushView:yaodianHot withType:MAP_TYPE_DRUGSTORE];
+            }
+        
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+- (void)dealloc
+{
+    self.datasourceArray = nil;
+    [super dealloc];
+}
+
+//- (void)mapView:(MKMapView *)mapView regionDidChangeAnimated:(BOOL)animated {
+//    [self postRefresh];
+//}
+
+- (void)postRefresh {
+//    NSLog(@"TIMER INVOKE!");
+    [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:kRegionDidChanged object:nil];
+}
+
+
+@end

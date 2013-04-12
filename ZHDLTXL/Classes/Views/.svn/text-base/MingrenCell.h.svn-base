@@ -1,0 +1,23 @@
+//
+//  MingrenCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-11.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MingrenCell : UITableViewCell {
+    UILabel *labTitle;
+    UILabel *labSubtitle;
+    EGOImageView *avatar;
+    UILabel *labInfo;
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *labTitle;
+@property (retain, nonatomic) IBOutlet UILabel *labSubtitle;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (retain, nonatomic) IBOutlet UILabel *labInfo;
+
+@end

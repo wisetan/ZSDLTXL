@@ -1,0 +1,31 @@
+//
+//  CreateHotViewController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-21.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@protocol HotCreaterDelegate;
+@class PHTextView;
+@interface CreateHotViewController : UIViewController<UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
+    UIButton *clearButton;
+    UIView *operationView;
+    UIButton *photoButton;
+    id<HotCreaterDelegate> delegate;
+}
+
+@property (retain, nonatomic) IBOutlet UIView       *operationView;
+@property (retain, nonatomic) IBOutlet UIButton     *clearButton;
+@property (retain, nonatomic) IBOutlet PHTextView   *mTextView;
+@property (retain, nonatomic) IBOutlet UIButton     *photoButton;
+@property (retain, nonatomic) IBOutlet UIImageView  *photoImageView;
+@property (assign, nonatomic) id<HotCreaterDelegate> delegate;
+@end
+
+@protocol HotCreaterDelegate <NSObject>
+@optional
+- (void)hotSpotDidFinishCreated;
+
+@end

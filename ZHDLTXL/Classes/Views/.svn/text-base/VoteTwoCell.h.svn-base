@@ -1,0 +1,29 @@
+//
+//  VoteTwoCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-5.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "EGODictButton.h"
+
+@protocol VoteCellDelegate;
+@interface VoteTwoCell : UITableViewCell {
+    NSArray *mButtonArray;
+    id<VoteCellDelegate> delegate;
+}
+
+@property (retain, nonatomic) NSArray *mButtonArray;
+@property (retain, nonatomic) IBOutlet EGODictButton *mFirstButton;
+@property (retain, nonatomic) IBOutlet EGODictButton *mSecondButton;
+@property (assign, nonatomic) id<VoteCellDelegate> delegate;
+
+@end
+
+@protocol VoteCellDelegate <NSObject>
+
+- (void)voteCellButtonClicked:(EGODictButton *)dictButton;
+
+@end

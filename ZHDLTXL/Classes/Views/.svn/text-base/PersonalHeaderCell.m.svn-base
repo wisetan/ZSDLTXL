@@ -1,0 +1,134 @@
+//
+//  PersonalHeaderCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "PersonalHeaderCell.h"
+#import "CustomAlertView.h"
+
+@implementation PersonalHeaderCell
+
+@synthesize avatar;
+@synthesize sexLabel;
+@synthesize labName;
+@synthesize ivSex;
+@synthesize delegate;
+@synthesize btnChangeAvatar;
+@synthesize btnChangeSignature;
+@synthesize ratingView;
+@synthesize ratingCount;
+@synthesize labBaotongId;
+
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+	[super willMoveToSuperview:newSuperview];
+	
+	if(!newSuperview) {
+		[avatar cancelImageLoad];
+	}
+}
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    self.ratingView = [[[DLStarRatingControl alloc] initWithFrame:CGRectMake(104, 83, 100, 40) andStars:5 isFractional:NO delegate:self] autorelease];
+    self.ratingView.userInteractionEnabled = NO;
+    ratingView.backgroundColor = [UIColor clearColor];
+    ratingView.autoresizingMask =  UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    ratingView.rating = 3;
+    [self.contentView addSubview:self.ratingView];
+}
+
+- (UIImage *)defaultStar {
+    return [UIImage imageByName:@"rating_big"];
+}
+
+- (UIImage *)highlightedStar {
+    return [UIImage imageByName:@"rating_big_p"];
+}
+
+
+
+- (void)dealloc {
+    [ratingView release];
+    [avatar release];
+    [sexLabel release];
+    [labName release];
+    [ivSex release];
+    [btnChangeAvatar release];
+    [btnChangeSignature release];
+    [labBaotongId release];
+    [super dealloc];
+}
+
+- (IBAction)changeMaxim:(id)sender {
+    CustomAlertView *alertView = [[CustomAlertView alloc] initWithTitle:@"修改签名"
+                                                                content:@"输入您的个性签名"
+                                                               delegate:self 
+                                                      cancelButtonTitle:@"取消" 
+                                                               okButton:@"确定"];
+    [alertView show];
+    [alertView release];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"确定"]) {
+        
+        NSString *text = [[(CustomAlertView *)alertView textField].text removeSpace];
+        if ([text isValid]) {
+            NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"updateUserAutograph.json", @"path", text, @"autograph", myUid, @"userid", nil];
+            
+            [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+                if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+                    [kAppDelegate showWithCustomAlertViewWithText:@"更新成功" andImageName:nil];
+                    self.labName.text = text;
+                    if ([delegate respondsToSelector:@selector(maximDidFinishChange)]) {
+                        [delegate maximDidFinishChange];
+                    }
+                } else {
+                    [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+                }
+            } failure:^(NSError *error) {
+                [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:nil];
+            }];
+        }
+    }
+}
+
+- (void)changeAvatarWithImage:(UIImage *)image {
+    self.avatar.image = image;
+}
+
+- (IBAction)changeAvatarAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(changeAvatar)]) {
+        [delegate changeAvatar];
+    }
+}
+
+- (IBAction)showCurrentLocationAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(changeAvatar)]) {
+        [delegate showCurrentLocation];
+    }
+}
+
+- (void)setRatingCount:(NSInteger)aRatingCount {
+    ratingCount = aRatingCount;
+    ratingView.rating = ratingCount;
+}
+
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [super setHighlighted:highlighted animated:animated];
+    ratingView.rating = ratingCount;
+}
+
+@end

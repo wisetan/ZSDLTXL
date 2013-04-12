@@ -1,0 +1,218 @@
+//
+//  MapController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-13.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "MapController.h"
+#import "MKMapView+MapViewUtil.h"
+
+@interface MapController ()
+
+@end
+
+@implementation MapController
+@synthesize mMapView;
+@synthesize lat = _lat;
+@synthesize lon = _lon;
+@synthesize mapType;
+
+- (id)initWithLat:(double)lat lon:(double)lon
+{
+    self = [super initWithNibName:@"MapController" bundle:nil];
+    if (self) {
+        if ([Utility isValidLatLon:lat Lon:lon]) {
+            self.lat = lat;
+            self.lon = lon;
+        }
+    }
+    return self;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)mapView:(MKMapView *)mapView willFinishCreateView:(MKAnnotationView *)annotationView ForAnnotation:(id<MKAnnotation>)annotation {
+    
+}
+
+- (MKAnnotationView *)mapView:(MKMapView *)mapView customViewForAnnotation:(id<MKAnnotation>)annotation {
+    return nil;
+}
+
+
+- (void)refreshData {
+    
+}
+
+#pragma mark - MapView delegate.
+
+- (MKAnnotationView *)mapView:(MKMapView *)mapView
+            viewForAnnotation:(id<MKAnnotation>)annotation
+{  
+    MKAnnotationView *annotationView = nil;
+    NSString *identifier = nil;
+    NSString *id_hospital = nil;
+    NSString *id_drugstore = nil;
+    
+    if ([annotation isKindOfClass:[MKUserLocation class]]) {
+        return nil;
+    }
+
+    annotationView = [self mapView:mapView customViewForAnnotation:annotation];
+    if (annotationView == nil) {
+        if ([annotation isKindOfClass:[PinAnnotation class]]) {
+            // Pin annotation.
+            identifier = @"Pin";
+            if (annotationView == nil) {
+                if (mapType == MAP_TYPE_PERSON || mapType == MAP_TYPE_HOT) {
+                    annotationView = [[[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier] autorelease];
+                    annotationView.image = [UIImage imageByName:@"icon_pin"];
+                } else if (mapType == MAP_TYPE_HOSPITAL){
+                    annotationView = [[[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:id_hospital] autorelease];
+                    annotationView.image = [UIImage imageByName:@"icon_pin_hospital"];
+                } else {
+                    annotationView = [[[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:id_drugstore] autorelease];
+                    annotationView.image = [UIImage imageByName:@"icon_pin_drugstore"];
+                }
+                
+                annotationView.draggable = NO;
+                annotationView.canShowCallout = NO;
+                annotationView.centerOffset = CGPointMake(16, -21);
+            }
+            
+        } else {
+            // Callout annotation.
+            identifier = @"Callout";
+            annotationView = (CalloutAnnotationView *)[mapView dequeueReusableAnnotationViewWithIdentifier:identifier];
+            
+            if (annotationView == nil) {
+                annotationView = [[[CalloutAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier] autorelease];
+            }
+            
+            CalloutAnnotation *calloutAnnotation = (CalloutAnnotation *)annotation;
+            [(CalloutAnnotationView *)annotationView updateWithAnnotation:calloutAnnotation];        
+        }        
+    }
+    
+    [self mapView:mapView willFinishCreateView:annotationView ForAnnotation:annotation];
+    
+    return annotationView;
+}
+
+- (void)removeAllCalloutAnnotation {
+    NSMutableArray *array = [NSMutableArray array];
+    for (id<MKAnnotation> annotation in [self.mMapView annotations]) {
+        if ([annotation isKindOfClass:[CalloutAnnotation class]]) {
+            [array addObject:annotation];
+            ((CalloutAnnotation *)annotation).refPinAnnotation.calloutAnnotation = nil;
+        }
+    }
+    
+    [self.mMapView removeAnnotations:array];
+}
+
+- (void)clickAnnotationView:(MKAnnotationView *)annotationView {
+//    NSLog(@"click : %@", annotationView);
+}
+
+- (void)mapView:(MKMapView *)mapView
+didSelectAnnotationView:(MKAnnotationView *)view
+{    
+    if ([view.annotation isKindOfClass:[PinAnnotation class]]) {
+        PinAnnotation *pinAnnotation = (PinAnnotation *)view.annotation;
+        
+        if (pinAnnotation.calloutAnnotation) {
+            [mapView removeAnnotation:pinAnnotation.calloutAnnotation];
+            pinAnnotation.calloutAnnotation = nil;
+        } else {
+            // Selected the pin annotation.
+            [self removeAllCalloutAnnotation];
+            CalloutAnnotation *calloutAnnotation = [[[CalloutAnnotation alloc] initWithPinAnnotaion:pinAnnotation] autorelease];
+            pinAnnotation.calloutAnnotation = calloutAnnotation;
+            [mapView addAnnotation:calloutAnnotation];
+        } 
+    } else if ([view.annotation isKindOfClass:[CalloutAnnotation class]]) {
+        [self clickAnnotationView:view];
+        CalloutAnnotation *calloutAnnotation = (CalloutAnnotation *)view.annotation;
+        calloutAnnotation.refPinAnnotation.calloutAnnotation = nil;
+        [mapView removeAnnotation:view.annotation];        
+    }
+}
+
+- (void)mapView:(MKMapView *)mapView
+didDeselectAnnotationView:(MKAnnotationView *)view
+{
+    if ([view.annotation isKindOfClass:[PinAnnotation class]]) {
+        [view setNeedsDisplay];
+    }
+}
+
+- (void)moveToLat:(double)lat lon:(double)lon {
+    MKCoordinateRegion defaultRegion;
+    defaultRegion.center.latitude = lat;
+    defaultRegion.center.longitude = lon;
+    
+    defaultRegion.span.latitudeDelta = kDefaultLatitudeDelta;
+    defaultRegion.span.longitudeDelta = kDefaultLatitudeDelta;
+    
+    [mMapView setRegion:defaultRegion animated:YES];
+}
+
+- (CAAnimationGroup *)blowupAnimation
+{
+    CABasicAnimation *scaleAnimation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    scaleAnimation.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(1.1, 1.1, 1)];
+    
+    CAAnimationGroup *animationgroup = [CAAnimationGroup animation];
+    animationgroup.animations = [NSArray arrayWithObjects:scaleAnimation, nil];
+    animationgroup.duration = 0.1f;
+    animationgroup.fillMode = kCAFillModeForwards;
+    animationgroup.autoreverses = YES;
+    
+    return animationgroup;
+}
+
+
+- (void)mapView:(MKMapView *)mapView didAddAnnotationViews:(NSArray *)views {
+    
+    for (MKAnnotationView *view in views) {
+        CGRect endFrame = view.frame;
+        CGRect startFrame = CGRectZero;
+        view.frame = startFrame;
+        
+        CAAnimationGroup *blowup = [self blowupAnimation];
+        [view.layer addAnimation:blowup forKey:@"blowup"];
+        view.frame = endFrame;
+    }        
+}
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self moveToLat:[kAppDelegate gLat] lon:[kAppDelegate gLon]];
+}
+
+- (void)viewDidUnload
+{
+    [self setMMapView:nil];
+    [super viewDidUnload];
+}
+
+- (void)dealloc {
+    self.mMapView.delegate  = nil;
+    self.mMapView           = nil;
+    [super dealloc];
+}
+
+
+@end

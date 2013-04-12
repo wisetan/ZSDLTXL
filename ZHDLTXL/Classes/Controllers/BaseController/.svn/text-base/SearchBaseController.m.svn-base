@@ -1,0 +1,101 @@
+//
+//  DiscoverController.m
+//  LeheV2
+//
+//  Created by zhangluyi on 11-7-11.
+//  Copyright 2011年 www.lehe.com. All rights reserved.
+//
+
+#import "SearchBaseController.h"
+
+@implementation SearchBaseController
+
+@synthesize filteredListContent,searchDisplayController;
+@synthesize searchBar;
+- (void)dealloc
+{
+
+    self.searchDisplayController.delegate = nil; 
+    self.searchDisplayController.searchResultsDelegate = nil; 
+    self.searchDisplayController.searchResultsDataSource = nil;
+    self.searchDisplayController = nil;
+    self.searchBar.delegate = nil;
+    self.searchBar = nil;
+    self.filteredListContent = nil;
+    [super dealloc];
+}
+
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+//        self.hidesBottomBarWhenPushed = YES;
+    }
+    return self;
+}
+#pragma mark - View lifecycle
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    self.filteredListContent = [NSMutableArray array];
+    self.searchBar = [[[UISearchBar alloc] init] autorelease];
+    searchBar.frame = CGRectMake(0, 0, 320, 44);
+    searchBar.delegate = self;
+    [self.view addSubview:searchBar];
+    
+    self.searchDisplayController = [[[UISearchDisplayController alloc] initWithSearchBar:searchBar contentsController:self] autorelease];
+	[self.searchDisplayController setDelegate:self];
+	[self.searchDisplayController setSearchResultsDataSource:self];    
+}
+
+- (void)backAction {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+#pragma mark -
+#pragma mark UITableView data source and delegate methods
+
+- (UITableViewCell *)tableView:(UITableView *)_tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [_tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (cell == nil) {
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"] autorelease];
+    }
+    return cell;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)_tableView {
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)_tableView numberOfRowsInSection:(NSInteger)section {
+	if (_tableView == self.searchDisplayController.searchResultsTableView) {
+        return [self.filteredListContent count];
+    } else {
+        return [self.dataSourceArray count];
+    }
+}
+
+#pragma mark -
+#pragma mark Content Filtering
+
+- (void)filterContentForSearchText:(NSString *)searchText {
+    
+}
+
+#pragma mark -
+#pragma mark Content Filtering
+- (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString{
+    [self filterContentForSearchText:searchString];
+    return YES;
+}
+
+- (void)searchDisplayControllerDidBeginSearch:(UISearchDisplayController *)controller{
+	[self.searchDisplayController.searchResultsTableView setDelegate:self];
+}
+
+
+@end

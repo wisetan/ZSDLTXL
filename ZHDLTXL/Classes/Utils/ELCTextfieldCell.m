@@ -26,7 +26,7 @@
 //		[leftLabel setTextColor:[UIColor colorWithRed:.285 green:.376 blue:.541 alpha:1]];
         [leftLabel setTextColor:[UIColor blackColor]];
 		[leftLabel setFont:[UIFont fontWithName:@"Helvetica" size:15]];
-		[leftLabel setTextAlignment:UITextAlignmentRight];
+		[leftLabel setTextAlignment:NSTextAlignmentRight];
 		[leftLabel setText:@"Left Field"];
 		[self addSubview:leftLabel];
 		

@@ -11,7 +11,7 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
-#import "AppDelegate.h"
+
     #import "Defines.h"
 #import "UIImage+stretch.h"
 #import "UIPlaceHolderTextView.h"
@@ -19,10 +19,22 @@
 #import "MBProgressHUD.h"
 #import "NSString+Utils.h"
 
-
+//3rd lib
 
 #import "JSONKit.h"
+#import "RegexKitLite.h"
+#import "EGOImageView.h"
+
+
+//Utils
 #import "Utils.h"
 #import "Utility.h"
+
+//singleton
+#import "PersistenceHelper.h"
+#import "AppDelegate.h"
+#import "DreamFactoryClient.h"
+
+
 
 #endif

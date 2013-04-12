@@ -1,0 +1,22 @@
+//
+//  OthersProfileViewController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//  getUserDetail.json
+
+#import "zxPersonalViewController.h"
+
+@interface OthersProfileViewController : zxPersonalViewController<EGOImageViewDelegate> {
+    UIButton *btnFocus;
+}
+
+@property (retain, nonatomic) IBOutlet UIButton *btnFocus;
+@property (retain, nonatomic) IBOutlet UILabel  *labFocus;
+@property (retain, nonatomic) IBOutlet UIView   *buttomBarView;
+
+- (id)initWithUserId:(NSString *)uId userName:(NSString *)userName;
+- (IBAction)operationAction:(id)sender;
+
+@end

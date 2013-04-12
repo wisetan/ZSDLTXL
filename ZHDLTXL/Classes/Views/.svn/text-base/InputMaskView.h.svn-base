@@ -1,0 +1,25 @@
+//
+//  InputMaskView.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-24.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@protocol InputMaskDelegate;
+@interface InputMaskView : UIView {
+    id<InputMaskDelegate> delegate;
+}
+
+@property (retain, nonatomic) IBOutlet UIButton *focusButton;
+@property (assign, nonatomic) IBOutlet id<InputMaskDelegate> delegate;
+
+@end
+
+@protocol InputMaskDelegate <NSObject>
+
+- (void)startToWriteMessage;
+- (void)startToFocus;
+
+@end

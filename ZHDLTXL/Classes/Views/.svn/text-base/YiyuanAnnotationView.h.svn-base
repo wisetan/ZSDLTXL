@@ -1,0 +1,24 @@
+//
+//  YiyuanAnnotaionView.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-27.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <MapKit/MapKit.h>
+#import "CalloutAnnotation.h"
+
+@interface YiyuanAnnotationView : MKAnnotationView {
+    UILabel *mainLabel;
+    UILabel *subLable;
+    UIImageView *bgImageView;
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *mainLabel;
+@property (retain, nonatomic) IBOutlet UILabel *subLabel;
+@property (nonatomic, retain) UIImageView *bgImageView;
+
+- (void)updateWithAnnotation:(CalloutAnnotation *)annotation;
+
+@end

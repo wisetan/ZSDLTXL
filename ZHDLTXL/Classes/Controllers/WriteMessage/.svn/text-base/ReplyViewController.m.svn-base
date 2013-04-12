@@ -1,0 +1,143 @@
+//
+//  ReplyViewController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-21.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "ReplyViewController.h"
+#import "UIActionSheet+MKBlockAdditions.h"
+
+@interface ReplyViewController ()
+
+@end
+
+@implementation ReplyViewController
+
+@synthesize clearButton;
+@synthesize mTextView;
+@synthesize hotsPotid;
+@synthesize replyUserId;
+@synthesize delegate;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    self.hotsPotid      = nil;
+    self.replyUserId    = nil;
+
+    [mTextView release];
+    [clearButton release];
+
+    [super dealloc];
+}
+
+- (void)changeTextViewToFitKeySize:(CGSize)keyboardSize {
+    [UIView animateWithDuration:0.1 animations:^{
+        mTextView.frame = CGRectMake(0, 0, 320, 460-44-keyboardSize.height);
+    }];
+}
+
+- (void)backAction {
+    [self dismissModalViewControllerAnimated:YES];
+}
+
+- (void)initNavigationBar {
+    //left item
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.frame = CGRectMake(0, 0, 40, 40);
+    [button addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
+    button.showsTouchWhenHighlighted = YES;
+    [button setImage:[UIImage imageByName:@"icon_nav_back"] forState:UIControlStateNormal];
+    UIBarButtonItem *button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
+    self.navigationItem.leftBarButtonItem = button1;
+
+    //right item
+    button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.frame = CGRectMake(0, 0, 40, 40);
+    [button addTarget:self action:@selector(sendAction) forControlEvents:UIControlEventTouchUpInside];
+    button.showsTouchWhenHighlighted = YES;
+    [button setImage:[UIImage imageByName:@"icon_msg_send"] forState:UIControlStateNormal];
+    UIBarButtonItem *button2 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
+    self.navigationItem.rightBarButtonItem = button2;
+    
+    [Utility addShadow:self.navigationController.navigationBar];    
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self initNavigationBar];
+    
+    self.title = @"发布评论";
+    mTextView.placeholder = @"请输入回复信息……";
+    mTextView.placeholderColor = [UIColor darkGrayColor];
+    [self.mTextView becomeFirstResponder];    
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification
+{
+    NSDictionary *info = [notification userInfo];
+    CGSize kbSize = [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].size;
+    [self changeTextViewToFitKeySize:kbSize];
+}
+
+- (void)viewDidUnload
+{
+    [self setMTextView:nil];
+    [self setClearButton:nil];
+    [super viewDidUnload];
+}
+
+- (IBAction)clearAction:(id)sender {
+    [UIActionSheet actionSheetWithTitle:nil
+                                message:nil 
+                                buttons:[NSArray arrayWithObjects:@"确认清除文字", nil] 
+                             showInView:self.view 
+                              onDismiss:^(int buttonIndex) {
+                                  self.mTextView.text = @"";
+                              } 
+                               onCancel:^{
+                                   
+                               }];
+}
+
+- (void)sendAction {
+    
+    NSString *userId = [[PersistenceHelper dataForKey:@"userid"] stringValue];
+    NSString *content = [self.mTextView.text removeSpace];
+    if (![content isValid]) {
+        [kAppDelegate showWithCustomAlertViewWithText:@"您还没有填写内容" andImageName:kErrorIcon];
+        return;
+    }
+    
+    if ([userId isValid]) {
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"addReply.json", @"path", userId, @"userid", replyUserId, @"upuserid", hotsPotid, @"hotspotid", content, @"content", nil];
+        [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+
+            if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+                [kAppDelegate showWithCustomAlertViewWithText:@"评论发送成功" andImageName:nil];
+                if ([delegate respondsToSelector:@selector(replyDidFinished)]) {
+                    [delegate replyDidFinished];
+                }
+            } else {
+                [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:kErrorIcon];
+            }
+        } failure:^(NSError *error) {
+            NSLog(@"error : %@", error);
+            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+        }];        
+    }
+}
+
+@end

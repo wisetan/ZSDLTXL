@@ -1,0 +1,126 @@
+//
+//  HotCommentsHeaderView.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-21.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "HotCommentsHeaderView.h"
+#import "DLStarRatingControl.h"
+
+@implementation HotCommentsHeaderView
+@synthesize labName;
+@synthesize labReply;
+@synthesize avatar;
+@synthesize labSubTitle;
+@synthesize labContent;
+@synthesize thumbnail;
+@synthesize ratingView;
+@synthesize hasThumbnail;
+@synthesize labTime;
+@synthesize bgImageView;
+@synthesize delegate;
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    
+    self.ratingView = [[[DLStarRatingControl alloc] initWithFrame:CGRectMake(0, 80, 80, 30) andStars:5 isFractional:NO] autorelease];
+    self.ratingView.userInteractionEnabled = NO;
+	ratingView.backgroundColor = [UIColor clearColor];
+	ratingView.autoresizingMask =  UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+	ratingView.rating = 3;
+    [self addSubview:self.ratingView];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    self.labContent.frame = CGRectMake(self.labContent.frame.origin.x, self.labContent.frame.origin.y, 230, 0);
+    [labContent sizeToFit];
+    
+    self.ratingView.frame = CGRectMake(0, 80, 80, 30);
+    CGFloat offset = 75;
+    CGSize contentSize = [labContent.text sizeWithFont:[UIFont systemFontOfSize:16] 
+                                     constrainedToSize:CGSizeMake(230, CGFLOAT_MAX) 
+                                         lineBreakMode:UILineBreakModeCharacterWrap];
+    
+    offset += contentSize.height + 10; 
+    CGRect frame = self.thumbnail.frame;
+    if (hasThumbnail) {
+        self.thumbnail.hidden = NO;
+        self.thumbnail.frame = CGRectMake(frame.origin.x, offset, frame.size.width, frame.size.height);
+        offset += self.thumbnail.frame.size.height + 10;
+    } else {
+        self.thumbnail.hidden = YES;
+    }
+    
+    CGRect timeFrame = self.labTime.frame;
+    self.labTime.frame = CGRectMake(timeFrame.origin.x, offset, timeFrame.size.width, timeFrame.size.height);
+}
+
++ (CGFloat)heightWithContent:(NSString *)content hasThumbnail:(BOOL)hasThumbnail {
+    CGFloat offset = 75.0;
+    if (content == nil || [content length] == 0) {
+        if (hasThumbnail) {
+            return offset + 75 + 10;
+        }
+        return offset + 10;
+    }
+    
+    CGSize contentSize = [content sizeWithFont:[UIFont systemFontOfSize:16] 
+                             constrainedToSize:CGSizeMake(230, CGFLOAT_MAX) 
+                                 lineBreakMode:UILineBreakModeCharacterWrap];
+    
+    offset += contentSize.height + 10;
+    
+    if (hasThumbnail) {
+        return offset + 75 + 10;
+    }
+    return offset;
+}
+
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+	[super willMoveToSuperview:newSuperview];
+	
+	if(!newSuperview) {
+		[avatar cancelImageLoad];
+        [thumbnail cancelImageLoad];
+	}
+}
+
+- (IBAction)avatarAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(avatarOnClick)]) {
+        [delegate avatarOnClick];
+    }
+}
+
+- (IBAction)thumbnailAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(thumbnailOnClick)]) {
+        [delegate thumbnailOnClick];
+    }
+}
+
+
+- (void)dealloc {
+    [ratingView release];
+    [avatar release];
+    [labName release];
+    [labReply release];
+    [labSubTitle release];
+    [labContent release];
+    [thumbnail release];
+    [labTime release];
+    [bgImageView release];
+    [super dealloc];
+}
+@end

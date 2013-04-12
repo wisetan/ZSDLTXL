@@ -1,0 +1,26 @@
+//
+//  CrossButtonCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-27.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@protocol CrossDelegate;
+@interface CrossButtonCell : UITableViewCell {
+    id<CrossDelegate> delegate;
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *labFocusCount;
+@property (retain, nonatomic) IBOutlet UILabel *labFansCount;
+@property (retain, nonatomic) IBOutlet UILabel *labDynamicCount;
+@property (retain, nonatomic) IBOutlet UILabel *labCollectionCount;
+@property (assign, nonatomic) id<CrossDelegate> delegate;
+@end
+
+@protocol CrossDelegate <NSObject>
+
+- (void)crossClickedAtIndex:(NSInteger)index;
+
+@end

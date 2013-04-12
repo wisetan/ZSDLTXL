@@ -1,0 +1,25 @@
+//
+//  DiscoverController.h
+//  LeheV2
+//
+//  Created by zhangluyi on 11-7-11.
+//  Copyright 2011年 www.lehe.com. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "CustomTableViewBase.h"
+
+@interface SearchBaseController : CustomTableViewBase<UISearchDisplayDelegate, UISearchBarDelegate> {
+	NSMutableArray              *filteredListContent;
+	UISearchBar                 *searchBar;
+	UISearchDisplayController	*searchDisplayController;
+}
+
+@property (nonatomic, retain) UISearchBar *searchBar;
+@property (nonatomic, retain) NSMutableArray *filteredListContent;
+@property (nonatomic, retain) UISearchDisplayController	*searchDisplayController;
+
+//need to override
+- (void)filterContentForSearchText:(NSString *)searchText;
+
+@end

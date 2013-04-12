@@ -1,0 +1,42 @@
+//
+//  HotCommentsCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-21.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "HotCommentsCell.h"
+
+@implementation HotCommentsCell
+@synthesize labName;
+@synthesize labSubContent;
+@synthesize labContent;
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        
+    }
+    return self;
+}
+
++ (CGFloat)cellHeightWithContent:(NSString *)content {
+    CGFloat height = 40.0f;
+    if ([content isValid]) {
+        CGSize size =[content sizeWithFont:[UIFont systemFontOfSize:14] 
+                         constrainedToSize:CGSizeMake(260, CGFLOAT_MAX) 
+                             lineBreakMode:UILineBreakModeCharacterWrap];
+        height += size.height + 10;
+    }
+    return height;
+}
+
+- (void)dealloc {
+    [labName release];
+    [labSubContent release];
+    [labContent release];
+    [super dealloc];
+}
+@end

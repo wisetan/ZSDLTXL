@@ -1,0 +1,24 @@
+//
+//  HospitalMapController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-16.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "HospitalMapController.h"
+
+@interface HospitalMapController ()
+
+@end
+
+@implementation HospitalMapController
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+}
+
+@end

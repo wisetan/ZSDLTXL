@@ -1,0 +1,35 @@
+//
+//  ReplyViewController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-21.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "PHTextView.h"
+
+@protocol ReplyDelegate;
+
+@interface ReplyViewController : UIViewController {
+    UIButton *clearButton;
+    NSString *replyUserId;
+    NSString *hotsPotId;
+    id<ReplyDelegate> delegate;
+}
+
+@property (retain, nonatomic) IBOutlet UIButton     *clearButton;
+@property (retain, nonatomic) IBOutlet PHTextView   *mTextView;
+@property (nonatomic, copy)   NSString              *replyUserId;
+@property (nonatomic, copy)   NSString              *hotsPotid;
+@property (nonatomic, assign) id<ReplyDelegate>     delegate;
+
+- (void)sendAction;
+
+@end
+
+@protocol ReplyDelegate <NSObject>
+
+- (void)replyDidFinished;
+
+@end

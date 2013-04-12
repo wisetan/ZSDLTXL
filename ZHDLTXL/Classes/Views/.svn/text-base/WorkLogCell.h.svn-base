@@ -1,0 +1,20 @@
+//
+//  WorkLogCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-24.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface WorkLogCell : UITableViewCell {
+
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *labTime;
+@property (retain, nonatomic) IBOutlet UILabel *labContent;
+
++ (CGFloat)heightForCellWithContent:(NSString *)content;
+
+@end

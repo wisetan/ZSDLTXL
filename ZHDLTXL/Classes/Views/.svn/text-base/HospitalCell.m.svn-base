@@ -1,0 +1,36 @@
+//
+//  HospitalCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-15.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "HospitalCell.h"
+
+@implementation HospitalCell
+
+@synthesize avatar;
+@synthesize labName;
+@synthesize labDistance;
+@synthesize labSubtitle;
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [labDistance release];
+    [avatar release];
+    [labName release];
+    [labSubtitle release];
+    [super dealloc];
+}
+
+
+@end

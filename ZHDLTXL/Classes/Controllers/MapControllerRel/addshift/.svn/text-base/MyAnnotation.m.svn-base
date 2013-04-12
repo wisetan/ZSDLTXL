@@ -1,0 +1,50 @@
+//
+//  MyAnnotation.m
+//  MapKitTest
+//
+//  Created by zhangluyi on 11-4-25.
+//  Copyright 2011 __MyCompanyName__. All rights reserved.
+//
+
+#import "MyAnnotation.h"
+#import "Utility.h"
+#define kDefaultCompanyLat 39.985769
+#define kDefaultCompanyLon 116.426497
+@implementation MyAnnotation
+@synthesize myTitle, mySubTitle, type, uid, avator;
+@synthesize coordinate, lat, lon;
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+    }
+	
+	return self;
+}
+
+- (CLLocationCoordinate2D)coordinate {
+    if ([Utility isValidLatLon:lat Lon:lon]) {
+        return CLLocationCoordinate2DMake(lat, lon);
+    } else {
+        return CLLocationCoordinate2DMake(kDefaultCompanyLat, kDefaultCompanyLon);
+    }
+}
+    
+- (NSString *)title {
+    return myTitle;
+}
+
+- (NSString *)subtitle {
+    return mySubTitle;
+}
+
+- (void)dealloc {
+    [uid release];
+    [myTitle release];
+    [mySubTitle release];
+	[avator release];
+    [super dealloc];
+}
+
+@end

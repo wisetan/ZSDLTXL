@@ -1,0 +1,35 @@
+//
+//  ListCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-20.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol ListCellDelegate;
+
+@interface ListCell : UITableViewCell {
+    EGOImageView    *avatar;
+    UILabel         *labName;
+    UILabel         *labTitle;
+    UILabel         *labSubTitle;
+    NSIndexPath     *indexPath;
+    id<ListCellDelegate> delegate;
+}
+
+@property (nonatomic, assign) id<ListCellDelegate>      delegate;
+@property (retain, nonatomic) NSIndexPath               *indexPath;
+@property (retain, nonatomic) IBOutlet EGOImageView     *avatar;
+@property (retain, nonatomic) IBOutlet UILabel          *labName;
+@property (retain, nonatomic) IBOutlet UILabel          *labTitle;
+@property (retain, nonatomic) IBOutlet UILabel          *labSubTitle;
+
+@end
+
+@protocol ListCellDelegate <NSObject>
+
+- (void)cell:(UITableViewCell *)cell avatarClickedAtIndexPath:(NSIndexPath *)indexPath;
+
+@end

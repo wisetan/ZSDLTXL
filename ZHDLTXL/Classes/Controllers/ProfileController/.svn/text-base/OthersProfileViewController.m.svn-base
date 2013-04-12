@@ -1,0 +1,401 @@
+//
+//  OthersProfileViewController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "OthersProfileViewController.h"
+#import "AddFocusViewController.h"
+#import "TalkViewController.h"
+#import "PersonHotSpotController.h"
+#import "FavoriteViewController.h"
+
+@interface OthersProfileViewController ()
+
+@end
+
+@implementation OthersProfileViewController
+@synthesize btnFocus;
+@synthesize labFocus;
+@synthesize buttomBarView;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (id)initWithUserId:(NSString *)uId userName:(NSString *)userName
+{
+    self = [super initWithNibName:@"OthersProfileViewController" bundle:nil];
+    if (self) {
+        self.uName = userName;
+        self.uid = uId;
+        self.profileType = PROFILE_TYPE_OTHERS;        
+        self.itemArray = [NSArray arrayWithObjects:@"他的动态", @"他的收藏", nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addFocusSucceedAction) name:kAddFocusSucceed object:nil];
+    }
+    return self;
+}
+
+- (void)addFocusSucceedAction {
+    [self sendRequest];
+}
+
+- (void)updateFriendStatus {
+    if ([[[self.profileDict objForKey:@"isfriend"] stringValue] isEqualToString:@"0"]) { //不是好友
+        [self.btnFocus setImage:[UIImage imageByName:@"icon_unfocus"] forState:UIControlStateNormal];
+        self.labFocus.text = @"添加关注";
+    } else {
+        [self.btnFocus setImage:[UIImage imageByName:@"icon_guanzhu"] forState:UIControlStateNormal];
+        self.labFocus.text = @"取消关注";
+    }
+}
+
+- (void)sendRequest {
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    NSString *myUid = [[PersistenceHelper dataForKey:@"userid"] stringValue];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getUserDetail.json" , @"path", myUid, @"userid", uid, @"peoperid", nil];
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+        
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        
+        if ([reloadButton isAnimating]) {
+            [reloadButton stopAnimating];
+        }
+        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            self.profileDict = [[[json objForKey:@"UserDetail"] mutableCopy] autorelease];
+            
+            NSString *name = [profileDict objForKey:@"username"];
+            if ([name isValid]) {
+                NSString *titleName = [NSString stringWithFormat:@"%@的主页", name];
+                self.title = titleName;
+            }
+
+            if ([[self.profileDict objForKey:@"sex"] isEqualToString:@"女"]) {
+                self.itemArray = [NSArray arrayWithObjects:@"她的动态", @"她的收藏", nil];
+            }
+            
+            [UIView animateWithDuration:0.3 animations:^{
+                self.mTableView.alpha = 1;
+                self.buttomBarView.alpha = 1;
+            }];
+        
+            [self.mTableView reloadData];
+            [self updateFriendStatus];
+        } else {
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([reloadButton isAnimating]) {
+            [reloadButton stopAnimating];
+        }
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:nil];
+    }];
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath  {
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    if (indexPath.section == 1) {
+        if (indexPath.row == 0) {
+            PersonHotSpotController *hotSpot = [[[PersonHotSpotController alloc] initWithNibName:@"PersonHotSpotController" bundle:nil] autorelease];
+            hotSpot.uid = self.uid;
+            
+            if ([[self.profileDict objForKey:@"sex"] isEqualToString:@"女"]) {
+                hotSpot.navTitle = @"她的动态";
+            } else {
+                hotSpot.navTitle = @"他的动态";
+            }
+            [self.navigationController pushViewController:hotSpot animated:YES];        
+        }
+        
+        if (indexPath.row == 1) {
+            FavoriteViewController *favor = [[[FavoriteViewController alloc] initWithNibName:@"FavoriteViewController" bundle:nil] autorelease];
+            if ([[self.profileDict objForKey:@"sex"] isEqualToString:@"女"]) {
+                favor.navTitle = @"她的收藏";
+            } else {
+                favor.navTitle = @"他的收藏";
+            }
+            favor.uid = self.uid;
+            [self.navigationController pushViewController:favor animated:YES];
+        }        
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    switch (section) {
+        case 0:
+        {
+            return 1;
+        }
+        case 1:
+        {
+            return 2;
+        }
+        case 2:
+        {
+            return 1;
+        }
+            
+        default:
+            break;
+    }
+    return 0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.section) {
+        case 0:
+        {
+            return 108;
+        }
+        case 1:
+        {
+            return 44;
+        }
+        case 2:
+        {
+            return [PersonalCardCell heightForDict:[self dictForProfileInfo]]; 
+        }        
+            
+        default:
+            break;
+    }
+    return 44;
+}
+
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 3;
+}
+
+- (void)removeFocus {
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    hud.labelText = @"正在取消关注…";
+    NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"delAttentionUser.json", @"path", myUid, @"sourceUserid", uid, @"destUserid", nil];
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"取消关注成功" andImageName:nil];
+            [self sendRequest];
+        } else {
+            [kAppDelegate showWithCustomAlertViewWithText:@"取消关注失败" andImageName:kErrorIcon];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
+}
+
+- (IBAction)operationAction:(id)sender {
+    NSInteger index = [(UIButton *)sender tag];
+    switch (index) {
+        case 0:
+        {
+            [self sendRequest];
+            break;        
+        }
+        case 1:
+        {
+            if ([[[self.profileDict objForKey:@"isfriend"] stringValue] isEqualToString:@"0"]) {
+                //没有关注
+                AddFocusViewController *addFocus = [[[AddFocusViewController alloc] initWithNibName:@"AddFocusViewController" bundle:nil] autorelease];
+                addFocus.uid = self.uid;
+                [self.navigationController pushViewController:addFocus animated:YES];
+            } else {
+                [self removeFocus];
+            }
+            break;
+        }
+        case 2:
+        {
+            NSString *avatarUrl = [self.profileDict objForKey:@"picturelinkurl"];
+            TalkViewController *talk = [[[TalkViewController alloc] initWithNibName:@"TalkViewController" bundle:nil] autorelease];
+            talk.fid = self.uid;
+            talk.fAvatarUrl = avatarUrl;
+            [self.navigationController pushViewController:talk animated:YES];
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+- (void)backAction {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    self.mTableView.sectionHeaderHeight = 5;
+    self.mTableView.sectionFooterHeight = 5;
+
+    //left item
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.frame = CGRectMake(0, 0, 40, 40);
+    [button addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
+    button.showsTouchWhenHighlighted = YES;
+    [button setImage:[UIImage imageByName:@"icon_nav_back"] forState:UIControlStateNormal];
+    UIBarButtonItem *button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
+    self.navigationItem.leftBarButtonItem = button1;
+
+    self.mTableView.frame = CGRectMake(0, 0, 320, 460-44-44);
+    self.mTableView.backgroundColor = bgGreyColor;
+    self.buttomBarView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"bg_buttom_bar"]];
+    self.buttomBarView.alpha = 0;
+    //add refreshActivityIndicator bar
+    reloadButton = [[[DAReloadActivityButton alloc] init] autorelease];
+    reloadButton.frame = CGRectMake(0, 0, 40, 40);
+    [reloadButton addTarget:self action:@selector(refreshAction) forControlEvents:UIControlEventTouchUpInside];
+    reloadButton.showsTouchWhenHighlighted = YES;
+    [reloadButton setImage:[UIImage imageByName:@"icon_nav_refresh"] forState:UIControlStateNormal];
+    button1 = [[[UIBarButtonItem alloc] initWithCustomView:reloadButton] autorelease];
+    self.navigationItem.rightBarButtonItem = button1;
+    self.view.backgroundColor = [UIColor whiteColor];
+    self.mTableView.alpha = 0;
+    [self sendRequest];
+}
+
+- (void)refreshAction {
+    if ([reloadButton isAnimating]) {
+        [reloadButton stopAnimating];
+    }
+    [reloadButton startAnimating];
+    
+    [self sendRequest];
+}
+
+- (void)viewDidUnload
+{
+    [self setBtnFocus:nil];
+    [self setLabFocus:nil];
+    [self setButtomBarView:nil];
+    [super viewDidUnload];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kAddFocusSucceed object:nil];
+    [btnFocus release];
+    [labFocus release];
+    [buttomBarView release];
+    [super dealloc];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *kHeaderMine = @"PersonalHeaderCell";
+    static NSString *kCommonCell = @"kCommonCell";
+    static NSString *kCardCell   = @"kCardCell";
+    UITableViewCell *cell = nil;
+    switch (indexPath.section) {
+        case 0:
+        {
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell = [tableView dequeueReusableCellWithIdentifier:kHeaderMine];
+            if (cell == nil) {
+                NSArray *nib = [[NSBundle mainBundle] loadNibNamed:kHeaderMine owner:self options:nil];
+                cell = (PersonalHeaderCell *)[nib objectAtIndex:0];
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+                ((PersonalHeaderCell *)cell).avatar.placeholderImage = [UIImage imageByName:@"default_avatar"];
+                ((PersonalHeaderCell *)cell).avatar.delegate = self;
+                [[(PersonalHeaderCell *)cell btnChangeAvatar] setHidden:YES];
+                [[(PersonalHeaderCell *)cell btnChangeSignature] setHidden:YES];
+            }
+            
+            [(PersonalHeaderCell *)cell setDelegate:self];
+            break;
+        }
+        case 1:
+        {
+            cell.selectionStyle = UITableViewCellSelectionStyleGray;
+            cell = [tableView dequeueReusableCellWithIdentifier:kCommonCell];
+            if (cell == nil) {
+                cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kCommonCell] autorelease]; 
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+                cell.textLabel.backgroundColor = [UIColor clearColor];
+                cell.detailTextLabel.backgroundColor = [UIColor clearColor];
+            }
+            break;
+        }
+        case 2:
+        {
+            cell.selectionStyle = UITableViewCellSelectionStyleGray;
+            cell = [tableView dequeueReusableCellWithIdentifier:kCardCell];
+            if (cell == nil) {
+                NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"PersonalCardCell" owner:self options:nil];
+                cell = (PersonalCardCell *)[nib objectAtIndex:0];
+                [(PersonalCardCell *)cell setDelegate:self];
+                [Utility groupTableView:self.mTableView changeBgForCell:cell atIndexPath:indexPath];
+            }
+            break;
+        }
+            
+        default:
+            break;
+    }
+    [self configureCell:cell atIndexPath:indexPath];
+    return cell;
+}
+
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.section) {
+        case 0:
+        {
+            PersonalHeaderCell *othersHeaderCell = (PersonalHeaderCell *)cell;
+            othersHeaderCell.btnChangeAvatar.hidden = YES;
+            othersHeaderCell.labName.text = [self.profileDict objForKey:@"autograph"];
+            NSString *url = [self.profileDict objForKey:@"picturelinkurl"];
+            othersHeaderCell.ratingCount =  [[profileDict objForKey:@"attention"] intValue];
+            othersHeaderCell.avatar.imageURL = [url isValid] ? [NSURL URLWithString:url] : nil;
+            othersHeaderCell.labBaotongId.text = [[profileDict objForKey:@"userid"] stringValue];
+            break;
+        }
+            
+        case 1:
+        {            
+            //更新我的关注、粉丝、热点、跟帖数量
+            [self updateCountForCell:cell atIndexPath:indexPath];            
+            break;
+        }
+        case 2:
+        {            
+            [(PersonalCardCell *)cell updateCardWithInfoDict:[self dictForProfileInfo]];
+            if (self.profileType != PROFILE_TYPE_MINE) {
+                [(PersonalCardCell *)cell showModifyButton:NO];
+            }
+            
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+- (void)updateCountForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    //need override for my profile
+    NSString *title = [self.itemArray objectAtIndex:indexPath.row];
+    cell.textLabel.text = title;
+    cell.textLabel.textColor = RGBCOLOR(90, 90, 90);
+    cell.textLabel.backgroundColor = [UIColor clearColor];
+    if (indexPath.row == 0) {
+        cell.detailTextLabel.text = [[self.profileDict objForKey:@"hotspotcount"] stringValue];
+    }
+    if (indexPath.row == 1) {
+        cell.detailTextLabel.text = [[self.profileDict objForKey:@"collectcount"] stringValue];
+    }
+}
+
+- (void)imageViewLoadedImage:(EGOImageView*)imageView {
+    imageView.image = [imageView.image roundedCornerImage:10 borderSize:2];
+}
+
+@end

@@ -1,0 +1,38 @@
+//
+//  CheckInView.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-5-2.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "CustomAlertView.h"
+@protocol CheckInDelegate;
+@interface CheckInView : UIView<UIAlertViewDelegate> {
+    NSArray *locationList;
+    BOOL isCheckinAvalible;
+    id<CheckInDelegate> delegate;
+    NSString *mNewAddress;
+    NSDictionary *currentSelectedDict;
+}
+
+@property (retain, nonatomic) NSDictionary *currentSelectedDict;
+@property (retain, nonatomic) IBOutlet UILabel *labCompanyName;
+@property (retain, nonatomic) IBOutlet UILabel *labCheckInLocation;
+@property (retain, nonatomic) NSArray *locationList;
+@property (retain, nonatomic) IBOutlet UIButton *btnModify;
+@property (retain, nonatomic) IBOutlet UIButton *btnOk;
+@property (retain, nonatomic) IBOutlet UIButton *btnCancel;
+@property (retain, nonatomic) IBOutlet UIImageView *bgImageView;
+@property (retain, nonatomic) IBOutlet UIButton *btnHistory;
+@property (assign, nonatomic) id<CheckInDelegate> delegate;
+@property (copy,   nonatomic) NSString *mNewAddress;
+@end
+
+@protocol CheckInDelegate <NSObject>
+
+- (void)checkinHistoryOnClick;
+- (void)checkinDidFailed;
+
+@end

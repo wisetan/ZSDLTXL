@@ -1,0 +1,28 @@
+//
+//  CalloutAnnotationView.h
+//  CustomCalloutSample
+//
+//  Created by tochi on 11/05/17.
+//  Copyright 2011 aguuu,Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <MapKit/MapKit.h>
+#import "CalloutAnnotation.h"
+
+@interface CalloutAnnotationView : MKAnnotationView<EGOImageViewDelegate>
+{
+    UILabel *mainLabel;
+    UILabel *subLable;
+    EGOImageView *avatar;
+    UIImageView *bgImageView;
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *mainLabel;
+@property (retain, nonatomic) IBOutlet UILabel *subLabel;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (nonatomic, retain) UIImageView *bgImageView;
+
+- (void)updateWithAnnotation:(CalloutAnnotation *)annotation;
+
+@end

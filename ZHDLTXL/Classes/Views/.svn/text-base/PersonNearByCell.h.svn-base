@@ -1,0 +1,23 @@
+//
+//  PersonNearByCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-27.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "ListCell.h"
+#import "DLStarRatingControl.h"
+@interface PersonNearByCell : ListCell<DLStarRatingDelegate> {
+    DLStarRatingControl *ratingView;
+    NSInteger ratingCount;
+//    UIProgressView *progressView;
+}
+
+//@property (retain, nonatomic) UIProgressView *progressView;
+@property (assign, nonatomic) NSInteger ratingCount;
+@property (retain, nonatomic) IBOutlet DLStarRatingControl *ratingView;
+
+//- (void)updateProgress:(CGFloat)progress;
+
+@end

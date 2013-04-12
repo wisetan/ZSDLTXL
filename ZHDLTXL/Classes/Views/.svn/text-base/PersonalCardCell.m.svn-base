@@ -1,0 +1,275 @@
+//
+//  PersonalCardCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "PersonalCardCell.h"
+
+@implementation PersonalCardCell
+
+@synthesize arrLabels;
+@synthesize modifyButton;
+@synthesize labCardTitle;
+@synthesize delegate;
+@synthesize uid;
+
+- (void)dealloc
+{
+    self.uid        = nil;
+    self.arrLabels  = nil;
+    [modifyButton release];
+    [labCardTitle release];
+    [super dealloc];
+}
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    if (self.arrLabels == nil) {
+        self.arrLabels = [NSMutableArray arrayWithCapacity:5];
+        CGFloat offset = 50;
+        for (int i = 0; i < 7; i++) {
+            UILabel *label = [[[UILabel alloc] initWithFrame:CGRectMake(15, offset, 280, 20)] autorelease];
+            label.backgroundColor = [UIColor clearColor];
+            label.font = [UIFont systemFontOfSize:14];
+            [arrLabels addObject:label];
+            [self.contentView addSubview:label];
+            offset += 20+10;
+        }
+    }
+}
+
++ (CGFloat)heightForDict:(NSDictionary *)dict {
+    if (dict == nil || [[dict allKeys] count] == 0) {
+        return 50;
+    }
+    CGFloat offset = 50.0f;
+    for (int i = 0; i < 7; i++) {
+        switch (i) {
+            case 0: //name
+            {
+                NSString *name = [dict objForKey:@"realname"];
+                if ([name isValid]) {
+                    offset += 20+10;
+                }
+                break;
+            }
+            case 1:
+            {
+                NSString *sex = [dict objForKey:@"sex"];
+                if ([sex isValid]) {
+                    offset += 20 + 10;
+                }
+                break;
+            }
+            case 2:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                }
+                NSString *email = [dict objForKey:@"email"];
+                if ([email isValid]) {
+                    offset += 20 + 10;
+                }
+                break;
+            }
+            case 3:
+            {
+                NSString *company = [dict objForKey:@"company"];
+                if ([company isValid]) {
+                    offset += 20 + 10;
+                }
+                break;
+            }
+            case 4:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                }
+                NSString *phone = [dict objForKey:@"phone"];
+                if ([phone isValid]) {
+                    offset += 20 + 10;
+                }
+                break;
+            }
+            case 5:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                }
+                NSString *qq = [dict objForKey:@"qq"];
+                if ([qq isValid]) {
+                    offset += 20 + 10;
+                }
+                break;
+            }
+            case 6:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                }
+                NSString *age = [dict objForKey:@"age"];
+                if ([age isValid]) {
+                    offset += 20 + 10;
+                }
+                break;
+            }    
+            default:
+                break;
+        }
+    }
+    
+    return offset;
+}
+
+#define OFFSET_WITH_INDEX(xx_index) (50+(xx_index)*(20+10))
+
+
+- (void)updateCardWithInfoDict:(NSDictionary *)dict {
+    if (dict == nil || [dict allKeys] == 0) {
+        return;
+    }
+    
+    NSInteger currentIndex = 0;
+    for (int i = 0; i < 7; i++) {
+        UILabel *currentLabel = [self.arrLabels objectAtIndex:currentIndex];
+        switch (i) {
+            case 0: //name
+            {
+                NSString *name = [dict objForKey:@"realname"];
+                if ([name isValid]) {
+                    currentLabel.hidden = NO;
+                    currentLabel.text = [NSString stringWithFormat:@"姓名：%@",name];
+                    currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                    currentIndex++;
+                }
+                break;
+            }
+            case 1:
+            {
+                NSString *sex = [dict objForKey:@"sex"];
+                if ([sex isValid]) {
+                    currentLabel.hidden = NO;
+                    currentLabel.text = [NSString stringWithFormat:@"性别：%@", sex];
+                    currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                    currentIndex++;
+                }
+                
+                NSString *myuid = [PersistenceHelper dataForKey:@"userid"];
+                if ([uid isValid] && [myuid isValid] && [myuid isEqualToString:myuid]) {
+                    labCardTitle.text = @"我的名片";
+                } else {
+                    if ([sex isEqualToString:@"女"]) {
+                        labCardTitle.text = @"她的名片";
+                    } else {
+                        labCardTitle.text = @"他的名片";
+                    }                    
+                }
+                break;
+            }
+            case 2:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                } else {
+                    NSString *email = [dict objForKey:@"email"];
+                    if ([email isValid]) {
+                        currentLabel.hidden = NO;
+                        currentLabel.text = [NSString stringWithFormat:@"邮箱：%@", email];
+                        currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                        currentIndex++;
+                    }    
+                }
+                break;
+            }
+            case 3:
+            {
+                NSString *company = [dict objForKey:@"company"];
+                if ([company isValid]) {
+                    currentLabel.hidden = NO;
+                    currentLabel.text = [NSString stringWithFormat:@"公司：%@", company];
+                    currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                    currentIndex++;
+                }
+                
+                break;
+            }
+            case 4:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                } else {
+                    NSString *phone = [dict objForKey:@"phone"];
+                    if ([phone isValid]) {
+                        currentLabel.hidden = NO;
+                        currentLabel.text = [NSString stringWithFormat:@"手机：%@", phone];
+                        currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                        currentIndex++;
+                    }                    
+                }
+                break;
+            }
+            case 5:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                } else {
+                    NSString *qq = [dict objForKey:@"qq"];
+                    if ([qq isValid]) {
+                        currentLabel.hidden = NO;
+                        currentLabel.text = [NSString stringWithFormat:@"Q Q：%@", qq];
+                        currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                        currentIndex++;
+                    }                    
+                }
+                
+                break;
+            }
+            case 6:
+            {
+                if ([[dict objForKey:@"type"] isEqualToString:@"0"]) {
+                    break;
+                } else {
+                    NSString *age = [dict objForKey:@"age"];
+                    if ([age isValid]) {
+                        currentLabel.hidden = NO;
+                        currentLabel.text = [NSString stringWithFormat:@"年龄：%@", age];
+                        currentLabel.frame = CGRectMake(currentLabel.frame.origin.x, OFFSET_WITH_INDEX(currentIndex), 280, 20);
+                        currentIndex++;
+                    }                    
+                }
+                
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+}
+
+- (IBAction)modifyAction:(id)sender {
+    if ([delegate respondsToSelector:@selector(modifyCard)]) {
+        [delegate modifyCard];
+    }
+}
+
+- (void)showModifyButton:(BOOL)willShow {
+    if (willShow) {
+        self.modifyButton.hidden = NO;
+    } else {
+        self.modifyButton.hidden = YES;
+    }
+}
+
+@end

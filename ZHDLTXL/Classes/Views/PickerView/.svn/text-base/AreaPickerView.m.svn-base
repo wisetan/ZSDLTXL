@@ -1,0 +1,170 @@
+//
+//  AreaPickerView.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-23.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "AreaPickerView.h"
+#import <QuartzCore/QuartzCore.h>
+
+@implementation AreaPickerView
+@synthesize toolbar;
+@synthesize picker;
+@synthesize pickerArray;
+@synthesize customDelegate;
+@synthesize selectedIndex;
+@synthesize bgView;
+@synthesize labelTitle;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
+    return 3;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
+    @try {
+        if (component == 0) {
+            return [pickerArray count];
+        }
+        if (component == 1) {
+            NSInteger firstIndex = [self.picker selectedRowInComponent:0];
+            return [[[pickerArray objectAtIndex:firstIndex] objForKey:@"citylist"] count];
+        }
+        if (component == 2) {
+            NSInteger firstIndex = [self.picker selectedRowInComponent:0];
+            NSInteger secondIndex = [self.picker selectedRowInComponent:1];
+            return [[[[[pickerArray objectAtIndex:firstIndex] objForKey:@"citylist"] objectAtIndex:secondIndex] objForKey:@"countylist"] count];        
+        }
+    }
+    @catch (NSException *exception) {
+        NSLog(@"exception : %@", exception);
+    }
+    return 0;
+}
+
+- (IBAction)confirmAction:(id)sender {
+    @try {
+        if ([customDelegate respondsToSelector:@selector(picker:didSelectedWithDict:)]) {
+            NSInteger firstIndex = [self.picker selectedRowInComponent:0];
+            NSInteger secondIndex = [self.picker selectedRowInComponent:1];
+            NSInteger thridIndex = [self.picker selectedRowInComponent:2];
+            NSDictionary *dict = [[[[[pickerArray objectAtIndex:firstIndex] objForKey:@"citylist"] objectAtIndex:secondIndex] objForKey:@"countylist"] objectAtIndex:thridIndex];        
+            [customDelegate picker:self didSelectedWithDict:dict];
+        }
+        
+        [self pushOut];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"confirm exception : %@", exception);
+    }
+}
+
+
+- (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view {
+    UILabel *label = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 40)] autorelease];
+    label.backgroundColor = [UIColor clearColor];
+    label.numberOfLines = 2;
+    label.textAlignment = UITextAlignmentCenter;
+    label.lineBreakMode = UILineBreakModeTailTruncation;
+    label.font = [UIFont boldSystemFontOfSize:16];
+    label.minimumFontSize = 10;
+    
+    @try {
+        if (component == 0) {
+            label.text = [[pickerArray objectAtIndex:row] objForKey:@"provincename"];
+        }
+        if (component == 1) {
+            NSInteger firstIndex = [self.picker selectedRowInComponent:0];
+            label.text = [[[[pickerArray objectAtIndex:firstIndex] objForKey:@"citylist"] objectAtIndex:row] objForKey:@"cityname"];
+        }
+        if (component == 2) {
+            NSInteger firstIndex = [self.picker selectedRowInComponent:0];
+            NSInteger secondIndex = [self.picker selectedRowInComponent:1];
+            label.text = [[[[[[pickerArray objectAtIndex:firstIndex] objForKey:@"citylist"] objectAtIndex:secondIndex] objForKey:@"countylist"] objectAtIndex:row] objForKey:@"countyname"];        
+        }        
+    }
+    @catch (NSException *exception) {
+        NSLog(@"exception : %@", exception);
+    }
+
+    return label;
+}
+
+
+- (void)dealloc
+{
+    [bgView release];
+    [pickerArray release];
+    [toolbar release];
+    [picker release];
+	[labelTitle release];
+    [super dealloc];
+}
+
+- (void)pickerAnimation:(BOOL)direction {    
+    
+    CATransition *animation = [CATransition animation];
+	[animation setDelegate:self];
+	[animation setDuration:0.4];
+	[animation setType:kCATransitionPush];
+    
+    if (direction) {
+        [animation setSubtype:kCATransitionFromTop];
+    } else {
+        [animation setSubtype:kCATransitionFromBottom];
+    }
+	[animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+	[animation setValue:@"sliding" forKey:@"LeheAnimation"];
+	[[self layer] addAnimation:animation forKey:nil];
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
+    [self.picker reloadAllComponents];
+}
+
+- (void)pushIn {
+    
+//    [self.picker selectRow:selectedIndex inComponent:0 animated:NO];
+    
+    if (self.bgView == nil) {
+        self.bgView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 480)] autorelease];
+        self.bgView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5];
+        [self.superview insertSubview:bgView belowSubview:self];
+        self.bgView.hidden =YES;
+    }
+    self.bgView.hidden = NO;
+    [self pickerAnimation:YES];
+    self.hidden = NO;
+}
+
+- (void)pushOut {
+    self.bgView.hidden = YES;
+    [self pickerAnimation:NO];
+    self.hidden = YES;
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    CATransition *transition = (CATransition *)anim;
+    if (transition.subtype == kCATransitionFromTop) {
+        //Push in : Do nothing
+    } else if (transition.subtype == kCATransitionFromBottom) {
+        //Push out : remove from superview
+        //        [self removeFromSuperview];
+    }
+}
+
+- (IBAction)cancelAction:(id)sender {
+    [self pushOut];
+}
+
+@end

@@ -1,0 +1,43 @@
+//
+//  PinAnnotation.m
+//  CustomCalloutSample
+//
+//  Created by tochi on 11/05/17.
+//  Copyright 2011 aguuu,Inc. All rights reserved.
+//
+
+#import "PinAnnotation.h"
+
+@implementation PinAnnotation
+@synthesize cateType;
+@synthesize myTitle;
+@synthesize mySubTitle;
+@synthesize avatarUrl;
+@synthesize clickStatus;
+@synthesize advType;
+@synthesize coordinate = coordinate_;
+@synthesize calloutAnnotation = calloutAnnotation_;
+@synthesize infoType;
+@synthesize mid;
+@synthesize hotSpotUserId;
+
+- (NSString *)title {
+    return nil;
+}
+
+- (NSString *)subtitle {
+    return nil;
+}
+
+- (void)dealloc
+{
+    self.hotSpotUserId  = nil;
+    self.mid            = nil;
+    self.avatarUrl      = nil;
+    self.mySubTitle     = nil;
+    self.myTitle        = nil;
+    self.calloutAnnotation = nil;
+    [super dealloc];
+}
+
+@end

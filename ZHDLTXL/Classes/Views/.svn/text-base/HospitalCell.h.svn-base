@@ -1,0 +1,22 @@
+//
+//  HospitalCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-15.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface HospitalCell : UITableViewCell {
+    UIImageView *avatar;
+    UILabel *labName;
+    UILabel *labDistance;
+}
+
+@property (retain, nonatomic) IBOutlet UIImageView *avatar;
+@property (retain, nonatomic) IBOutlet UILabel *labName;
+@property (retain, nonatomic) IBOutlet UILabel *labDistance;
+@property (retain, nonatomic) IBOutlet UILabel *labSubtitle;
+
+@end

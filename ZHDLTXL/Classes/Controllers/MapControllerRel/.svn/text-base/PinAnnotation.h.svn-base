@@ -1,0 +1,43 @@
+//
+//  PinAnnotation.h
+//  CustomCalloutSample
+//
+//  Created by tochi on 11/05/17.
+//  Copyright 2011 aguuu,Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <MapKit/MapKit.h>
+#import "CalloutAnnotation.h"
+
+@interface PinAnnotation : NSObject <MKAnnotation>
+{
+    CLLocationCoordinate2D coordinate_;
+    CalloutAnnotation *calloutAnnotation_;
+    
+    NSString *myTitle;
+    NSString *mySubTitle;
+    CLICK_STATUS clickStatus;
+    ADV_TYPE advType;
+    NSString *avatarUrl;
+    INFO_TYPE infoType;
+    CATEGORY_TYPE cateType;
+    NSString *mid;
+    NSString *hotSpotUserId;
+}
+
+@property (nonatomic, assign) INFO_TYPE infoType;
+@property (nonatomic, assign) CATEGORY_TYPE cateType;
+@property (nonatomic, copy) NSString *avatarUrl;
+@property (nonatomic, copy) NSString *myTitle;
+@property (nonatomic, copy) NSString *mySubTitle;
+@property (nonatomic, copy) NSString *mid;
+@property (nonatomic, copy) NSString *hotSpotUserId;
+@property (nonatomic) CLLocationCoordinate2D coordinate;
+@property (nonatomic, assign) CLICK_STATUS clickStatus;
+@property (nonatomic, assign) ADV_TYPE advType;
+@property (nonatomic, retain) CalloutAnnotation *calloutAnnotation;
+
+- (NSString *)title;
+
+@end

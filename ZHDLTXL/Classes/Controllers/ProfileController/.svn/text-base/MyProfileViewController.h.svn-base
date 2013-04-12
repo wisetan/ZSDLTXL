@@ -1,0 +1,18 @@
+//
+//  MyProfileViewController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "zxPersonalViewController.h"
+#import "CrossButtonCell.h"
+#import "ModifyCardController.h"
+
+@interface MyProfileViewController : zxPersonalViewController<CrossDelegate, EGOImageViewDelegate, ModifyCardDelegate> {
+    BOOL isFullScreen;
+}
+
+@property (assign, nonatomic) BOOL isFullScreen;
+@end

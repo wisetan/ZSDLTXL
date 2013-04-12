@@ -1,0 +1,19 @@
+//
+//  VoteOneCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-5.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "VoteTwoCell.h"
+
+@interface VoteOneCell : UITableViewCell {
+    id<VoteCellDelegate> delegate;
+}
+
+@property (assign, nonatomic) id<VoteCellDelegate> delegate;
+@property (retain, nonatomic) IBOutlet EGODictButton *mImageButton;
+
+@end

@@ -44,9 +44,9 @@ NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud
     if (parameters && [parameters isKindOfClass:[NSDictionary class]]) {
         //set main para
         
-        [mutableParameters setValue:[kAppDelegate uuid] forKey:@"uuid"];
-        [mutableParameters setValue:@"iphone" forKey:@"via"];
-        [mutableParameters setValue:kClientVersion forKey:@"version"];
+//        [mutableParameters setValue:[kAppDelegate uuid] forKey:@"uuid"];
+//        [mutableParameters setValue:@"iphone" forKey:@"via"];
+//        [mutableParameters setValue:kClientVersion forKey:@"version"];
         
         NSString *userid = [PersistenceHelper dataForKey:@"userid"];
         if ([userid isValid]) {
@@ -56,7 +56,7 @@ NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud
     
     NSString *path = [mutableParameters objForKey:@"path"];
     if (![path isValid]) {
-        path = @"/BLYTCloud";
+        path = @"/BLZTCloud";
     } else {
         path = [NSString stringWithFormat:@"/BLZTCloud/%@", path] ;
     }

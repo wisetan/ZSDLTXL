@@ -19,6 +19,7 @@
 #define kErrorIcon @"ico_error_info.png"
 #define kNetworkError  @"网络不给力啊"
 
+//app API
 #define kGetProAndCityData              @"getProAndCityData.json"
 #define kGetInvestmentUserList          @"getInvestmentUserList.json"
 #define kGetPharmacologyPicturelinkurl  @"getPharmacologyPicturelinkurl.json"
@@ -30,7 +31,10 @@
 #define bgSkyBlueColor  RGBCOLOR(0,184,238)
 #define bgGreyColor     RGBCOLOR(231,234,239)
 #define kContentColor   RGBCOLOR(70, 70, 70)
-#define kSubContentColor RGBCOLOR(90, 90, 90)
+#define kSubContentColor RGBCOLOR(98, 98, 98)
+
+#define kContentBlueColor RGBCOLOR(20,100,170);
+#define kContentGrayColor RGBCOLOR(200,200,200);
 
 typedef struct
 {
@@ -43,5 +47,8 @@ typedef struct
 
 #define GET_RETURNMESSAGE(xx_json) \
 [[xx_json objForKey:@"returnMess"] stringValue]
+
+#define kCityChangedNotification @"CityChangedNotification"
+#define kInvestmentUserListRefreshed @"investmentUserListRefreshed"
 
 #endif

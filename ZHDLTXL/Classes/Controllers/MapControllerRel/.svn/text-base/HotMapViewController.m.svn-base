@@ -1,0 +1,123 @@
+//
+//  HotMapViewController.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-20.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "HotMapViewController.h"
+
+@interface HotMapViewController ()
+- (void)updateAnnotation;
+@end
+
+@implementation HotMapViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self updateAnnotation];
+    
+    NSMutableArray *advPins = [NSMutableArray array];
+    for (int i = 0; i < [[mMapView annotations] count]; i++) {
+        PinAnnotation *pinAnnotation = [[mMapView annotations] objectAtIndex:i];
+        if (pinAnnotation && ![pinAnnotation isKindOfClass:[MKUserLocation class]]) {
+            if (pinAnnotation.advType == ADV_TYPE_CLASS1) {
+                [advPins addObject:pinAnnotation];
+            }
+        }
+    }
+    
+    for (PinAnnotation *pinAnnotation in advPins) {
+        if ([pinAnnotation isKindOfClass:[PinAnnotation class]] && pinAnnotation.calloutAnnotation == nil) {
+            CalloutAnnotation *calloutAnnotation = [[[CalloutAnnotation alloc] initWithPinAnnotaion:pinAnnotation] autorelease];
+            pinAnnotation.calloutAnnotation = calloutAnnotation;
+            
+            [mMapView addAnnotation:calloutAnnotation];
+        }
+    }
+
+}
+
+- (void)updateAnnotation {
+    // Pin annotation.
+    NSMutableArray *locationArray = [NSMutableArray arrayWithCapacity:0];
+    [locationArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                              @"Pin-1", @"title",
+                              [NSNumber numberWithFloat:39.985769],  @"lat",
+                              [NSNumber numberWithFloat:116.326497], @"lon", 
+                              @"YES", @"adv",nil]];
+    [locationArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                              @"Pin-2", @"title",
+                              [NSNumber numberWithFloat:39.99],  @"lat",
+                              [NSNumber numberWithFloat:116.43], @"lon", 
+                              @"YES", @"adv", nil]];
+    
+    [locationArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                              @"Pin-2", @"title",
+                              [NSNumber numberWithFloat:39.69],  @"lat",
+                              [NSNumber numberWithFloat:116.23], @"lon", 
+                              @"NO", @"adv", nil]];
+    
+    [locationArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                              @"Pin-2", @"title",
+                              [NSNumber numberWithFloat:39.70],  @"lat",
+                              [NSNumber numberWithFloat:116.33], @"lon", 
+                              @"NO", @"adv", nil]];
+    
+    [locationArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                              @"Pin-2", @"title",
+                              [NSNumber numberWithFloat:39.92],  @"lat",
+                              [NSNumber numberWithFloat:116.23], @"lon", 
+                              @"NO", @"adv", nil]];
+    
+    [locationArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                              @"Pin-2", @"title",
+                              [NSNumber numberWithFloat:39.69],  @"lat",
+                              [NSNumber numberWithFloat:116.73], @"lon",
+                              @"NO", @"adv", nil]];
+    
+    
+    // Add annotations on the MapView.
+    PinAnnotation *pinAnnotation;
+    CLLocationCoordinate2D coordinate;
+    for (int i = 0; i < [locationArray count]; i++) {
+        
+        NSDictionary *location = [locationArray objectAtIndex:i];
+        
+        coordinate.latitude  = [[location objectForKey:@"lat"] floatValue];
+        coordinate.longitude = [[location objectForKey:@"lon"] floatValue];
+        
+        pinAnnotation = [[[PinAnnotation alloc] init] autorelease];
+        pinAnnotation.myTitle = @"医院要搬迁了";
+        pinAnnotation.mySubTitle = @"北京301医院";
+        pinAnnotation.avatarUrl = @"1314";
+        pinAnnotation.clickStatus = CLICK_STATUS_NONE;
+        
+        if (i == 0 || i == 1) {
+            pinAnnotation.advType = ADV_TYPE_CLASS1;
+        } else {
+            pinAnnotation.advType = ADV_TYPE_NONE;
+        }
+        
+        pinAnnotation.coordinate = coordinate;
+        [mMapView addAnnotation:pinAnnotation];
+    }
+}
+
+- (void)viewDidUnload
+{
+    [super viewDidUnload];
+}
+
+@end

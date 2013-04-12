@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "RootViewController.h"
 
+
 @implementation AppDelegate
 
 - (void)dealloc
@@ -22,9 +23,17 @@
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     
     self.uuid = [[UIDevice currentDevice] uniqueDeviceIdentifier];
-    
+    self.geocoder = [[CLGeocoder alloc] init];
+    [self initGPS];
     
     RootViewController *rootVC = [[RootViewController alloc] init];
+    if ([userId isValid]) {
+        rootVC.hasRegisted = YES;
+    }
+    else{
+        rootVC.hasRegisted = NO;
+    }
+    rootVC.currentCity = self.newCity;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:rootVC];
     self.window.rootViewController = nav;
     [rootVC release];
@@ -62,8 +71,27 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (void)loginFinishedWithAnimation:(BOOL)animate {
+//    UIViewController *currentController = [[[self.leveyTabBarController viewControllers] objectAtIndex:self.leveyTabBarController.selectedIndex] topViewController];
+//    [currentController dismissModalViewControllerAnimated:animate];
+//    
+//    if ([currentController isKindOfClass:[zxHomeViewController class]]) {
+//        [currentController performSelector:@selector(moveToCurrentLocation) withObject:nil afterDelay:0.5];
+//    }
+//    
+//    [leveyTabBarController hidesTabBar:NO animated:YES];
+//    [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:@"kNotifactionLoginSuccess" object:nil];
+//    
+//    [self updateDeviceToken];
+}
 
-
+- (NSString *)userId
+{
+    if (![userId isValid]) {
+        return (NSString *)[PersistenceHelper dataForKey:@"userid"];
+    }
+    return nil;
+}
 
 - (void)doShowAlertWithText:(NSString *)text imageByName:(NSString *)image {
     HUD = [[MBProgressHUD alloc] initWithView:self.window];
@@ -101,8 +129,86 @@
     [self doShowAlertWithText:text imageByName:image];
 }
 
+//about GPS
+- (void)initGPS {
+    if(locationManager == nil) {
+        self.locationManager = [[[CLLocationManager alloc] init] autorelease];
+        self.locationManager.delegate = self;
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        self.locationManager.distanceFilter = 1000.f;
+	}
+    if ([CLLocationManager locationServicesEnabled]) {
+        [self.locationManager startUpdatingLocation];
+        [self getCurrentCity];
+    }
+}
 
+- (void)getCurrentCity
+{
+    [self.geocoder reverseGeocodeLocation: locationManager.location completionHandler:
+     ^(NSArray *placemarks, NSError *error) {
+         CLPlacemark *placemark = [placemarks objectAtIndex:0];
+         self.newCity = placemark.locality;
+     }];
+}
 
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    NSLog(@"location update");
+    NSLog(@"locations: %@", locations);
+//    [self.locationManager stopUpdatingLocation];
+    
+    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+    [geocoder reverseGeocodeLocation:[locations objectAtIndex:0] completionHandler:^(NSArray *array, NSError *error){
+        if (array.count > 0)
+        {
+            CLPlacemark *placemark = [array objectAtIndex:0];
+
+            self.newCity = placemark.locality;
+            NSLog(@"place: %@", placemark.locality);
+            if ([self cityChanged]) {
+                [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
+            }
+        }
+        else if (error == nil && [array count] == 0)
+        {
+            NSLog(@"No results were returned.");
+        }
+        else if (error != nil)
+        {
+            NSLog(@"An error occurred = %@", error);
+        }
+    }];
+    
+}
+
+- (BOOL)cityChanged
+{
+    return [self.lastCity isEqualToString:self.newCity];
+}
+
+//- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
+//{
+//    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+//    [geocoder reverseGeocodeLocation:newLocation completionHandler:^(NSArray *array, NSError *error){
+//         if (array.count > 0)
+//         {
+//             CLPlacemark *placemark = [array objectAtIndex:0];
+//             self.newCity = placemark.locality;
+//             if ([self cityChanged]) {
+//                 [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
+//             }
+//         }
+//         else if (error == nil && [array count] == 0)
+//         {
+//             NSLog(@"No results were returned.");
+//         }
+//         else if (error != nil)
+//         {
+//             NSLog(@"An error occurred = %@", error);
+//         }
+//     }];
+//}
 
 
 

@@ -1,0 +1,45 @@
+//
+//  PersonalHeaderCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "DLStarRatingControl.h"
+
+@protocol PersonalHeaderDelegate;
+@interface PersonalHeaderCell : UITableViewCell<UIAlertViewDelegate, DLStarRatingDelegate> {
+    EGOImageView *avatar;
+    UIImageView *sexLabel;
+    UILabel *labName;
+    UIImageView *ivSex;
+    id<PersonalHeaderDelegate> delegate;
+    DLStarRatingControl *ratingView;
+    NSInteger ratingCount;
+}
+
+@property (retain, nonatomic) DLStarRatingControl *ratingView;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (retain, nonatomic) IBOutlet UIImageView *sexLabel;
+@property (retain, nonatomic) IBOutlet UILabel *labName;
+@property (retain, nonatomic) IBOutlet UIImageView *ivSex;
+@property (nonatomic, assign) id<PersonalHeaderDelegate> delegate;
+@property (retain, nonatomic) IBOutlet UIButton *btnChangeAvatar;
+@property (retain, nonatomic) IBOutlet UIButton *btnChangeSignature;
+@property (assign, nonatomic) NSInteger ratingCount;
+@property (retain, nonatomic) IBOutlet UILabel *labBaotongId;
+
+- (IBAction)changeAvatarAction:(id)sender;
+- (IBAction)showCurrentLocationAction:(id)sender;
+- (void)changeAvatarWithImage:(UIImage *)image;
+
+@end
+
+@protocol PersonalHeaderDelegate <NSObject>
+@optional
+- (void)showCurrentLocation;
+- (void)changeAvatar;
+- (void)maximDidFinishChange;
+@end

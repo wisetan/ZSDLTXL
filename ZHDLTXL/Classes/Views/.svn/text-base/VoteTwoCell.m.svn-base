@@ -1,0 +1,56 @@
+//
+//  VoteTwoCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-5.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "VoteTwoCell.h"
+
+@implementation VoteTwoCell
+
+@synthesize delegate;
+@synthesize mFirstButton;
+@synthesize mSecondButton;
+@synthesize mButtonArray;
+
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    self.mButtonArray = [NSArray arrayWithObjects:mFirstButton, mSecondButton, nil];
+    for (EGODictButton *button in mButtonArray) {
+        [button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+    }
+}
+         
+- (void)buttonAction:(EGODictButton *)aButton {
+    if ([delegate respondsToSelector:@selector(voteCellButtonClicked:)]) {
+        [delegate voteCellButtonClicked:aButton];
+    }
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+	[super willMoveToSuperview:newSuperview];
+	
+	if(!newSuperview) {
+		[self.mFirstButton cancelImageLoad];
+        [self.mSecondButton cancelImageLoad];
+	}
+}
+
+- (void)dealloc {
+    [mButtonArray release];
+    [mFirstButton release];
+    [mSecondButton release];
+    [super dealloc];
+}
+@end

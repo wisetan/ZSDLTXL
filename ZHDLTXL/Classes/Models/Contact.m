@@ -10,4 +10,16 @@
 
 @implementation Contact
 
+- (void)dealloc
+{
+    [super dealloc];
+    self.username = nil;
+    self.tel = nil;
+    self.mailbox = nil;
+    self.picturelinkurl = nil;
+    self.col1 = nil;
+    self.col2 = nil;
+    self.col3 = nil;;
+}
+
 @end

@@ -1,0 +1,27 @@
+//
+//  HomeMapController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-16.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "MapController.h"
+
+@protocol MapHomeDelegate;
+@interface HomeMapController : MapController {
+    NSMutableArray *datasourceArray;
+    id<MapHomeDelegate> delegate;
+    NSTimer *timer;
+}
+
+@property (nonatomic, retain) NSMutableArray *datasourceArray;
+@property (nonatomic, assign) id<MapHomeDelegate> delegate;
+
+- (void)updateAnnotation;
+- (void)clearAnnotation;
+@end
+
+@protocol MapHomeDelegate <NSObject>
+- (void)mapPushView:(UIViewController *)viewController withType:(MAP_TYPE)mapType;
+@end

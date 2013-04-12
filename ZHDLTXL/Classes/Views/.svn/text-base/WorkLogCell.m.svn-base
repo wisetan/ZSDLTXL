@@ -1,0 +1,46 @@
+//
+//  WorkLogCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-24.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "WorkLogCell.h"
+
+@implementation WorkLogCell
+
+@synthesize labTime;
+@synthesize labContent;
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [labTime release];
+    [labContent release];
+    [super dealloc];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    CGRect frame = labContent.frame;
+    labContent.frame = CGRectMake(frame.origin.x, frame.origin.y, 280, 0);
+    [labContent sizeToFit];
+}
+
++ (CGFloat)heightForCellWithContent:(NSString *)content {
+    CGFloat offset = 30.0f;
+    
+    CGSize contentSize = [content sizeWithFont:[UIFont boldSystemFontOfSize:15] constrainedToSize:CGSizeMake(280, CGFLOAT_MAX) lineBreakMode:UILineBreakModeCharacterWrap];
+    
+    return offset + contentSize.height + 10;
+}
+
+@end

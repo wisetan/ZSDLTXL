@@ -1,0 +1,47 @@
+//
+//  MapController.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-13.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import <MapKit/MapKit.h>
+
+#import "PinAnnotation.h"
+#import "CalloutAnnotation.h"
+#import "CalloutAnnotationView.h"
+
+#define kDefaultLatitudeDelta 0.1
+#define kRegionDidChanged @"kRegionDidChanged"
+typedef enum {
+    MAP_TYPE_PERSON     = 0,
+    MAP_TYPE_HOT        = 1,
+    MAP_TYPE_HOSPITAL   = 2,
+    MAP_TYPE_DRUGSTORE  = 3
+} MAP_TYPE;
+
+@interface MapController : UIViewController<MKMapViewDelegate> {
+    MKMapView *mMapView;
+    double _lat;
+    double _lon;
+    MAP_TYPE mapType;
+}
+
+@property (nonatomic, assign) double lat;
+@property (nonatomic, assign) double lon;
+@property (retain, nonatomic) IBOutlet MKMapView *mMapView;
+@property (nonatomic, assign) MAP_TYPE mapType;
+
+- (void)moveToLat:(double)lat lon:(double)lon;
+- (id)initWithLat:(double)lat lon:(double)lon;
+
+
+- (void)mapView:(MKMapView *)mapView willFinishCreateView:(MKAnnotationView *)annotationView ForAnnotation:(id<MKAnnotation>)annotation;
+
+//need to override
+- (void)clickAnnotationView:(MKAnnotationView *)annotationView;
+- (MKAnnotationView *)mapView:(MKMapView *)mapView customViewForAnnotation:(id<MKAnnotation>)annotation;
+
+@end

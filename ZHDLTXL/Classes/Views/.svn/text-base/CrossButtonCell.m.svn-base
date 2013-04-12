@@ -1,0 +1,40 @@
+//
+//  CrossButtonCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-27.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "CrossButtonCell.h"
+
+@implementation CrossButtonCell
+@synthesize labFocusCount;
+@synthesize labFansCount;
+@synthesize labDynamicCount;
+@synthesize labCollectionCount;
+@synthesize delegate;
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (IBAction)buttonOnClick:(id)sender {
+    NSInteger index = [(UIButton *)sender tag];
+    if ([delegate respondsToSelector:@selector(crossClickedAtIndex:)]) {
+        [delegate crossClickedAtIndex:index];
+    }
+}
+
+- (void)dealloc {
+    [labFocusCount release];
+    [labFansCount release];
+    [labDynamicCount release];
+    [labCollectionCount release];
+    [super dealloc];
+}
+@end

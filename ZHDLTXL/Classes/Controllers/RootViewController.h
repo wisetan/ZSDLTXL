@@ -24,4 +24,16 @@
 @property (nonatomic, assign) NSInteger currentCellButtonIndex;
 @property (nonatomic, retain) CLLocationManager *locationManager;
 
+@property (nonatomic, assign) BOOL hasRegisted;
+@property (nonatomic, copy) NSString *currentCity;
+@property (nonatomic, copy) NSString *originCity;
+
+
+@property (nonatomic, copy) NSString *curProvinceId;
+@property (nonatomic, copy) NSString *curCityId;
+
+@property (nonatomic, retain) NSMutableDictionary *contactDictSortByAlpha;
+
+- (void)getInvestmentUserList;
+
 @end

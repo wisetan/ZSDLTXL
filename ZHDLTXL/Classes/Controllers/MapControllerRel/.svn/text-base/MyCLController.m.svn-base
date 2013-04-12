@@ -1,0 +1,57 @@
+#import "MyCLController.h"
+
+@implementation MyCLController
+
+@synthesize locationManager;
+@synthesize delegate;
+@synthesize shift;
+
+- (id) init {
+	self = [super init];
+	if (self != nil) 
+	{
+		self.locationManager = [[[CLLocationManager alloc] init] autorelease];
+		self.locationManager.delegate = self; 
+		
+		if( !shift ) {
+            AddShift *newShift = [[AddShift alloc] init];
+            self.shift = newShift;
+            [newShift release];
+        }
+	}
+	return self;
+}
+
+- (void)locationManager:(CLLocationManager *)manager
+	didUpdateToLocation:(CLLocation *)newLocation
+		   fromLocation:(CLLocation *)oldLocation
+{
+    GPoint realP;
+    realP.lat = newLocation.coordinate.latitude;
+    realP.lon = newLocation.coordinate.longitude;
+//    fakeP = [shift fakeToReal:realP];
+//    CLLocation *fakeLocation = [[[CLLocation alloc] initWithLatitude:fakeP.lat longitude:fakeP.lon] autorelease]; 
+    CLLocation *realLocation = [[[CLLocation alloc] initWithLatitude:realP.lat longitude:realP.lon] autorelease]; 
+    [self.delegate locationUpdate:realLocation];    
+}
+
+ - (void)locationManager:(CLLocationManager *)manager 
+		didUpdateHeading:(CLHeading *)newHeading
+{
+	[self.delegate headingUpdate:newHeading]; 
+}
+
+- (void)locationManager:(CLLocationManager *)manager
+	   didFailWithError:(NSError *)error
+{
+	[self.delegate locationError:error];
+}
+
+- (void)dealloc {
+
+	self.locationManager = nil;
+    self.shift = nil;
+    [super dealloc];
+}
+
+@end

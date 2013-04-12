@@ -1,0 +1,42 @@
+//
+//  OthersPersonalHeaderCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-3-19.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol OthersPersonalHeaderDelegate;
+@class DLStarRatingControl;
+@interface OthersPersonalHeaderCell : UITableViewCell {
+    EGOImageView *avatar;
+    UILabel *labName;
+    UIImageView *ivSex;
+    id<OthersPersonalHeaderDelegate> delegate;
+    DLStarRatingControl *ratingView;
+}
+
+@property (nonatomic, assign) id<OthersPersonalHeaderDelegate> delegate;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (retain, nonatomic) IBOutlet UILabel *labName;
+@property (retain, nonatomic) IBOutlet UIImageView *ivSex;
+@property (retain, nonatomic) DLStarRatingControl *ratingView;
+
+- (void)clear;
+//- (IBAction)showCurrentLocationAction:(id)sender;
+//- (IBAction)addAttentionAction:(id)sender;
+//- (IBAction)talkAction:(id)sender;
+- (void)changeAvatarAction:(id)sender;
+
+@end
+
+@protocol OthersPersonalHeaderDelegate <NSObject>
+
+- (void)changeAvatar;
+- (void)showCurrentLocation;
+- (void)addAttention;
+- (void)talk;
+
+@end

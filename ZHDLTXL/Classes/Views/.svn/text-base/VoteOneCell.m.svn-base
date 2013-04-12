@@ -1,0 +1,47 @@
+//
+//  VoteOneCell.m
+//  ZXCXBlyt
+//
+//  Created by zly on 12-7-5.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import "VoteOneCell.h"
+
+@implementation VoteOneCell
+
+@synthesize mImageButton;
+@synthesize delegate;
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    [mImageButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)buttonAction:(EGODictButton *)aButton {
+    if ([delegate respondsToSelector:@selector(voteCellButtonClicked:)]) {
+        [delegate voteCellButtonClicked:aButton];
+    }
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+	[super willMoveToSuperview:newSuperview];
+	
+	if(!newSuperview) {
+		[mImageButton cancelImageLoad];
+	}
+}
+
+- (void)dealloc {
+    [mImageButton release];
+    [super dealloc];
+}
+@end
