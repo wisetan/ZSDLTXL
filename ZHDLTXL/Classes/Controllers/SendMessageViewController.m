@@ -7,6 +7,7 @@
 //
 
 #import "SendMessageViewController.h"
+#import "GroupSendViewController.h"
 
 @interface SendMessageViewController ()
 
@@ -162,6 +163,10 @@
 - (void)addContact:(UIButton *)sender
 {
     NSLog(@"add contact");
+    GroupSendViewController *groupSendVC = [[GroupSendViewController alloc] init];
+    groupSendVC.contactDictSortByAlpha = self.contactDict;
+    [self.navigationController pushViewController:groupSendVC animated:YES];
+    [groupSendVC release];
 }
 
 //hide keyboard

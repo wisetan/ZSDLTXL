@@ -9,21 +9,14 @@
 #import <UIKit/UIKit.h>
 #import "ContactHimView.h"
 
-@interface HomepageViewController : UIViewController <ContactHimViewDelegate>
-
-//@property (nonatomic, retain) UIImageView *headIcon;
-//@property (nonatomic, retain) UILabel *nameLabel;
-//@property (nonatomic, retain) UILabel *areaLabel;
-//@property (nonatomic, retain) UILabel *categoryLabel;
-//
-//@property (nonatomic, retain) UIButton *backBarButton;
-
+@interface OtherHomepageViewController : UIViewController <ContactHimViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic, retain) NSString *headIconName;
 @property (nonatomic, retain) NSString *userName;
 @property (nonatomic, retain) NSString *pharmacologyCategory;
 @property (nonatomic, retain) NSString *residentArea;
 @property (nonatomic, retain) NSString *comment;
+@property (nonatomic, retain) NSDictionary *contactDict;
 
 
 @end

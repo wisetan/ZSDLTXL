@@ -33,7 +33,12 @@
     else{
         rootVC.hasRegisted = NO;
     }
-    rootVC.currentCity = self.newCity;
+    
+    if (![self.newCity isValid]) {
+        self.newCity = @"北京";
+    }
+    
+    rootVC.currentCity = self.newCity ;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:rootVC];
     self.window.rootViewController = nav;
     [rootVC release];
@@ -154,64 +159,17 @@
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
-    NSLog(@"location update");
-    NSLog(@"locations: %@", locations);
-//    [self.locationManager stopUpdatingLocation];
-    
     CLGeocoder *geocoder = [[CLGeocoder alloc] init];
-    [geocoder reverseGeocodeLocation:[locations objectAtIndex:0] completionHandler:^(NSArray *array, NSError *error){
-        if (array.count > 0)
-        {
-            CLPlacemark *placemark = [array objectAtIndex:0];
 
-            self.newCity = placemark.locality;
-            NSLog(@"place: %@", placemark.locality);
-            if ([self cityChanged]) {
-                [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
-            }
-        }
-        else if (error == nil && [array count] == 0)
-        {
-            NSLog(@"No results were returned.");
-        }
-        else if (error != nil)
-        {
-            NSLog(@"An error occurred = %@", error);
-        }
+    [geocoder reverseGeocodeLocation:manager.location completionHandler:^(NSArray *placemarks, NSError *error) {
+        CLPlacemark *placemark = [placemarks objectAtIndex:0];
+        self.newCity = placemark.locality;
     }];
-    
 }
 
 - (BOOL)cityChanged
 {
     return [self.lastCity isEqualToString:self.newCity];
 }
-
-//- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
-//{
-//    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
-//    [geocoder reverseGeocodeLocation:newLocation completionHandler:^(NSArray *array, NSError *error){
-//         if (array.count > 0)
-//         {
-//             CLPlacemark *placemark = [array objectAtIndex:0];
-//             self.newCity = placemark.locality;
-//             if ([self cityChanged]) {
-//                 [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
-//             }
-//         }
-//         else if (error == nil && [array count] == 0)
-//         {
-//             NSLog(@"No results were returned.");
-//         }
-//         else if (error != nil)
-//         {
-//             NSLog(@"An error occurred = %@", error);
-//         }
-//     }];
-//}
-
-
-
-
 
 @end

@@ -24,4 +24,6 @@
 @property (nonatomic, retain) NSArray *contactArray;
 @property (nonatomic, retain) UIButton *addButton;
 
+@property (nonatomic, retain) NSDictionary *contactDict;
+
 @end

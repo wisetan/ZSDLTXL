@@ -14,7 +14,8 @@
 #import "SendMessageViewController.h"
 #import "SendEmailViewController.h"
 #import "ChatViewController.h"
-#import "HomepageViewController.h"
+#import "OtherHomepageViewController.h"
+#import "UIImageView+WebCache.h"
 
 @interface RootViewController ()
 
@@ -44,9 +45,6 @@
     
 //    NSLog(@"sections: %@", [[UILocalizedIndexedCollation currentCollation] sectionTitles]);
 //    [[UILocalizedIndexedCollation currentCollation] sectionForObject:nil collationStringSelector:@selector(123)];
-    NSString *testString = @"我";
-    char c = indexTitleOfString([testString characterAtIndex:0]);
-    NSLog(@"%@ index: %c", testString, c);
     
     [self addObserver];
     
@@ -120,21 +118,8 @@
     [self.contactTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     self.contactTableView.delegate = self;
     self.contactTableView.dataSource = self;
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapOnTableView:)];
-    [self.contactTableView addGestureRecognizer:tap];
-    
-    self.sectionTitleArray = [[NSMutableArray new] autorelease];
-    for (char c='A'; c<='Z'; c++) {
-        [self.sectionTitleArray addObject:[NSString stringWithFormat:@"%c", c]];
-    }
-    [self.sectionTitleArray addObject:[NSString stringWithFormat:@"%c", '#']];
-    
-    
     
     [self.view addSubview:self.contactTableView];
-    
-    //contactHimView
-//    [self addContactHimView];
     
     //left area barbutton
     self.areaButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -177,6 +162,8 @@
     UIBarButtonItem *rBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.friendButton];
     [self.navigationItem setRightBarButtonItem:rBarButton];
     
+    [self getInvestmentUserList];
+    
 }
 
 - (void)addContactHimView
@@ -192,48 +179,69 @@
     [self selectArea:nil];
 }
 
-- (NSString *)getProvinceIdOfCity:(NSString *)city
+- (void)setProvinceIdAndCityIdOfCity:(NSString *)city
 {
-//    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
-//    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
-//    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
-//    
-//    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
-//    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
-//        //        NSLog(@"%@", proDict);
-//        ProvinceInfo *province = [[ProvinceInfo alloc] init];
-//        province.centerlon = [proDict objectForKey:@"centerlon"];
-//        province.centerlat = [proDict objectForKey:@"centerlat"];
-//        province.provinceid = [proDict objectForKey:@"provinceid"];
-//        province.provincename = [proDict objectForKey:@"provincename"];
-//        province.radius = [proDict objectForKey:@"radius"];
-//        //        [province setValuesForKeysWithDictionary:proDict];
-//        [self.provinceArray addObject:province];
-//        
-//        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
-//        NSMutableArray *cityArrayTmp = [[NSMutableArray alloc] init];
-//        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-//            //            NSLog(@"city: %@", cityDict);
-//            CityInfo *city = [[CityInfo alloc] init];
-//            [city setValuesForKeysWithDictionary:cityDict];
-//            [cityArrayTmp addObject:city];
-//        }];
-//        
-//        [self.areaInfoDict setObject:cityArrayTmp forKey:province.provinceid];
-//        [cityArrayTmp release];
-//        
-//    }];
-}
-
-- (NSString *)getCityIdOfCity:(NSString *)city
-{
+    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
+    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
+    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
     
+    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
+    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
+        
+        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
+        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+            if ([[cityDict objectForKey:@"cityname"] isEqualToString:self.currentCity]) {
+                self.curProvinceId = [cityDict objectForKey:@"provinceid"];
+                self.curCityId = [cityDict objectForKey:@"cityid"];
+            }
+        }];
+    }];
 }
 
 - (void)getInvestmentUserList
 {
-    //parameter: provinceid, cityid, userid(用来取备注), 
+    [self setProvinceIdAndCityIdOfCity:self.currentCity];
+    //parameter: provinceid, cityid, userid(用来取备注),
+    long userId = [kAppDelegate.userId longLongValue];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:self.curProvinceId, @"provinceid",
+                                                                    self.curCityId, @"cityid",
+                                                                    [NSNumber numberWithLong:userId], @"userid",
+                                                                    @"getInvestmentUserList.json", @"path", nil];
     
+    MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    hub.labelText = @"获取商家列表";
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            
+//            NSLog(@"商家列表：%@", json);
+            NSMutableArray *contactArray = [NSMutableArray new];
+            [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
+                //                NSLog(@"contact Dict: %@", contactDict);
+                Contact *contact = [Contact new];
+                contact.userid = [[contactDict objectForKey:@"id"] longValue];
+                contact.username = [contactDict objForKey:@"username"];
+                contact.tel = [contactDict objForKey:@"tel"];
+                contact.mailbox = [contactDict objectForKey:@"mailbox"];
+                contact.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
+                contact.col1 = [contactDict objectForKey:@"col1"];
+                contact.col2 = [contactDict objectForKey:@"col2"];
+                contact.col2 = [contactDict objectForKey:@"col2"];
+                [contactArray addObject:contact];
+                [contact release];
+            }];
+            
+//            NSLog(@"contact array %@", contactArray);
+            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:contactArray];
+            [contactArray release];
+        } else {
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
     
     
 }
@@ -313,25 +321,22 @@
         cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
     }
     cell.selectionStyle = UITableViewCellEditingStyleNone;
-    cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
+//    cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
     
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+    NSString *imageUrl = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] picturelinkurl];
+    
+    
+    [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
     
     if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
         
-        cell.nameLabel.text = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+        cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
     }
     
-    
-//    cell.nameLabel.text = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-//    [cell.contactButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
-//    [cell.contactButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
-//    cell.contactButton.index = indexPath.row;
-//    [cell.contactButton addTarget:self action:@selector(contactHim:) forControlEvents:UIControlEventTouchUpInside];
-    
-//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapOnCellButton:)];
-//    [cell.contactButton addGestureRecognizer:tap];
     self.currentContact = nil;  //[self.contactArray objectAtIndex:indexPath.row];
+    cell.unSelectedImage.alpha = 0.f;
+//    cell.selectButton = nil;
 
     return cell;
 }
@@ -348,48 +353,39 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    HomepageViewController *homeVC = [[HomepageViewController alloc] init];
+    OtherHomepageViewController *homeVC = [[OtherHomepageViewController alloc] init];
+
+    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+    NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
+    homeVC.userName = username;
+    homeVC.contactDict = self.contactDictSortByAlpha;
     [self.navigationController pushViewController:homeVC animated:YES];
     [homeVC release];
 }
 
 
-- (void)contactHim:(CellButton *)sender
-{
-    NSLog(@"sender.index: %d, cur index: %d", sender.index, self.currentCellButtonIndex);
-    if (sender.index == self.currentCellButtonIndex && self.contactHimView.isAppeared == YES) {
-        return;
-    }
-    else{
-        self.currentCellButtonIndex = sender.index;
-    }
-    if (self.contactHimView.isAppeared) {
-        self.contactHimView.isAppeared = NO;
-        [UIView animateWithDuration:1.f animations:^{
-            self.contactHimView.center = CGPointMake(self.contactHimView.center.x+320, self.contactHimView.center.y);
-        }];
-        return;
-    }
-    self.contactHimView.isAppeared = YES;
-    [UIView animateWithDuration:1.f animations:^{
-        self.contactHimView.center = self.contactTableView.center;
-    }];
-    self.contactTableView.scrollEnabled = NO;
-}
-
-
-- (void)didTapOnTableView:(UIGestureRecognizer*) recognizer
-{
-    if (self.contactHimView.isAppeared) {
-        [UIView animateWithDuration:1.f animations:^{
-            self.contactHimView.center = CGPointMake(self.contactTableView.center.x+320, self.contactTableView.center.y);
-        }];
-        
-        self.contactHimView.isAppeared = NO;
-        self.contactTableView.userInteractionEnabled = YES;
-        self.contactTableView.scrollEnabled = YES;
-    }
-}
+//- (void)contactHim:(CellButton *)sender
+//{
+////    NSLog(@"sender.index: %d, cur index: %d", sender.index, self.currentCellButtonIndex);
+//    if (sender.indexRow == self.currentCellButtonIndex && self.contactHimView.isAppeared == YES) {
+//        return;
+//    }
+//    else{
+//        self.currentCellButtonIndex = sender.index;
+//    }
+//    if (self.contactHimView.isAppeared) {
+//        self.contactHimView.isAppeared = NO;
+//        [UIView animateWithDuration:1.f animations:^{
+//            self.contactHimView.center = CGPointMake(self.contactHimView.center.x+320, self.contactHimView.center.y);
+//        }];
+//        return;
+//    }
+//    self.contactHimView.isAppeared = YES;
+//    [UIView animateWithDuration:1.f animations:^{
+//        self.contactHimView.center = self.contactTableView.center;
+//    }];
+//    self.contactTableView.scrollEnabled = NO;
+//}
 
 #pragma mark - contactHimView delegate
 
@@ -447,7 +443,7 @@
         
     [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
         NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
-        [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact.username];
+        [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact];
     }];
     
     [self.contactTableView reloadData];

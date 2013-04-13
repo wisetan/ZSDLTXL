@@ -10,6 +10,9 @@
 
 @interface CellButton : UIButton
 
-@property (nonatomic, assign) NSInteger index;
+@property (nonatomic, copy) NSString *indexKey;
+@property (nonatomic, assign) NSInteger indexSection;
+@property (nonatomic, assign) NSInteger indexRow;
+@property (nonatomic, assign) BOOL isSelected;
 
 @end

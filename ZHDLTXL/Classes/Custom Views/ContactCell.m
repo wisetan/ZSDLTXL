@@ -30,6 +30,8 @@
     [_headIcon release];
     [_nameLabel release];
 //    [_contactButton release];
+//    [_selectButton release];
+    [_unSelectedImage release];
     [super dealloc];
 }
 @end

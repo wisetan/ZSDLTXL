@@ -26,4 +26,8 @@
 @property (nonatomic, retain) Contact *contact;
 @property (nonatomic, assign) BOOL isAppeared;
 
+@property (nonatomic, retain) UIImageView *messageIcon;
+@property (nonatomic, retain) UIImageView *emailIcon;
+@property (nonatomic, retain) UIImageView *chatIcon;
+
 @end

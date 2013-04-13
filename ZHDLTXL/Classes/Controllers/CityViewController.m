@@ -81,7 +81,7 @@
     [cell.areaNameLabel setFont:[UIFont systemFontOfSize:14]];
     [cell.selectButton setBackgroundImage:[UIImage imageNamed:@"unselected.png"] forState:UIControlStateNormal];
     [cell.selectButton setBackgroundImage:[UIImage imageNamed:@"selected.png"] forState:UIControlStateHighlighted];
-    cell.selectButton.index = indexPath.row;
+    cell.selectButton.indexRow = indexPath.row;
     [cell.selectButton addTarget:self action:@selector(selectCity:) forControlEvents:UIControlEventTouchUpInside];
     return cell;
     
@@ -91,8 +91,8 @@
 {
     //parameter: provinceid, cityid, userid(用来取备注),
     
-    NSString *cityId = [[self.cityArray objectAtIndex:sender.index] cityid];
-    NSString *provinceId = [[self.cityArray objectAtIndex:sender.index] provinceid];
+    NSString *cityId = [[self.cityArray objectAtIndex:sender.indexRow] cityid];
+    NSString *provinceId = [[self.cityArray objectAtIndex:sender.indexRow] provinceid];
     long userId = [kAppDelegate.userId longLongValue];
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityId, @"cityid", provinceId, @"provinceid", [NSNumber numberWithLong:userId], @"userid", @"getInvestmentUserList.json", @"path", nil];
     NSLog(@"parameter: %@", dict);

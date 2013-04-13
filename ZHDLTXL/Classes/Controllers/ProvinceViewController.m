@@ -179,7 +179,7 @@
     [cell.areaNameLabel setFont:[UIFont systemFontOfSize:14]];
     [cell.selectButton setBackgroundImage:[UIImage imageNamed:@"unselected.png"] forState:UIControlStateNormal];
     [cell.selectButton setBackgroundImage:[UIImage imageNamed:@"selected.png"] forState:UIControlStateHighlighted];
-    cell.selectButton.index = indexPath.row;
+    cell.selectButton.indexRow = indexPath.row;
     [cell.selectButton addTarget:self action:@selector(selectCity:) forControlEvents:UIControlEventTouchUpInside];
     return cell;
     
@@ -190,7 +190,7 @@
     CityViewController *cityVC = [[[CityViewController alloc] init] autorelease];
 //    cityVC.cityArray = [self.areaDict objectForKey:[self.provinceNameArray objectAtIndex:sender.index]];
     NSMutableArray *cityArr = [[NSMutableArray alloc] init];
-    NSString *provinceId = [[self.provinceArray objectAtIndex:sender.index] provinceid];
+    NSString *provinceId = [[self.provinceArray objectAtIndex:sender.indexRow] provinceid];
     [[self.areaInfoDict objectForKey:provinceId] enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
         [cityArr addObject:city];
     }];

@@ -35,5 +35,6 @@
 @property (nonatomic, retain) NSMutableDictionary *contactDictSortByAlpha;
 
 - (void)getInvestmentUserList;
+- (void)setProvinceIdAndCityIdOfCity:(NSString *)city;
 
 @end
