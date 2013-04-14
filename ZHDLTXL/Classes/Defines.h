@@ -50,5 +50,7 @@ typedef struct
 
 #define kCityChangedNotification @"CityChangedNotification"
 #define kInvestmentUserListRefreshed @"investmentUserListRefreshed"
+#define kSendMessageAddFriendNotification @"kSendMessageAddFriendNotification"
+#define kRegistSuccedd @"kRegistSuccedd"
 
 #endif

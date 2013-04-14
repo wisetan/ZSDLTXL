@@ -24,6 +24,9 @@
 @property (nonatomic, assign) NSInteger currentCellButtonIndex;
 @property (nonatomic, retain) CLLocationManager *locationManager;
 
+@property (nonatomic, retain) UILabel *areaLabel;
+@property (nonatomic, retain) UILabel *loginLabel;
+
 @property (nonatomic, assign) BOOL hasRegisted;
 @property (nonatomic, copy) NSString *currentCity;
 @property (nonatomic, copy) NSString *originCity;
@@ -36,5 +39,6 @@
 
 - (void)getInvestmentUserList;
 - (void)setProvinceIdAndCityIdOfCity:(NSString *)city;
+- (BOOL)isLogined;
 
 @end

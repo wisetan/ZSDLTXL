@@ -17,6 +17,7 @@
 @property (nonatomic, retain) NSString *residentArea;
 @property (nonatomic, retain) NSString *comment;
 @property (nonatomic, retain) NSDictionary *contactDict;
+@property (nonatomic, retain) Contact *contact;
 
 
 @end

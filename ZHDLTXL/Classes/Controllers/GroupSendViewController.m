@@ -32,8 +32,7 @@
     [super viewDidLoad];
 	
     self.title = @"群发人员";
-//    self.selectedContactArray = [[NSMutableArray new] autorelease];
-    self.selectedContactDict = [[NSMutableDictionary new] autorelease];
+    self.selectedContactArray = [[NSMutableArray new] autorelease];
     self.contactTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-44-45) style:UITableViewStylePlain];
     self.contactTableView.delegate = self;
     self.contactTableView.dataSource = self;
@@ -81,7 +80,9 @@
 
 - (void)confirmSelect:(UIButton *)sender
 {
-    NSLog(@"select contact: %@", self.selectedContactDict);
+    NSLog(@"select contact: %@", self.selectedContactArray);
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSendMessageAddFriendNotification object:self.selectedContactArray];
+    [self popVC:nil];
 }
 
 
@@ -122,33 +123,33 @@
     if (nil == cell) {
         cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
     }
-    cell.selectionStyle = UITableViewCellEditingStyleNone;
-    //    cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
-    
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-//    NSString *imageUrl = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] picturelinkurl];
-//    
-//    
-//    [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
-    
+//    CellTapGestureRecognizer *tap = [[CellTapGestureRecognizer alloc] initWithTarget:self action:@selector(selectContact:)];
+//    tap.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+//    tap.indexRow = indexPath.row;
+//    tap.indexSection = indexPath.section;
+//    cell.unSelectedImage.userInteractionEnabled = YES;
+//    [cell.unSelectedImage addGestureRecognizer:tap];
     if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
         cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
     }
     
-    CellTapGestureRecognizer *tap = [[CellTapGestureRecognizer alloc] initWithTarget:self action:@selector(selectContact:)];
-    tap.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-    tap.indexKey = indexKey;
-    tap.indexRow = indexPath.row;
-    tap.indexRow = indexPath.section;
-//    tap.userId = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] userid];
-    cell.unSelectedImage.userInteractionEnabled = YES;
-    [cell.unSelectedImage addGestureRecognizer:tap];
+//    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexPath] objectAtIndex:indexPath.row];
+//    if ([[self.selectedContactDict allKeys] containsObject:[NSNumber numberWithLong:contact.userid]]
+//        && !cell.unSelectedImage.isSelected) {
+//        [[[cell.unSelectedImage subviews] objectAtIndex:0] removeFromSuperview];
+//    }
     
-//    cell.selectButton.indexKey = indexKey;
-//    cell.selectButton.indexRow = indexPath.row;
-//    [cell.selectButton setImage:[UIImage imageNamed:@"unselected.png"] forState:UIControlStateNormal];
-//    [cell.selectButton setImage:nil forState:UIControlStateHighlighted];
-//    [cell.selectButton addTarget:self action:@selector(selectContact:) forControlEvents:UIControlEventTouchUpInside];
+    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+    if ([self.selectedContactArray containsObject:contact]) {
+        cell.unSelectedImage.image = [UIImage imageNamed:@"selected.png"];
+    }
+    else{
+        cell.unSelectedImage.image = [UIImage imageNamed:@"unselected.png"];
+    }
+    
+    
+    cell.selectionStyle = UITableViewCellEditingStyleNone;
     
     return cell;
 }
@@ -163,29 +164,45 @@
     return UITableViewAutomaticDimension;
 }
 
-- (void)selectContact:(CellTapGestureRecognizer *)sender
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSNumber *userId = [NSNumber numberWithLong:sender.contact.userid];
-    if ([self.selectedContactDict objectForKey:userId]) {
-        [self.selectedContactDict removeObjectForKey:userId];
+    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+    if ([self.selectedContactArray containsObject:contact]) {
+        [self.selectedContactArray removeObject:contact];
     }
     else{
-        [self.selectedContactDict setObject:sender.contact forKey:userId];
+        [self.selectedContactArray addObject:contact];
     }
+    [self.contactTableView reloadData];
     
-    
-    BOOL isSelected = [(SelectImageView *)sender.view isSelected];
-    if (!isSelected) {
-        UIImageView *selectedImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"selected.png"]];
-        selectedImage.frame = CGRectMake(0, 0, sender.view.frame.size.width, sender.view.frame.size.height);
-        [(SelectImageView *)sender.view addSubview:selectedImage];
-    }
-    else{
-        [[[sender.view subviews] objectAtIndex:0] removeFromSuperview];
-    }
-    ((SelectImageView *)sender.view).isSelected = !isSelected;
-
 }
+
+//- (void)selectContact:(CellTapGestureRecognizer *)sender
+//{
+//    NSNumber *userId = [NSNumber numberWithLong:sender.contact.userid];
+//    if ([self.selectedContactDict objectForKey:userId]) {
+//        [self.selectedContactDict removeObjectForKey:userId];
+//    }
+//    else{
+//        [self.selectedContactDict setObject:sender.contact forKey:userId];
+//    }
+//    
+//    
+//    SelectImageView *selectedImageView = (SelectImageView *)sender.view;
+//    
+//    BOOL isSelected = [selectedImageView isSelected];
+//    if (!isSelected) {
+//        UIImageView *selectedImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"selected.png"]];
+//        selectedImage.frame = CGRectMake(0, 0, sender.view.frame.size.width, sender.view.frame.size.height);
+//        [selectedImageView addSubview:selectedImage];
+//    }
+//    else{
+//        [[[sender.view subviews] objectAtIndex:0] removeFromSuperview];
+//    }
+//    selectedImageView.isSelected = !isSelected;
+//
+//}
 
 
 

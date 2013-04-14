@@ -17,7 +17,7 @@
 @property (nonatomic, retain) UIButton *confirmSelectButton;
 @property (nonatomic, retain) UIButton *backBarButton;
 
-@property (nonatomic, retain) NSMutableDictionary *selectedContactDict;
+//@property (nonatomic, retain) NSMutableDictionary *selectedContactDict;
 
 
 @end

@@ -14,6 +14,9 @@
 		352F042617153DAE00949A96 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 352F042517153DAE00949A96 /* icon@2x.png */; };
 		352F042917153F1800949A96 /* SendEmailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 352F042817153F1800949A96 /* SendEmailViewController.m */; };
 		352F042C17154A8100949A96 /* ChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 352F042B17154A8100949A96 /* ChatViewController.m */; };
+		3553FD1E171ACE35002E6823 /* MyHomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3553FD1C171ACE34002E6823 /* MyHomePageViewController.m */; };
+		3553FD22171AD405002E6823 /* PersonalInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3553FD21171AD405002E6823 /* PersonalInfoCell.m */; };
+		3553FD24171AD426002E6823 /* PersonalInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3553FD23171AD426002E6823 /* PersonalInfoCell.xib */; };
 		356A211B1715608F00C56D8A /* input-bar-cyan.png in Resources */ = {isa = PBXBuildFile; fileRef = 356A21191715608E00C56D8A /* input-bar-cyan.png */; };
 		356A211C1715608F00C56D8A /* input-bar-cyan@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 356A211A1715608E00C56D8A /* input-bar-cyan@2x.png */; };
 		356A21241715694C00C56D8A /* input-field-cyan.png in Resources */ = {isa = PBXBuildFile; fileRef = 356A21231715694C00C56D8A /* input-field-cyan.png */; };
@@ -159,6 +162,7 @@
 		35C87CDC1719630300CB34F0 /* GroupSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C87CDB1719630200CB34F0 /* GroupSendViewController.m */; };
 		35C87CDF1719845000CB34F0 /* SelectImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C87CDE1719844F00CB34F0 /* SelectImageView.m */; };
 		35C87CE21719860800CB34F0 /* cellTapGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C87CE11719860800CB34F0 /* cellTapGestureRecognizer.m */; };
+		35F198BC171A975E0023C2B5 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35F198BB171A975E0023C2B5 /* MessageUI.framework */; };
 		35F1D0BF17154F660004F069 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35F1D0BE17154F660004F069 /* AudioToolbox.framework */; };
 		35F1D0EE17154F790004F069 /* JSBubbleMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F1D0C217154F790004F069 /* JSBubbleMessageCell.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		35F1D0EF17154F790004F069 /* JSBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F1D0C417154F790004F069 /* JSBubbleView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -208,6 +212,11 @@
 		352F042817153F1800949A96 /* SendEmailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SendEmailViewController.m; sourceTree = "<group>"; };
 		352F042A17154A8100949A96 /* ChatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatViewController.h; sourceTree = "<group>"; };
 		352F042B17154A8100949A96 /* ChatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatViewController.m; sourceTree = "<group>"; };
+		3553FD1B171ACE33002E6823 /* MyHomePageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyHomePageViewController.h; sourceTree = "<group>"; };
+		3553FD1C171ACE34002E6823 /* MyHomePageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyHomePageViewController.m; sourceTree = "<group>"; };
+		3553FD20171AD405002E6823 /* PersonalInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersonalInfoCell.h; path = "Custom Views/PersonalInfoCell.h"; sourceTree = "<group>"; };
+		3553FD21171AD405002E6823 /* PersonalInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PersonalInfoCell.m; path = "Custom Views/PersonalInfoCell.m"; sourceTree = "<group>"; };
+		3553FD23171AD426002E6823 /* PersonalInfoCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PersonalInfoCell.xib; sourceTree = "<group>"; };
 		356A21191715608E00C56D8A /* input-bar-cyan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "input-bar-cyan.png"; sourceTree = "<group>"; };
 		356A211A1715608E00C56D8A /* input-bar-cyan@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "input-bar-cyan@2x.png"; sourceTree = "<group>"; };
 		356A21231715694C00C56D8A /* input-field-cyan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "input-field-cyan.png"; sourceTree = "<group>"; };
@@ -423,6 +432,7 @@
 		35C87CDE1719844F00CB34F0 /* SelectImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SelectImageView.m; path = "Custom Views/SelectImageView.m"; sourceTree = "<group>"; };
 		35C87CE01719860600CB34F0 /* cellTapGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cellTapGestureRecognizer.h; path = "Custom Views/cellTapGestureRecognizer.h"; sourceTree = "<group>"; };
 		35C87CE11719860800CB34F0 /* cellTapGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = cellTapGestureRecognizer.m; path = "Custom Views/cellTapGestureRecognizer.m"; sourceTree = "<group>"; };
+		35F198BB171A975E0023C2B5 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		35F1D0BE17154F660004F069 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		35F1D0C117154F790004F069 /* JSBubbleMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSBubbleMessageCell.h; sourceTree = "<group>"; };
 		35F1D0C217154F790004F069 /* JSBubbleMessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSBubbleMessageCell.m; sourceTree = "<group>"; };
@@ -473,6 +483,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				35F198BC171A975E0023C2B5 /* MessageUI.framework in Frameworks */,
 				35C87CD9171939E100CB34F0 /* MapKit.framework in Frameworks */,
 				35C87CD7171939A300CB34F0 /* ImageIO.framework in Frameworks */,
 				35C87CD51719396300CB34F0 /* CoreImage.framework in Frameworks */,
@@ -629,6 +640,7 @@
 		359703D017126AA1001980B5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				35F198BB171A975E0023C2B5 /* MessageUI.framework */,
 				35C87CD8171939E100CB34F0 /* MapKit.framework */,
 				35C87CD6171939A300CB34F0 /* ImageIO.framework */,
 				35C87CD41719396300CB34F0 /* CoreImage.framework */,
@@ -736,6 +748,8 @@
 				35A0F7691717B7D400720103 /* OtherHomepageViewController.m */,
 				35C87CDA1719630200CB34F0 /* GroupSendViewController.h */,
 				35C87CDB1719630200CB34F0 /* GroupSendViewController.m */,
+				3553FD1B171ACE33002E6823 /* MyHomePageViewController.h */,
+				3553FD1C171ACE34002E6823 /* MyHomePageViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -892,6 +906,9 @@
 				35C87CDE1719844F00CB34F0 /* SelectImageView.m */,
 				35C87CE01719860600CB34F0 /* cellTapGestureRecognizer.h */,
 				35C87CE11719860800CB34F0 /* cellTapGestureRecognizer.m */,
+				3553FD20171AD405002E6823 /* PersonalInfoCell.h */,
+				3553FD21171AD405002E6823 /* PersonalInfoCell.m */,
+				3553FD23171AD426002E6823 /* PersonalInfoCell.xib */,
 			);
 			name = CustomViews;
 			sourceTree = "<group>";
@@ -1156,6 +1173,7 @@
 				35963CE81716E8CB00AAA4D8 /* submit.png in Resources */,
 				35963CE91716E8CB00AAA4D8 /* submit@2x.png in Resources */,
 				35A0F75E17179C7700720103 /* ContactCell.xib in Resources */,
+				3553FD24171AD426002E6823 /* PersonalInfoCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1243,6 +1261,8 @@
 				35C87CDC1719630300CB34F0 /* GroupSendViewController.m in Sources */,
 				35C87CDF1719845000CB34F0 /* SelectImageView.m in Sources */,
 				35C87CE21719860800CB34F0 /* cellTapGestureRecognizer.m in Sources */,
+				3553FD1E171ACE35002E6823 /* MyHomePageViewController.m in Sources */,
+				3553FD22171AD405002E6823 /* PersonalInfoCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

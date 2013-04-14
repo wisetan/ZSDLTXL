@@ -7,6 +7,8 @@
 //
 
 #import "SendEmailViewController.h"
+#import "GroupSendViewController.h"
+
 
 @interface SendEmailViewController ()
 
@@ -30,6 +32,8 @@
 {
     [super viewDidLoad];
 	self.title = @"发送邮件";
+    [self addObserver];
+    self.contactArray = [[NSMutableArray alloc] init];
     
     //bg image
     UIImageView *bgImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"debut_light.png"]];
@@ -98,7 +102,7 @@
     
     //name label
     self.nameLabel = [[[UILabel alloc] initWithFrame:CGRectMake(90, 8, 120, 40)] autorelease];
-    self.nameLabel.text = @"张三";
+    self.nameLabel.text = self.currentContact.username;
     self.nameLabel.font = [UIFont systemFontOfSize:14];
     self.nameLabel.textColor = [UIColor colorWithRed:98.f/255.f green:98.f/255.f blue:98.f/255.f alpha:1.f];
     self.nameLabel.backgroundColor = [UIColor clearColor];
@@ -168,11 +172,18 @@
 - (void)cancelSend:(UIButton *)sender
 {
     NSLog(@"cancel send message");
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)addContact:(UIButton *)sender
 {
     NSLog(@"add contact");
+    [self.contactArray removeAllObjects];
+    [self.contactArray addObject:self.currentContact];
+    GroupSendViewController *groupSendVC = [[GroupSendViewController alloc] init];
+    groupSendVC.contactDictSortByAlpha = self.contactDict;
+    [self.navigationController pushViewController:groupSendVC animated:YES];
+    [groupSendVC release];
 }
 
 //hide keyboard
@@ -191,6 +202,32 @@
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
     textView.frame = CGRectMake(textView.frame.origin.x, textView.frame.origin.y, textView.frame.size.width, self.textViewHeight);
+}
+
+
+#pragma mark - add observer
+
+- (void)addObserver
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addContactFinished:) name:kSendMessageAddFriendNotification object:nil];
+}
+
+- (void)addContactFinished:(NSNotification *)noti
+{
+    [noti.object enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+        if (![self.contactArray containsObject:contact]) {
+            [self.contactArray addObject:contact];
+        }
+    }];
+    NSMutableString *allSendTargetName = [[NSMutableString alloc] init];
+    [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+        [allSendTargetName appendFormat:@"%@、", contact.username];
+    }];
+    if ([allSendTargetName isValid]) {
+        allSendTargetName = (NSMutableString *)[allSendTargetName substringToIndex:[allSendTargetName length] - 1];
+    }
+    NSLog(@"all name: %@", allSendTargetName);
+    self.nameLabel.text = allSendTargetName;
 }
 
 - (void)didReceiveMemoryWarning

@@ -240,12 +240,14 @@
             NSString *uid = [[json objForKey:@"Userid"] stringValue];
             [kAppDelegate setUserId:uid];
             [PersistenceHelper setData:@"YES" forKey:@"autoLogin"]; //注册时默认自动登陆
+            [PersistenceHelper setData:@"YES" forKey:@"isLogined"];
             [PersistenceHelper setData:uid forKey:@"userid"];   //宝通号
             [PersistenceHelper setData:telNum forKey:@"telnum"];
             [PersistenceHelper setData:password forKey:@"password"];
             [self.navigationController popToRootViewControllerAnimated:YES];
             kAppDelegate.userId = uid;
 //            [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:kRegistSucceed object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kRegistSuccedd object:nil];
         } else {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];

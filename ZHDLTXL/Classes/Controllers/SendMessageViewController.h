@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "Contact.h"
+#import <MessageUI/MessageUI.h>
 
-@interface SendMessageViewController : UIViewController <UITextViewDelegate>
+@interface SendMessageViewController : UIViewController <UITextViewDelegate, MFMessageComposeViewControllerDelegate>
 
 @property (nonatomic, retain) UIButton *sendButton;
 @property (nonatomic, retain) UIButton *cancelButton;
@@ -21,7 +22,7 @@
 @property (nonatomic, retain) UIPlaceHolderTextView *messageTextView;
 @property (nonatomic, retain) UIImageView *textViewBgImage;
 @property (nonatomic, retain) Contact *currentContact;
-@property (nonatomic, retain) NSArray *contactArray;
+@property (nonatomic, retain) NSMutableArray *contactArray;
 @property (nonatomic, retain) UIButton *addButton;
 
 @property (nonatomic, retain) NSDictionary *contactDict;

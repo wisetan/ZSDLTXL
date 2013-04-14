@@ -16,6 +16,7 @@
 #import "ChatViewController.h"
 #import "OtherHomepageViewController.h"
 #import "UIImageView+WebCache.h"
+#import "MyHomePageViewController.h"
 
 @interface RootViewController ()
 
@@ -79,22 +80,22 @@
     self.loginButton.frame = CGRectMake(5, 5, 101, 34);
     [self.loginButton setTitle:@"登录" forState:UIControlStateNormal];
     [self.loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    UILabel *loginLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)];
+    self.loginLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)];
     
     if (self.hasRegisted) {
-        loginLabel.text = @"我的主页";
+        self.loginLabel.text = @"我的主页";
         [self.loginButton addTarget:self action:@selector(showMyHomepage:) forControlEvents:UIControlEventTouchUpInside];
     }
     else{
         [self.loginButton addTarget:self action:@selector(login:) forControlEvents:UIControlEventTouchUpInside];
-        loginLabel.text = @"登录";
+        self.loginLabel.text = @"登录";
     }
     
-    [loginLabel setFont:[UIFont systemFontOfSize:16]];
-    loginLabel.backgroundColor = [UIColor clearColor];
-    loginLabel.textColor = [UIColor whiteColor];
-    loginLabel.textAlignment = NSTextAlignmentCenter;
-    [self.loginButton addSubview:loginLabel];
+    [self.loginLabel setFont:[UIFont systemFontOfSize:16]];
+    self.loginLabel.backgroundColor = [UIColor clearColor];
+    self.loginLabel.textColor = [UIColor whiteColor];
+    self.loginLabel.textAlignment = NSTextAlignmentCenter;
+    [self.loginButton addSubview:self.loginLabel];
     [self.bottomImageView addSubview:self.loginButton];
     
     
@@ -127,13 +128,13 @@
     [self.areaButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [self.areaButton addTarget:self action:@selector(selectArea:) forControlEvents:UIControlEventTouchUpInside];
     self.areaButton.frame = CGRectMake(0, 0, 101, 34);
-    UILabel *areaLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, 101, 34)];
-    areaLabel.text = @"北京";
-    [areaLabel setFont:[UIFont systemFontOfSize:16]];
-    areaLabel.backgroundColor = [UIColor clearColor];
-    areaLabel.textColor = [UIColor whiteColor];
-    areaLabel.textAlignment = NSTextAlignmentCenter;
-    [self.areaButton addSubview:areaLabel];
+    self.areaLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, 101, 34)];
+    self.areaLabel.text = self.currentCity;
+    [self.areaLabel setFont:[UIFont systemFontOfSize:16]];
+    self.areaLabel.backgroundColor = [UIColor clearColor];
+    self.areaLabel.textColor = [UIColor whiteColor];
+    self.areaLabel.textAlignment = NSTextAlignmentCenter;
+    [self.areaButton addSubview:self.areaLabel];
     
     UIImageView *areaIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"location_icon.png"]];
     areaIcon.frame = CGRectMake(7, 3, 28, 28);
@@ -162,8 +163,14 @@
     UIBarButtonItem *rBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.friendButton];
     [self.navigationItem setRightBarButtonItem:rBarButton];
     
-    [self getInvestmentUserList];
+//    [self getInvestmentUserList];
     
+}
+
+- (BOOL)isLogined
+{
+    NSString *isLogined = [PersistenceHelper dataForKey:@"isLogined"];
+    return [isLogined isEqualToString:@"YES"];
 }
 
 - (void)addContactHimView
@@ -201,6 +208,7 @@
 - (void)getInvestmentUserList
 {
     [self setProvinceIdAndCityIdOfCity:self.currentCity];
+    NSLog(@"current city; %@", self.currentCity);
     //parameter: provinceid, cityid, userid(用来取备注),
     long userId = [kAppDelegate.userId longLongValue];
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:self.curProvinceId, @"provinceid",
@@ -232,7 +240,8 @@
             }];
             
 //            NSLog(@"contact array %@", contactArray);
-            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:contactArray];
+            NSDictionary *contactDict = [NSDictionary dictionaryWithObjectsAndKeys:self.currentCity, @"cityName", contactArray, @"contactArray", nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:contactDict];
             [contactArray release];
         } else {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
@@ -249,21 +258,33 @@
 - (void)login:(UIButton *)sender
 {
     NSLog(@"login");
-    LoginViewController *loginVC = nil;
-    if (IS_IPHONE_5) {
-        loginVC = [[LoginViewController alloc] initWithNibName:@"LoginViewController_ip5" bundle:nil];
+    if ([self isLogined]) {
+        //已经登录，进入我的主页
+        MyHomePageViewController *myHomeVC = [[MyHomePageViewController alloc] init];
+        [self.navigationController pushViewController:myHomeVC animated:YES];
+        [myHomeVC release];
     }
     else{
-        loginVC = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
+        LoginViewController *loginVC = nil;
+        if (IS_IPHONE_5) {
+            loginVC = [[LoginViewController alloc] initWithNibName:@"LoginViewController_ip5" bundle:nil];
+        }
+        else{
+            loginVC = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
+        }
+        
+        [self.navigationController pushViewController:loginVC animated:YES];
+        [loginVC release];
     }
-    
-    [self.navigationController pushViewController:loginVC animated:YES];
-    [loginVC release];
 }
 
 - (void)showMyHomepage:(UIButton *)sender
 {
     NSLog(@"我得主页");
+    MyHomePageViewController *myHomePageVC = [[MyHomePageViewController alloc] init];
+    [self.navigationController pushViewController:myHomePageVC animated:YES];
+    [myHomePageVC release];
+    
 }
 
 - (void)select:(UIButton *)sender
@@ -359,6 +380,7 @@
     NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
     homeVC.userName = username;
     homeVC.contactDict = self.contactDictSortByAlpha;
+    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     [self.navigationController pushViewController:homeVC animated:YES];
     [homeVC release];
 }
@@ -420,32 +442,42 @@
 {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(cityChanged:) name:kCityChangedNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(investmentUserListRefreshed:) name:kInvestmentUserListRefreshed object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(registSucceed:) name:kRegistSuccedd object:nil];
+}
+
+- (void)registSucceed:(NSNotification *)noti
+{
+    NSLog(@"regist succeed");
+    self.loginLabel.text = @"我的主页";
 }
 
 - (void)cityChanged:(NSNotification *)noti
 {
     NSString *newCity = (NSString *)[noti object];
     self.currentCity = newCity;
+    self.areaLabel.text = self.currentCity;
+    [self getInvestmentUserList];
 }
 
 - (void)investmentUserListRefreshed:(NSNotification *)noti
 {
 //    NSLog(@"__func__: %@", noti);
     [self.contactArray removeAllObjects];
-    [self.contactArray addObjectsFromArray:[noti object]];
+    [self.contactArray addObjectsFromArray:[[noti object] objectForKey:@"contactArray"]];
     //按字母分组
     UILocalizedIndexedCollation *theCollation = [UILocalizedIndexedCollation currentCollation];
     for (NSString *indexKey in [theCollation sectionTitles]) {
-        NSMutableArray *contactArrayTmp = [NSMutableArray new];
+        NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] init];
         [self.contactDictSortByAlpha setObject:contactArrayTmp forKey:indexKey];
-        [contactArrayTmp release];
+//        [contactArrayTmp release];
     }
         
     [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
         NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
         [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact];
     }];
-    
+    self.currentCity = [noti.object objectForKey:@"cityName"];
+    self.areaLabel.text = self.currentCity;
     [self.contactTableView reloadData];
 }
 

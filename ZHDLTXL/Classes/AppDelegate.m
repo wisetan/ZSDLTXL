@@ -34,15 +34,16 @@
         rootVC.hasRegisted = NO;
     }
     
-    if (![self.newCity isValid]) {
+    if (self.isGpsError) {
         self.newCity = @"北京";
     }
     
-    rootVC.currentCity = self.newCity ;
+    rootVC.currentCity = self.newCity;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:rootVC];
     self.window.rootViewController = nav;
     [rootVC release];
     [nav release];
+
     
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
@@ -140,11 +141,20 @@
         self.locationManager = [[[CLLocationManager alloc] init] autorelease];
         self.locationManager.delegate = self;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        self.locationManager.distanceFilter = 1000.f;
+        self.locationManager.distanceFilter = 10.f;
 	}
-    if ([CLLocationManager locationServicesEnabled]) {
+    if ([CLLocationManager locationServicesEnabled]   &&   [CLLocationManager authorizationStatus] != kCLAuthorizationStatusDenied) {
         [self.locationManager startUpdatingLocation];
-        [self getCurrentCity];
+        self.isGpsError = NO;
+//        [self getCurrentCity];
+    }
+    else{
+        self.isGpsError = YES;
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil
+                                                        message:@"请在系统设置中打开“定位服务”来允许“招商代理通讯录”确定您的位置"
+                                                       delegate:nil cancelButtonTitle:@"知道了"
+                                              otherButtonTitles:nil];
+        [alert show];
     }
 }
 
@@ -153,23 +163,46 @@
     [self.geocoder reverseGeocodeLocation: locationManager.location completionHandler:
      ^(NSArray *placemarks, NSError *error) {
          CLPlacemark *placemark = [placemarks objectAtIndex:0];
+         NSLog(@"place: %@", placemarks);
          self.newCity = placemark.locality;
+         NSLog(@"city: %@", placemark.locality);
      }];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
     CLGeocoder *geocoder = [[CLGeocoder alloc] init];
-
-    [geocoder reverseGeocodeLocation:manager.location completionHandler:^(NSArray *placemarks, NSError *error) {
+    CLLocationCoordinate2D coord = [[locations objectAtIndex:0] coordinate];
+    NSLog(@"lat: %f, lon: %f", coord.latitude, coord.longitude);
+    CLLocation *location = [[[CLLocation alloc] initWithLatitude:coord.latitude longitude:coord.longitude] autorelease];
+    
+    [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
         CLPlacemark *placemark = [placemarks objectAtIndex:0];
-        self.newCity = placemark.locality;
+        self.newCity = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
+        self.newCity = [self.newCity substringToIndex:[self.newCity length] -1];
+        if ([self cityChanged]) {
+            [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
+            NSLog(@"lastcity: %@, newCity: %@",self.lastCity, self.newCity);
+            self.lastCity = self.newCity;
+        }
+        NSLog(@"city: %@", self.newCity);
     }];
+    [manager stopUpdatingLocation];
 }
+
+//- (void)displayPlacemarks:(NSArray *)placemarks
+//{
+//    CLPlacemark *placemark = [placemarks objectAtIndex:0];
+//    NSLog(@"placemark, %@", placemark);
+//    NSLog(@"placemark dict: %@", placemark.addressDictionary);
+//    self.newCity = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
+//    NSLog(@"city: %@", self.newCity);
+//}
 
 - (BOOL)cityChanged
 {
-    return [self.lastCity isEqualToString:self.newCity];
+    NSLog(@"lastcity: %@, newCity: %@",self.lastCity, self.newCity);
+    return ![self.lastCity isEqualToString:self.newCity];
 }
 
 @end

@@ -11,5 +11,7 @@
 @interface SelectImageView : UIImageView
 
 @property (nonatomic, assign) BOOL isSelected;
+@property (nonatomic, assign) NSInteger indexSection;
+@property (nonatomic, assign) NSInteger indexRow;
 
 @end

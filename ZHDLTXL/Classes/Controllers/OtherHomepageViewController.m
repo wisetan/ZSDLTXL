@@ -100,6 +100,7 @@
     //contact him view
     ContactHimView *contactHimView = [[ContactHimView alloc] initWithFrame:CGRectMake(22.f, 160.f, 276.f, 55.f)];
     contactHimView.delegate = self;
+    contactHimView.contact = self.contact;
     [self.view addSubview:contactHimView];
     
     //comment
@@ -140,7 +141,7 @@
 - (void)addFriend:(UIButton *)sender
 {
     NSLog(@"添加好友");
-
+    
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -178,6 +179,7 @@
 {
     NSLog(@"send message");
     SendMessageViewController *smVC = [[SendMessageViewController alloc] init];
+    smVC.currentContact = contact;
     smVC.contactDict = self.contactDict;
     [self.navigationController pushViewController:smVC animated:YES];
     [smVC release];
@@ -187,6 +189,8 @@
 {
     NSLog(@"send email");
     SendEmailViewController *seVC = [[SendEmailViewController alloc] init];
+    seVC.currentContact = contact;
+    seVC.contactDict = self.contactDict;
     [self.navigationController pushViewController:seVC animated:YES];
     [seVC release];
 }

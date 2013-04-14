@@ -9,6 +9,7 @@
 #import "SendMessageViewController.h"
 #import "GroupSendViewController.h"
 
+
 @interface SendMessageViewController ()
 
 @property (nonatomic, assign) CGFloat textViewEditingHeight;
@@ -30,6 +31,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self addObserver];
+    self.contactArray = [[NSMutableArray new] autorelease];
+    [self.contactArray addObject:self.currentContact];
     
     self.title = @"发送短信";
     
@@ -100,7 +104,7 @@
     
     //name label
     self.nameLabel = [[[UILabel alloc] initWithFrame:CGRectMake(20, 50, 210, 40)] autorelease];
-    self.nameLabel.text = @"张三";
+    self.nameLabel.text = self.currentContact.username;
     self.nameLabel.font = [UIFont systemFontOfSize:15];
     self.nameLabel.textColor = [UIColor colorWithRed:98.f/255.f green:98.f/255.f blue:98.f/255.f alpha:1.f];
     self.nameLabel.backgroundColor = [UIColor clearColor];
@@ -153,16 +157,42 @@
 - (void)sendMessage:(UIButton *)sender
 {
     NSLog(@"send message");
+    NSMutableArray *telNumArray = [[NSMutableArray alloc] init];
+    [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+        [telNumArray addObject:contact.tel];
+    }];
+    
+    
+    MFMessageComposeViewController *controller = [[[MFMessageComposeViewController alloc] init] autorelease];
+    if([MFMessageComposeViewController canSendText])
+    {
+        controller.body = self.messageTextView.text;
+        controller.recipients = telNumArray;
+        controller.messageComposeDelegate = self;
+        [self presentViewController:controller animated:YES completion:^{
+            return ;
+        }];
+    }
+}
+
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
+{
+    [controller dismissViewControllerAnimated:YES completion:^{
+        NSLog(@"发送完成");
+    }];
 }
 
 - (void)cancelSend:(UIButton *)sender
 {
     NSLog(@"cancel send message");
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)addContact:(UIButton *)sender
 {
     NSLog(@"add contact");
+    [self.contactArray removeAllObjects];
+    [self.contactArray addObject:self.currentContact];
     GroupSendViewController *groupSendVC = [[GroupSendViewController alloc] init];
     groupSendVC.contactDictSortByAlpha = self.contactDict;
     [self.navigationController pushViewController:groupSendVC animated:YES];
@@ -187,6 +217,31 @@
     textView.frame = CGRectMake(textView.frame.origin.x, textView.frame.origin.y, textView.frame.size.width, self.textViewHeight);
 }
 
+#pragma mark - observer method
+
+- (void)addObserver
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addContactFinished:) name:kSendMessageAddFriendNotification object:nil];
+}
+
+- (void)addContactFinished:(NSNotification *)noti
+{
+    [noti.object enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+        if (![self.contactArray containsObject:contact]) {
+            [self.contactArray addObject:contact];
+        }
+    }];
+    NSMutableString *allSendTargetName = [[NSMutableString alloc] init];
+    [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+        [allSendTargetName appendFormat:@"%@、", contact.username];
+    }];
+    if ([allSendTargetName isValid]) {
+        allSendTargetName = (NSMutableString *)[allSendTargetName substringToIndex:[allSendTargetName length] - 1];
+    }
+    NSLog(@"all name: %@", allSendTargetName);
+    self.nameLabel.text = allSendTargetName;
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -196,13 +251,6 @@
 - (void)dealloc
 {
     [super dealloc];
-//    self.sendTargetLabel = nil;
-//    self.bottomImageView = nil;
-//    self.backBarButton = nil;
-//    self.nameLabel = nil;
-//    self.messageTextView = nil;
-//    self.textViewBgImage = nil;
-    
 }
 
 @end

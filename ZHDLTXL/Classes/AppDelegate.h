@@ -24,16 +24,16 @@
     double gLon;
     NSString *uuid;
 
-    UIImage *pickedPhotoImage;
+//    UIImage *pickedPhotoImage;
     NSString *hotspotContent;
     NSString *userId;
     BOOL shakeDetected;
-    BOOL alreadyCheckin;
+//    BOOL alreadyCheckin;
     NSDate *lastUpdateDate;
     NSInteger requestIndex;
     NSInteger lastMessageCount;
     NSInteger lastInnerMessageCount;
-    NSString *tokenAsString;
+//    NSString *tokenAsString;
     
 }
 
@@ -41,13 +41,13 @@
 
 
 
-@property (nonatomic, copy)   NSString *tokenAsString;
+//@property (nonatomic, copy)   NSString *tokenAsString;
 
-@property (nonatomic, assign) BOOL alreadyCheckin;
-@property (nonatomic, retain) NSDate *lastUpdateDate;
+//@property (nonatomic, assign) BOOL alreadyCheckin;
+//@property (nonatomic, retain) NSDate *lastUpdateDate;
 @property (nonatomic, copy)   NSString *hotspotContent;
 
-@property (nonatomic, retain) UIImage *pickedPhotoImage;
+//@property (nonatomic, retain) UIImage *pickedPhotoImage;
 
 @property (nonatomic, assign) BOOL isGpsError;
 @property (nonatomic, assign) double gLat;

@@ -129,9 +129,11 @@
                 [contact release];
             }];
             
+            NSString *cityName = [[self.cityArray objectAtIndex:sender.indexRow] cityname];
+            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityName, @"cityName", contactArray, @"contactArray", nil];
             
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:contactArray];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
             
             [self.navigationController popToRootViewControllerAnimated:YES];
             

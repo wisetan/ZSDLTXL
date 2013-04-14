@@ -21,8 +21,11 @@
 @property (nonatomic, retain) UIPlaceHolderTextView *messageTextView;
 @property (nonatomic, retain) UIImageView *textViewBgImage;
 @property (nonatomic, retain) Contact *currentContact;
-@property (nonatomic, retain) NSArray *contactArray;
+@property (nonatomic, retain) NSMutableArray *contactArray;
 @property (nonatomic, retain) UIButton *addButton;
 @property (nonatomic, retain) UITextField *emailTitleTextField;
+
+@property (nonatomic, retain) NSDictionary *contactDict;
+
 
 @end
