@@ -17,5 +17,6 @@
 #import "NSString+MD5Addition.h"
 #import "UIDevice+IdentifierAddition.h"
 #import "NSNotificationCenter+MainThread.h"
+#import "NSString+Size.h"
 
 #endif

@@ -56,6 +56,8 @@
 @property (nonatomic, retain) CLLocationManager *locationManager;
 @property (nonatomic, copy)   NSString *uuid;
 @property (nonatomic, copy)   NSString *userId;
+@property (nonatomic, copy)   NSString *cityId;
+@property (nonatomic, copy)   NSString *provinceId;
 @property (nonatomic, retain) NSMutableDictionary *reviewedNews;
 
 @property (nonatomic, copy) NSString *lastCity;

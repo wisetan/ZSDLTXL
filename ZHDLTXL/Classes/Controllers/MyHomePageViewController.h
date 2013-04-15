@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ContactHimView.h"
 
-@interface MyHomePageViewController : UIViewController
+@interface MyHomePageViewController : UIViewController <ContactHimViewDelegate, UIAlertViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic, retain) UIButton *backBarButton;
 
@@ -24,5 +25,15 @@
 
 
 @property (retain, nonatomic) UIButton *modifyButton;
+@property (retain, nonatomic) NSMutableArray *residentArray;
+@property (retain, nonatomic) NSMutableArray *preferArray;
+@property (retain, nonatomic) NSMutableArray *residentImageArray;
+@property (retain, nonatomic) NSMutableArray *preferImageArray;
+
+@property (nonatomic, retain) UIView *modifyView;
+
+@property (nonatomic, retain) UITextField *nameField;
+@property (nonatomic, retain) UITextField *telField;
+@property (nonatomic, retain) UITextField *mailField;
 
 @end

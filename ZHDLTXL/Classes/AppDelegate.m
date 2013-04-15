@@ -181,6 +181,9 @@
         self.newCity = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
         self.newCity = [self.newCity substringToIndex:[self.newCity length] -1];
         if ([self cityChanged]) {
+            if (![self.newCity isValid]) {
+                self.newCity = @"北京";
+            }
             [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
             NSLog(@"lastcity: %@, newCity: %@",self.lastCity, self.newCity);
             self.lastCity = self.newCity;

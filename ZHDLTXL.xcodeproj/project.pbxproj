@@ -66,6 +66,18 @@
 		35963CF91716EF3900AAA4D8 /* NSString+MD5Addition.m in Sources */ = {isa = PBXBuildFile; fileRef = 35963CF71716EF3900AAA4D8 /* NSString+MD5Addition.m */; };
 		35963D001716F01B00AAA4D8 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 35963CFD1716F01B00AAA4D8 /* JSONKit.m */; };
 		35963D041716F9E800AAA4D8 /* UIDevice+IdentifierAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 35963D031716F9E700AAA4D8 /* UIDevice+IdentifierAddition.m */; };
+		359671B3171BBFB300B5D5CD /* SelectPreferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671B2171BBFB300B5D5CD /* SelectPreferViewController.m */; };
+		359671B6171BC14B00B5D5CD /* Pharmacology.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671B5171BC14B00B5D5CD /* Pharmacology.m */; };
+		359671B9171BC81F00B5D5CD /* PharCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671B8171BC81F00B5D5CD /* PharCell.m */; };
+		359671BB171BC83400B5D5CD /* PharCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 359671BA171BC83400B5D5CD /* PharCell.xib */; };
+		359671BF171BE21000B5D5CD /* ModifyInfoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 359671BE171BE20F00B5D5CD /* ModifyInfoView.xib */; };
+		359671C2171BEAB900B5D5CD /* ModifyInfoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671C1171BEAB900B5D5CD /* ModifyInfoView.m */; };
+		359671C6171BF34000B5D5CD /* MAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671C5171BF34000B5D5CD /* MAlertView.m */; };
+		359671C9171C02DB00B5D5CD /* preferInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671C8171C02DB00B5D5CD /* preferInfo.m */; };
+		359671CF171C1A3B00B5D5CD /* MyFriendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671CE171C1A3900B5D5CD /* MyFriendViewController.m */; };
+		359671D3171C340100B5D5CD /* SettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671D1171C33FE00B5D5CD /* SettingViewController.m */; };
+		359671D7171C3A8A00B5D5CD /* MenuCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 359671D6171C3A8900B5D5CD /* MenuCell.m */; };
+		359671D9171C3AA000B5D5CD /* MenuCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 359671D8171C3A9F00B5D5CD /* MenuCell.xib */; };
 		359703D217126AA1001980B5 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 359703D117126AA1001980B5 /* UIKit.framework */; };
 		359703D417126AA1001980B5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 359703D317126AA1001980B5 /* Foundation.framework */; };
 		359703D617126AA1001980B5 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 359703D517126AA1001980B5 /* CoreGraphics.framework */; };
@@ -297,6 +309,27 @@
 		35963CFD1716F01B00AAA4D8 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
 		35963D021716F9E700AAA4D8 /* UIDevice+IdentifierAddition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+IdentifierAddition.h"; sourceTree = "<group>"; };
 		35963D031716F9E700AAA4D8 /* UIDevice+IdentifierAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+IdentifierAddition.m"; sourceTree = "<group>"; };
+		359671B1171BBFB200B5D5CD /* SelectPreferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectPreferViewController.h; sourceTree = "<group>"; };
+		359671B2171BBFB300B5D5CD /* SelectPreferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SelectPreferViewController.m; sourceTree = "<group>"; };
+		359671B4171BC14B00B5D5CD /* Pharmacology.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pharmacology.h; sourceTree = "<group>"; };
+		359671B5171BC14B00B5D5CD /* Pharmacology.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Pharmacology.m; sourceTree = "<group>"; };
+		359671B7171BC81F00B5D5CD /* PharCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PharCell.h; path = "Custom Views/PharCell.h"; sourceTree = "<group>"; };
+		359671B8171BC81F00B5D5CD /* PharCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PharCell.m; path = "Custom Views/PharCell.m"; sourceTree = "<group>"; };
+		359671BA171BC83400B5D5CD /* PharCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PharCell.xib; sourceTree = "<group>"; };
+		359671BE171BE20F00B5D5CD /* ModifyInfoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModifyInfoView.xib; sourceTree = "<group>"; };
+		359671C0171BEAB900B5D5CD /* ModifyInfoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ModifyInfoView.h; path = "Custom Views/ModifyInfoView.h"; sourceTree = "<group>"; };
+		359671C1171BEAB900B5D5CD /* ModifyInfoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ModifyInfoView.m; path = "Custom Views/ModifyInfoView.m"; sourceTree = "<group>"; };
+		359671C4171BF34000B5D5CD /* MAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MAlertView.h; sourceTree = "<group>"; };
+		359671C5171BF34000B5D5CD /* MAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MAlertView.m; sourceTree = "<group>"; };
+		359671C7171C02DA00B5D5CD /* preferInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = preferInfo.h; sourceTree = "<group>"; };
+		359671C8171C02DB00B5D5CD /* preferInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = preferInfo.m; sourceTree = "<group>"; };
+		359671CD171C1A3900B5D5CD /* MyFriendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyFriendViewController.h; sourceTree = "<group>"; };
+		359671CE171C1A3900B5D5CD /* MyFriendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyFriendViewController.m; sourceTree = "<group>"; };
+		359671D0171C33FD00B5D5CD /* SettingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingViewController.h; sourceTree = "<group>"; };
+		359671D1171C33FE00B5D5CD /* SettingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingViewController.m; sourceTree = "<group>"; };
+		359671D5171C3A8800B5D5CD /* MenuCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MenuCell.h; path = "Custom Views/MenuCell.h"; sourceTree = "<group>"; };
+		359671D6171C3A8900B5D5CD /* MenuCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MenuCell.m; path = "Custom Views/MenuCell.m"; sourceTree = "<group>"; };
+		359671D8171C3A9F00B5D5CD /* MenuCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MenuCell.xib; sourceTree = "<group>"; };
 		359703CE17126AA1001980B5 /* ZHDLTXL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZHDLTXL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		359703D117126AA1001980B5 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		359703D317126AA1001980B5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -509,6 +542,10 @@
 				35963CAD1716A2D400AAA4D8 /* ProvinceInfo.m */,
 				35963CAF1716A37400AAA4D8 /* CityInfo.h */,
 				35963CB01716A37400AAA4D8 /* CityInfo.m */,
+				359671B4171BC14B00B5D5CD /* Pharmacology.h */,
+				359671B5171BC14B00B5D5CD /* Pharmacology.m */,
+				359671C7171C02DA00B5D5CD /* preferInfo.h */,
+				359671C8171C02DB00B5D5CD /* preferInfo.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -616,6 +653,15 @@
 				35963CFD1716F01B00AAA4D8 /* JSONKit.m */,
 			);
 			path = JSONKit;
+			sourceTree = "<group>";
+		};
+		359671C3171BF33F00B5D5CD /* MAlertView */ = {
+			isa = PBXGroup;
+			children = (
+				359671C4171BF34000B5D5CD /* MAlertView.h */,
+				359671C5171BF34000B5D5CD /* MAlertView.m */,
+			);
+			path = MAlertView;
 			sourceTree = "<group>";
 		};
 		359703C517126AA1001980B5 = {
@@ -750,6 +796,12 @@
 				35C87CDB1719630200CB34F0 /* GroupSendViewController.m */,
 				3553FD1B171ACE33002E6823 /* MyHomePageViewController.h */,
 				3553FD1C171ACE34002E6823 /* MyHomePageViewController.m */,
+				359671B1171BBFB200B5D5CD /* SelectPreferViewController.h */,
+				359671B2171BBFB300B5D5CD /* SelectPreferViewController.m */,
+				359671CD171C1A3900B5D5CD /* MyFriendViewController.h */,
+				359671CE171C1A3900B5D5CD /* MyFriendViewController.m */,
+				359671D0171C33FD00B5D5CD /* SettingViewController.h */,
+				359671D1171C33FE00B5D5CD /* SettingViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -888,6 +940,7 @@
 		35B786AB1713E2B60027224F /* CustomViews */ = {
 			isa = PBXGroup;
 			children = (
+				359671C3171BF33F00B5D5CD /* MAlertView */,
 				35963CB61716A76200AAA4D8 /* MyButton.h */,
 				35963CB71716A76200AAA4D8 /* MyButton.m */,
 				35B786A31713D6BB0027224F /* AreaCell.h */,
@@ -909,6 +962,15 @@
 				3553FD20171AD405002E6823 /* PersonalInfoCell.h */,
 				3553FD21171AD405002E6823 /* PersonalInfoCell.m */,
 				3553FD23171AD426002E6823 /* PersonalInfoCell.xib */,
+				359671B7171BC81F00B5D5CD /* PharCell.h */,
+				359671B8171BC81F00B5D5CD /* PharCell.m */,
+				359671BA171BC83400B5D5CD /* PharCell.xib */,
+				359671BE171BE20F00B5D5CD /* ModifyInfoView.xib */,
+				359671C0171BEAB900B5D5CD /* ModifyInfoView.h */,
+				359671C1171BEAB900B5D5CD /* ModifyInfoView.m */,
+				359671D5171C3A8800B5D5CD /* MenuCell.h */,
+				359671D6171C3A8900B5D5CD /* MenuCell.m */,
+				359671D8171C3A9F00B5D5CD /* MenuCell.xib */,
 			);
 			name = CustomViews;
 			sourceTree = "<group>";
@@ -1174,6 +1236,9 @@
 				35963CE91716E8CB00AAA4D8 /* submit@2x.png in Resources */,
 				35A0F75E17179C7700720103 /* ContactCell.xib in Resources */,
 				3553FD24171AD426002E6823 /* PersonalInfoCell.xib in Resources */,
+				359671BB171BC83400B5D5CD /* PharCell.xib in Resources */,
+				359671BF171BE21000B5D5CD /* ModifyInfoView.xib in Resources */,
+				359671D9171C3AA000B5D5CD /* MenuCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1263,6 +1328,15 @@
 				35C87CE21719860800CB34F0 /* cellTapGestureRecognizer.m in Sources */,
 				3553FD1E171ACE35002E6823 /* MyHomePageViewController.m in Sources */,
 				3553FD22171AD405002E6823 /* PersonalInfoCell.m in Sources */,
+				359671B3171BBFB300B5D5CD /* SelectPreferViewController.m in Sources */,
+				359671B6171BC14B00B5D5CD /* Pharmacology.m in Sources */,
+				359671B9171BC81F00B5D5CD /* PharCell.m in Sources */,
+				359671C2171BEAB900B5D5CD /* ModifyInfoView.m in Sources */,
+				359671C6171BF34000B5D5CD /* MAlertView.m in Sources */,
+				359671C9171C02DB00B5D5CD /* preferInfo.m in Sources */,
+				359671CF171C1A3B00B5D5CD /* MyFriendViewController.m in Sources */,
+				359671D3171C340100B5D5CD /* SettingViewController.m in Sources */,
+				359671D7171C3A8A00B5D5CD /* MenuCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

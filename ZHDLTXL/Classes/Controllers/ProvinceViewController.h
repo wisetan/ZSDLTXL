@@ -19,4 +19,7 @@
 @property (nonatomic, retain) NSMutableArray *cityArray;
 @property (nonatomic, retain) NSMutableDictionary *areaInfoDict;
 
+@property (nonatomic, assign) BOOL isAddResident;
+@property (nonatomic, retain) UIViewController *homePageVC;
+
 @end

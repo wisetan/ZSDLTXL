@@ -16,4 +16,7 @@
 @property (nonatomic, retain) UITableView *cityTableView;
 @property (nonatomic, retain) UIButton *backBarButton;
 
+@property (nonatomic, assign) BOOL isAddResident;
+@property (nonatomic, retain) UIViewController *homePageVC;
+
 @end

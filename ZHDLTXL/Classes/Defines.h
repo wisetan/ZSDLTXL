@@ -52,5 +52,8 @@ typedef struct
 #define kInvestmentUserListRefreshed @"investmentUserListRefreshed"
 #define kSendMessageAddFriendNotification @"kSendMessageAddFriendNotification"
 #define kRegistSuccedd @"kRegistSuccedd"
+#define kAddResidentNotification @"kAddResidentNotification"
+#define kSelectPharFinished @"kSelectPharFinished"
+#define kDeleteFriend @"kDeleteFriend"
 
 #endif

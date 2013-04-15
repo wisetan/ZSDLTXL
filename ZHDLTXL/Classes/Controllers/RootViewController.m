@@ -17,6 +17,7 @@
 #import "OtherHomepageViewController.h"
 #import "UIImageView+WebCache.h"
 #import "MyHomePageViewController.h"
+#import "MyFriendViewController.h"
 
 @interface RootViewController ()
 
@@ -211,6 +212,8 @@
     NSLog(@"current city; %@", self.currentCity);
     //parameter: provinceid, cityid, userid(用来取备注),
     long userId = [kAppDelegate.userId longLongValue];
+    [PersistenceHelper setData:self.curCityId forKey:@"currentCityId"];
+    [PersistenceHelper setData:self.curProvinceId forKey:@"currentProvinceId"];
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:self.curProvinceId, @"provinceid",
                                                                     self.curCityId, @"cityid",
                                                                     [NSNumber numberWithLong:userId], @"userid",
@@ -296,6 +299,7 @@
 {
     NSLog(@"select area");
     ProvinceViewController *areaVC = [[ProvinceViewController alloc] init];
+    areaVC.isAddResident = NO;
     [self.navigationController pushViewController:areaVC animated:YES];
     [areaVC release];
 }
@@ -303,6 +307,12 @@
 - (void)myFriend:(UIButton *)sender
 {
     NSLog(@"my friend");
+    MyFriendViewController *myFriendVC = [[MyFriendViewController alloc] init];
+    myFriendVC.provinceid = self.curProvinceId;
+    myFriendVC.cityid = self.curCityId;
+    myFriendVC.userid = kAppDelegate.userId;
+    [self.navigationController pushViewController:myFriendVC animated:YES];
+    [myFriendVC release];
 }
 
 #pragma mark - table view data source

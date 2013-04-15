@@ -15,6 +15,7 @@
 @property (nonatomic, copy) NSString *tel;
 @property (nonatomic, copy) NSString *mailbox;
 @property (nonatomic, copy) NSString *picturelinkurl;
+@property (nonatomic, copy) NSString *autograph;
 @property (nonatomic, copy) NSString *col1;
 @property (nonatomic, copy) NSString *col2;
 @property (nonatomic, copy) NSString *col3;

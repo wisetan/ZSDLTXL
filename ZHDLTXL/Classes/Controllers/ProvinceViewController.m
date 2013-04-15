@@ -195,6 +195,8 @@
         [cityArr addObject:city];
     }];
     cityVC.cityArray = cityArr;
+    cityVC.isAddResident = self.isAddResident;
+    cityVC.homePageVC = self.homePageVC;
     
     [self.navigationController pushViewController:cityVC animated:YES];
 }
