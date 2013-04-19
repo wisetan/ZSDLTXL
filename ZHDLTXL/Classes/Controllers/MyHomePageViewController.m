@@ -12,9 +12,20 @@
 #import "ProvinceViewController.h"
 #import "SelectPreferViewController.h"
 #import "Pharmacology.h"
+#import "PreferInfo.h"
 #import "ModifyInfoView.h"
 #import "MAlertView.h"
 #import "SettingViewController.h"
+
+#import "HomePageCell.h"
+#import "CityInfo.h"
+#import "Pharmacology.h"
+#import "MyInfoController.h"
+
+#import "UserDetail.h"
+
+#import "UIImageView+WebCache.h"
+#import "UIImage+Resizing.h"
 
 
 @interface MyHomePageViewController ()
@@ -39,153 +50,180 @@
     [super viewDidLoad];
     [self addObserver];
     
+    self.title = @"个人主页";
+    
+    self.userDetail = [[[UserDetail alloc] init] autorelease];
+    
+    self.nameLabel.text = self.name;
+    self.telLabel.text = self.tel;
+    self.mailLabel.text = self.mail;
+    
+    UITapGestureRecognizer *tap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnHeadIcon:)] autorelease];
+    [self.headIcon addGestureRecognizer:tap];
+    
     self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.backBarButton setImage:[UIImage imageNamed:@"retreat.png"] forState:UIControlStateNormal];
     [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
     self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
-    self.nameLabel.text = @"王老总";
-    self.telLabel.text = @"1234567890";
-    self.mailLabel.text = @"123@qq.com";
-    
-    UIImageView *bgImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"debut_light.png"]];
-    bgImage.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-    [self.view addSubview:bgImage];
-    
-    UIImageView *accountBgImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"myhomepage_bg.png"]];
-    accountBgImage.frame = CGRectMake(0, 0, 320, 100);
-    [self.view addSubview:accountBgImage];
-    
-    self.headIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AC_L_icon.png"]];
-    self.headIcon.frame = CGRectMake(18, 15, 70, 70);
-    [self.view addSubview:self.headIcon];
-    
-    self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(100, 15, 150, 25)];
-    self.nameLabel.text = @"王老总";
-    self.nameLabel.textColor = kContentColor;
-    self.nameLabel.backgroundColor = [UIColor clearColor];
-    [self.view addSubview:self.nameLabel];
-    
-    self.telLabel = [[UILabel alloc] initWithFrame:CGRectMake(100, 40, 150, 20)];
-    self.telLabel.text = @"1234567890";
-    self.telLabel.textColor = kContentColor;
-    self.telLabel.backgroundColor = [UIColor clearColor];
-    self.telLabel.font = [UIFont systemFontOfSize:14];
-    [self.view addSubview:self.telLabel];
-    
-    self.mailLabel = [[UILabel alloc] initWithFrame:CGRectMake(100, 65, 150, 20)];
-    self.mailLabel.text = @"123@qq.com";
-    self.mailLabel.textColor = kContentColor;
-    self.mailLabel.backgroundColor = [UIColor clearColor];
-    self.mailLabel.font = [UIFont systemFontOfSize:14];
-    [self.view addSubview:self.mailLabel];
-    
-    self.modifyButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.modifyButton.frame = CGRectMake(250, 15, 50, 30);
-    [self.modifyButton setImage:[UIImage imageNamed:@"alter_button"] forState:UIControlStateNormal];
-    [self.modifyButton setImage:[UIImage imageNamed:@"alter_button_p.png"] forState:UIControlStateHighlighted];
     [self.modifyButton addTarget:self action:@selector(modifyInfo:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:self.modifyButton];
     
     
     
-    UIImage *infoBgImage = [[UIImage imageNamed:@"underframe.png"] stretchableImageWithLeftCapWidth:0 topCapHeight:20];
-    UIImageView *infoBgImageView = [[UIImageView alloc] initWithImage:infoBgImage];
-    infoBgImageView.userInteractionEnabled = YES;
-    infoBgImageView.frame = CGRectMake(20, 120, 280, 200);
+    self.leftArray = [[[NSMutableArray alloc] initWithObjects:@"招商/代理：", @"常驻地区：", @"类别偏好：", @"账户余额：", @"我的设置", nil] autorelease];
+    self.selectorNameArray = [[[NSMutableArray alloc] initWithObjects:@"chooseAngencyOrBusiness", @"addArea:", @"addPrefer:", @"showExtra", @"setting", nil] autorelease];
     
-    [self.view addSubview:infoBgImageView];
+    self.selectorArray = [[[NSMutableArray alloc] init] autorelease];
+    [self.selectorNameArray enumerateObjectsUsingBlock:^(NSString *selectorName, NSUInteger idx, BOOL *stop) {
+        SEL sel = NSSelectorFromString(selectorName);
+        [self.selectorArray addObject:[NSValue valueWithPointer:sel]];
+    }];
     
-    for (int i=0; i<3; i++) {
-        UIImageView *sepView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"separator.png"]];
-        sepView.frame = CGRectMake(0, infoBgImageView.frame.size.height * (i+1) / 4, 280, 1);
-        [infoBgImageView addSubview:sepView];
-    }
-    
-    
-    UILabel* residentAreaLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 7, 80, 40)];
-    residentAreaLabel.text = @"常驻地区:";
-    residentAreaLabel.textColor = kContentBlueColor;
-    residentAreaLabel.backgroundColor = [UIColor clearColor];
-    [infoBgImageView addSubview:residentAreaLabel];
-    
-    UILabel* preferLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 55, 80, 40)];
-    preferLabel.text = @"类别偏好:";
-    preferLabel.textColor = kContentBlueColor;
-    preferLabel.backgroundColor = [UIColor clearColor];
-    [infoBgImageView addSubview:preferLabel];
-    
-    UILabel* balanceLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 105, 80, 40)];
-    balanceLabel.text = @"账户余额:";
-    balanceLabel.backgroundColor = [UIColor clearColor];
-    balanceLabel.textColor = kContentBlueColor;
-    [infoBgImageView addSubview:balanceLabel];
-    
-    UILabel* settingLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 155, 152, 40)];
-    settingLabel.userInteractionEnabled = YES;
-    settingLabel.text = @"我的设置";
-    settingLabel.backgroundColor = [UIColor clearColor];
-    settingLabel.font = [UIFont systemFontOfSize:14];
-    [infoBgImageView addSubview:settingLabel];
-    
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnMySetting:)];
-    [settingLabel addGestureRecognizer:tap];
+    UIImage *tableViewBgImage = [[UIImage imageNamed:@"underframe.png"] stretchableImageWithLeftCapWidth:290 topCapHeight:50];
+    UIImageView *tableViewBgImageView = [[[UIImageView alloc] initWithImage:tableViewBgImage] autorelease];
+    [self.infoTableView setBackgroundView:tableViewBgImageView];
+    [self.infoTableView setBackgroundColor:[UIColor clearColor]];
     
     
-    UIButton *addAreaButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [addAreaButton setImage:[UIImage imageNamed:@"more_select.png"] forState:UIControlStateNormal];
-    [addAreaButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
-    [addAreaButton addTarget:self action:@selector(addArea:) forControlEvents:UIControlEventTouchUpInside];
-    addAreaButton.frame = CGRectMake(240, 7, 36, 36);
-    [infoBgImageView addSubview:addAreaButton];
+    [self.messageButton setImage:[UIImage imageByName:@"button_left_message_p.png"] forState:UIControlStateHighlighted];
+    [self.mailButton setImage:[UIImage imageByName:@"button_middle_mail_p.png"] forState:UIControlStateHighlighted];
+    [self.chatButton setImage:[UIImage imageByName:@"button_right_chat_p.png"] forState:UIControlStateHighlighted];
     
-    UIButton *addPreferButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [addPreferButton setImage:[UIImage imageNamed:@"more_select.png"] forState:UIControlStateNormal];
-    [addPreferButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
-    [addPreferButton addTarget:self action:@selector(addPrefer:) forControlEvents:UIControlEventTouchUpInside];
-    addPreferButton.frame = CGRectMake(240, 57, 36, 36);
-    [infoBgImageView addSubview:addPreferButton];
-    
-    UILabel* balanceLabel2 = [[UILabel alloc] initWithFrame:CGRectMake(200, 105, 80, 40)];
-    balanceLabel2.text = @"账户余额:";
-    balanceLabel2.backgroundColor = [UIColor clearColor];
-    balanceLabel2.textColor = kContentBlueColor;
-    [infoBgImageView addSubview:balanceLabel];
-    
-    
-    ContactHimView *contactHimView = [[ContactHimView alloc] initWithFrame:CGRectMake(20, 300, 280, 60)];
-    contactHimView.delegate = self;
-    contactHimView.contact = nil;
+    [self.messageButton addTarget:self action:@selector(message:) forControlEvents:UIControlEventTouchUpInside];
+    [self.mailButton addTarget:self action:@selector(email:) forControlEvents:UIControlEventTouchUpInside];
+    [self.chatButton addTarget:self action:@selector(chat:) forControlEvents:UIControlEventTouchUpInside];
     
     self.residentArray = [[[NSMutableArray alloc] init] autorelease];
     self.preferArray = [[[NSMutableArray alloc] init] autorelease];
+    
     self.residentImageArray = [[[NSMutableArray alloc] init] autorelease];
-    self.preferImageArray = [[[NSMutableArray alloc] init] autorelease];
-    
-    
     for (int i=0; i<2; i++) {
-        UIImage *residentImage = [[UIImage imageNamed:@"myhomepage_location_bg.png"] stretchableImageWithLeftCapWidth:5 topCapHeight:5];
-        UIImageView *imageView = [[UIImageView alloc] initWithImage:residentImage];
-        imageView.hidden = YES;
+        UIImage *image = [UIImage imageNamed:@"myhomepage_location_bg.png"];
+        UIImageView *imageView = [[[UIImageView alloc] initWithImage:image] autorelease];
         [self.residentImageArray addObject:imageView];
-        [infoBgImageView addSubview:imageView];
     }
     
+    self.preferImageArray = [[[NSMutableArray alloc] init] autorelease];
     for (int i=0; i<2; i++) {
-        UIImage *preferImage = [[UIImage imageNamed:@"myhomepage_location_bg.png"] stretchableImageWithLeftCapWidth:5 topCapHeight:5];
-        UIImageView *imageView = [[UIImageView alloc] initWithImage:preferImage];
-        imageView.hidden = YES;
+        UIImage *image = [UIImage imageNamed:@"myhomepage_location_bg.png"];
+        UIImageView *imageView = [[[UIImageView alloc] initWithImage:image] autorelease];
         [self.preferImageArray addObject:imageView];
-        [infoBgImageView addSubview:imageView];
     }
     
+    self.unreadCountArray = [[[NSMutableArray alloc] init] autorelease];
     
-//    self.modifyView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 160)];
+    [self getPersonalInfo];
     
-    
+}
+
+- (void)getPersonalInfo
+{
+    //paradict getMypageDetail.json userid
+    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid", @"getMypageDetail.json", @"path", nil];
+    NSLog(@"get personinfo Dict: %@", paraDict);
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    hud.labelText = @"获取个人信息";
+    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            NSDictionary *userDetailDict = [json objectForKey:@"UserDetail"];
+            
+            self.name = [userDetailDict objectForKey:@"username"];
+            self.tel = [userDetailDict objectForKey:@"tel"];
+            self.mail = [userDetailDict objectForKey:@"mailbox"];
+            
+            self.nameLabel.text = self.name;
+            self.telLabel.text = self.tel;
+            self.mailLabel.text = self.mail;
+            
+    //            id: 20086,
+    //        username: "liuyue",
+    //        tel: "13800000005",
+    //        mailbox: "1234@qq.com",
+    //        picturelinkurl: "",
+    //        invagency: 3,
+    //        autograph: "",
+    //        col1: "20086@boramail.com",
+    //        col2: "",
+    //        col3: ""
+            
+            
+            self.userDetail.userid = [[userDetailDict objectForKey:@"id"] longValue];
+            self.userDetail.username = [userDetailDict objForKey:@"username"];
+            self.userDetail.tel = [userDetailDict objForKey:@"tel"];
+            self.userDetail.mailbox = [userDetailDict objForKey:@"mailbox"];
+            self.userDetail.picturelinkurl = [userDetailDict objForKey:@"picturelinkurl"];
+            self.userDetail.invagency = [[userDetailDict objForKey:@"invagency"] intValue];
+            self.userDetail.autograph = [userDetailDict objForKey:@"autograph"];
+            self.userDetail.col1 = [userDetailDict objectForKey:@"col1"];
+            self.userDetail.col2 = [userDetailDict objectForKey:@"col2"];
+            self.userDetail.col3 = [userDetailDict objectForKey:@"col3"];
+            NSLog(@"picturelinkurl: %@", self.userDetail.picturelinkurl);
+            
+            [self.headIcon setImageWithURL:[NSURL URLWithString:self.userDetail.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
+            
+            //取得未读消息
+            int unreadCount = [[json objectForKey:@"UnreadCount"] intValue];
+            NSLog(@"unreadcount: %d", unreadCount);
+            if (unreadCount > 0) {
+                
+                CustomBadge *badge = [CustomBadge customBadgeWithString:[NSString stringWithFormat:@"%d", unreadCount]
+                                                        withStringColor:[UIColor whiteColor]
+                                                         withInsetColor:[UIColor redColor]
+                                                         withBadgeFrame:YES
+                                                    withBadgeFrameColor:[UIColor whiteColor]
+                                                              withScale:1.0
+                                                            withShining:YES];
+                
+                CGRect badgeFrame = badge.frame;
+                badgeFrame.origin.y = -5.f;
+                badgeFrame.origin.x = self.chatButton.frame.size.width - badgeFrame.size.width + 2.f;
+                badge.frame = badgeFrame;
+                
+                [self.chatButton addSubview:badge];
+                [self.view bringSubviewToFront:self.chatButton];
+                
+            }
+            
+            NSArray *residentArray = [json objectForKey:@"AreaList"];
+            NSLog(@"residentArray: %@", residentArray);
+            [residentArray enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+                if (idx>1) {
+                    *stop = YES;
+                }else{
+                    CityInfo *city = [[CityInfo alloc] init];
+                    [city setValuesForKeysWithDictionary:cityDict];
+                    [self.residentArray addObject:city];
+                    [city release];
+                }
+            }];
+            
+            [self addResidentFinished:nil];
+            
+            NSArray *preferArray = [json objectForKey:@"PreferList"];
+            [preferArray enumerateObjectsUsingBlock:^(NSDictionary *preferDict, NSUInteger idx, BOOL *stop) {
+                PreferInfo *prefer = [[PreferInfo alloc] init];
+                prefer.prefername = [preferDict objectForKey:@"prefername"];
+                prefer.preferId = [[preferDict objectForKey:@"id"] longValue];
+                [self.preferArray addObject:prefer];
+                [prefer release];
+            }];
+            
+            [self addPreferFinished:nil];
+            
+            
+        } else{
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
 }
 
 - (void)addObserver
@@ -194,67 +232,232 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addPreferFinished:) name:kSelectPharFinished object:nil];
 }
 
-- (void)addResidentFinished:(NSNotification *)noti
+- (void)removeObserver
 {
-    NSLog(@"residentarrray: %@", self.residentArray);
-    NSLog(@"new city: %@", noti.object);
-    NSString *residentName = noti.object;
-    if (![self.residentArray containsObject:residentName]) {
-        [self.residentArray addObject:residentName];
-        [self.residentArray enumerateObjectsUsingBlock:^(NSString *cityName, NSUInteger idx, BOOL *stop) {
-            CGSize size = [cityName stringSizeWithMaxSize:CGSizeMake(MAXFLOAT, MAXFLOAT) fontSize:16];
-            NSLog(@"string width %f, string height %f", size.width, size.height);
-            UILabel *residentLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 5, size.width+15, size.height)];
-            residentLabel.backgroundColor = [UIColor clearColor];
-            residentLabel.text = cityName;
-            residentLabel.textColor = [UIColor whiteColor];
-            residentLabel.textAlignment = NSTextAlignmentCenter;
-            UIImageView *residentImageView = [self.residentImageArray objectAtIndex:idx];
-            if (idx == 0) {
-                [residentImageView setFrame:CGRectMake(100, 13, size.width+15, size.height+10)];
-                [residentImageView addSubview:residentLabel];
-            }
-            else{
-                UIImageView *lastImage = [self.residentImageArray objectAtIndex:idx-1];
-                [residentImageView setFrame:CGRectMake(lastImage.frame.origin.x+lastImage.frame.size.width+10, 13, size.width+15, size.height+10)];
-                [residentImageView addSubview:residentLabel];
-            }
-            [residentImageView setHidden:NO];
-        }];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+#pragma mark - table view datasouce
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.leftArray count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *cellId = @"homePageCell";
+    HomePageCell *cell = (HomePageCell *)[tableView dequeueReusableCellWithIdentifier:cellId];
+    if (!cell) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"HomePageCell" owner:self options:nil] lastObject];
+    }
+    SEL sel = [[self.selectorArray objectAtIndex:indexPath.row] pointerValue];
+    if (indexPath.row == 1 || indexPath.row == 2) {
+        [cell.addButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
+        [cell.addButton addTarget:self action:sel forControlEvents:UIControlEventTouchUpInside];
+    }
+    else{
+        cell.addButton.hidden = YES;
+    }
+    
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    cell.nameLabel.text = [self.leftArray objectAtIndex:indexPath.row];
+    
+    if (indexPath.row == self.leftArray.count-1) {
+        cell.separatorImage.image = nil;
+    }
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    SEL sel = [[self.selectorArray objectAtIndex:indexPath.row] pointerValue];
+    switch (indexPath.row) {
+        case 0:
+            
+            break;
+        case 1:
+            
+            break;
+        case 2:
+            [self performSelector:sel];
+            break;
+        case 3:
+            [self performSelector:sel];
+            break;
+        case 4:
+            [self performSelector:sel];
+            break;
+        default:
+            break;
     }
 }
 
-- (void)addPreferFinished:(NSNotification *)noti
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [self.preferArray removeAllObjects];
-    [self.preferArray addObjectsFromArray:noti.object];
-    [self.preferArray enumerateObjectsUsingBlock:^(Pharmacology *phar, NSUInteger idx, BOOL *stop) {
-        CGSize size = [phar.content stringSizeWithMaxSize:CGSizeMake(MAXFLOAT, MAXFLOAT) fontSize:16];
-        NSLog(@"string width %f, string height %f", size.width, size.height);
-        UILabel *residentLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 5, size.width+15, size.height)];
+    return 45.f;
+}
+
+- (void)addResidentFinished:(NSNotification *)noti
+{
+
+//    NSLog(@"noti.object: %@", noti.object);
+//    NSLog(@"residentarrray: %@", self.residentArray);
+    
+    [noti.object enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
+        if (![self.residentArray containsObject:city]) {
+            [self.residentArray addObject:city];
+        }
+    }];
+//    NSLog(@"residentarrray: %@", self.residentArray);
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+    
+    HomePageCell *cell = (HomePageCell *)[self.infoTableView cellForRowAtIndexPath:indexPath];
+    
+    [self.residentImageArray enumerateObjectsUsingBlock:^(UIImageView *imageView, NSUInteger idx, BOOL *stop) {
+        [[imageView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        imageView.hidden = YES;
+    }];
+
+    [self.residentArray enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
+        CGSize size = [city.cityname stringSizeWithMaxSize:CGSizeMake(MAXFLOAT, MAXFLOAT) fontSize:16];
+//        NSLog(@"string width %f, string height %f", size.width, size.height);
+        UILabel *residentLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 5, size.width+15, size.height)] autorelease];
         residentLabel.backgroundColor = [UIColor clearColor];
-        residentLabel.text = phar.content;
+        residentLabel.text = city.cityname;
+        residentLabel.textColor = [UIColor whiteColor];
+        residentLabel.textAlignment = NSTextAlignmentCenter;
+        UIImageView *residentImageView = [self.residentImageArray objectAtIndex:idx];
+        if (idx == 0) {
+            [residentImageView setFrame:CGRectMake(100, 7, size.width+15, size.height+10)];
+            [residentImageView addSubview:residentLabel];
+        }
+        else{
+            UIImageView *lastImage = [self.residentImageArray objectAtIndex:idx-1];
+            [residentImageView setFrame:CGRectMake(lastImage.frame.origin.x+lastImage.frame.size.width+10, 7, size.width+15, size.height+10)];
+            [residentImageView addSubview:residentLabel];
+        }
+        [cell.contentView addSubview:residentImageView];
+        [residentImageView setHidden:NO];
+    }];
+    [self.infoTableView reloadData];
+    
+    //上传数据
+    //para: changezsarea.json provcityid userid
+    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+    NSMutableString *provinceid = [[NSMutableString alloc] init];
+    [self.residentArray enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
+        [provinceid appendFormat:@"%@:%@,", city.provinceid, city.cityid];
+    }];
+    NSLog(@"provcityId: %@", provinceid);
+    if (![provinceid isValid]) {
+        provinceid = [NSMutableString stringWithString:@"P5:C617"];
+    }
+    else{
+        provinceid = (NSMutableString *)[provinceid substringToIndex:[provinceid length]-1];
+    }
+    
+
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:provinceid, @"provcityid", userid, @"userid", @"changezsarea.json", @"path", nil];
+    
+    NSLog(@"para dict %@", paraDict);
+    
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        NSLog(@"add resident %@", json);
+        
+        
+        [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
+    
+}
+
+- (void)addPreferFinished:(NSNotification *)noti
+{    
+//    NSLog(@"noti.object: %@", noti.object);
+//    NSLog(@"preferArray: %@", self.preferArray);
+    
+    [noti.object enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
+        if (![self.preferArray containsObject:prefer]) {
+            [self.preferArray addObject:prefer];
+        }
+    }];
+//    NSLog(@"preferArray: %@", self.preferArray);
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:2 inSection:0];
+    
+    HomePageCell *cell = (HomePageCell *)[self.infoTableView cellForRowAtIndexPath:indexPath];
+    
+    [self.preferImageArray enumerateObjectsUsingBlock:^(UIImageView *imageView, NSUInteger idx, BOOL *stop) {
+        [[imageView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        imageView.hidden = YES;
+    }];
+    
+    [self.preferArray enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
+        NSString *prefername = [NSString stringWithFormat:@"%@", prefer.prefername];
+        
+        CGSize size = [prefername stringSizeWithMaxSize:CGSizeMake(MAXFLOAT, MAXFLOAT) fontSize:16];
+//        NSLog(@"string width %f, string height %f", size.width, size.height);
+        CGFloat     labelWidth = MIN(size.width+15, 48);
+        UILabel *residentLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 5, labelWidth, size.height)] autorelease];
+        residentLabel.backgroundColor = [UIColor clearColor];
+        residentLabel.text = prefername;
         residentLabel.textColor = [UIColor whiteColor];
         residentLabel.textAlignment = NSTextAlignmentCenter;
         UIImageView *residentImageView = [self.preferImageArray objectAtIndex:idx];
         if (idx == 0) {
-            [residentImageView setFrame:CGRectMake(100, 63, size.width+15, size.height+10)];
+            [residentImageView setFrame:CGRectMake(100, 7, labelWidth, size.height+10)];
             [residentImageView addSubview:residentLabel];
         }
         else{
             UIImageView *lastImage = [self.preferImageArray objectAtIndex:idx-1];
-            [residentImageView setFrame:CGRectMake(lastImage.frame.origin.x+lastImage.frame.size.width+10, 63, size.width+15, size.height+10)];
+            [residentImageView setFrame:CGRectMake(lastImage.frame.origin.x+lastImage.frame.size.width+10, 7, labelWidth, size.height+10)];
             [residentImageView addSubview:residentLabel];
         }
+        [cell.contentView addSubview:residentImageView];
         [residentImageView setHidden:NO];
     }];
-}
-
-- (void)tapOnMySetting:(UITapGestureRecognizer *)sender
-{
-    SettingViewController *settingVC = [[SettingViewController alloc] init];
-    [self.navigationController pushViewController:settingVC animated:YES];
-    [settingVC release];
+    [self.infoTableView reloadData];
+    
+    //上传数据
+    //para: changezsarea.json provcityid userid
+    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+    NSMutableString *preferid = [[NSMutableString alloc] init];
+    [self.preferArray enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
+        [preferid appendFormat:@"%ld,", prefer.preferId];
+    }];
+//    NSLog(@"provcityId: %@", preferid);
+    if (![preferid isValid]) {
+        preferid = [NSMutableString stringWithString:@"1"];
+    }
+    else{
+        preferid = (NSMutableString *)[preferid substringToIndex:[preferid length]-1];
+    }
+    
+    
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:preferid, @"preferid", userid, @"userid", @"changeprefer.json", @"path", nil];
+    
+    NSLog(@"para dict %@", paraDict);
+    
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        NSLog(@"add resident %@", json);
+        
+        
+        [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
+    
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -264,23 +467,9 @@
 
 - (void)modifyInfo:(UIButton *)sender
 {
-//    NSLog(@"修改用户信息");
-//    ModifyInfoView *modifyView = [[[NSBundle mainBundle] loadNibNamed:@"ModifyInfoView" owner:self options:nil] lastObject];
-//    UITextField *textfield = [[UITextField alloc] initWithFrame:CGRectMake(50, 50, 100, 50)];
-//    textfield.borderStyle = UITextBorderStyleRoundedRect;
-////    modifyView.frame = CGRectMake(10, 45, 260, 127);
-////    [self.view addSubview:modifyView];
-////    modifyView.nameTextfield.delegate = self;
-////    modifyView.telTextfield.delegate = self;
-////    modifyView.mailTextfield.delegate = self;
-//    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"修改个人信息" message:nil delegate:self cancelButtonTitle:@"确认" otherButtonTitles:@"取消", nil];
-////    alert.alertViewStyle = UIAlertViewStylePlainTextInput;
-////    [alert addSubview:modifyView];
-//    [alert addSubview:textfield];
-//    [alert show];
-    self.nameField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 200, 45)];
-    self.telField = [[UITextField alloc] initWithFrame:CGRectMake(0, 45, 200, 45)];
-    self.mailField = [[UITextField alloc] initWithFrame:CGRectMake(0, 90, 200, 45)];
+    self.nameField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 0, 200, 45)] autorelease];
+    self.telField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 45, 200, 45)] autorelease];
+    self.mailField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 90, 200, 45)] autorelease];
     
     MAlertView *alert = [[MAlertView alloc] initWithTitle:@"修改个人信息" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认",nil];
     [alert addTextField:self.nameField placeHolder:@"姓名"];
@@ -308,6 +497,10 @@
             self.nameLabel.text = name;
             self.telLabel.text = tel;
             self.mailLabel.text = mail;
+            
+            [PersistenceHelper setData:name forKey:@"username"];
+            [PersistenceHelper setData:tel forKey:@"tel"];
+            [PersistenceHelper setData:mail forKey:@"mail"];
         } failure:^(NSError *error) {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:@"更新失败" andImageName:nil];
@@ -320,94 +513,140 @@
     }
 }
 
-//- (void)willPresentAlertView:(UIAlertView *)alertView
-//{
-//    alertView.frame = CGRectMake(0, 0, 280, 230);
-//    alertView.center = self.view.center;
-//    int i = 0;
-//    for (UIView *view in [alertView subviews]) {
-//        if ([view isKindOfClass:[UIButton class]]) {
-//            view.frame = CGRectMake(15+i*130, 170, 120, 40);
-//            i++;
-//        }
-//    }
-//}
-
-#pragma mark - table view datasource
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+- (void)chooseAngencyOrBusiness
 {
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return 4;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-//    static NSString *cellID = @"cellID";
-    PersonalInfoCell *cell = [[[NSBundle mainBundle] loadNibNamed:@"PersonalInfoCell" owner:self options:nil] objectAtIndex:0];
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    cell.nameLabel.text = [self.cellNameArray objectAtIndex:indexPath.row];
-    switch (indexPath.row) {
-        case 0:
-            [cell.setInfoButton addTarget:self action:@selector(addArea:) forControlEvents:UIControlEventTouchUpInside];
-            [cell.setInfoButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
-            break;
-        case 1:
-            [cell.setInfoButton addTarget:self action:@selector(addPrefer:) forControlEvents:UIControlEventTouchUpInside];
-            [cell.setInfoButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
-            break;
-        case 2:
-            cell.setInfoButton.hidden = YES;
-            break;
-        case 3:
-            cell.setInfoButton.hidden = YES;
-            break;
-        default:
-            break;
-    }
-    
-    return cell;
-    
+    NSLog(@"chooseAngencyOrBusiness");
 }
 
 - (void)addArea:(UIButton *)sender
 {
-    if ([self.residentArray count] == 2) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"最多选择两个常驻地区" delegate:self cancelButtonTitle:@"确认" otherButtonTitles: nil];
-        [alert show];
-        return;
-    }
+
     ProvinceViewController *provinceVC = [[ProvinceViewController alloc] init];
     provinceVC.isAddResident = YES;
     provinceVC.homePageVC = self;
+    NSLog(@"residentarrray: %@", self.residentArray);
+    provinceVC.selectCityArray = self.residentArray;
     [self.navigationController pushViewController:provinceVC animated:YES];
+
     [provinceVC release];
+
 }
 
 - (void)addPrefer:(UIButton *)sender
 {
     SelectPreferViewController *selectPreferVC = [[SelectPreferViewController alloc] init];
+    selectPreferVC.selectArray = self.preferArray;
     [self.navigationController pushViewController:selectPreferVC animated:YES];
     [selectPreferVC release];
 }
 
-- (void)message:(Contact *)contact
+- (void)showExtra
 {
+    NSLog(@"showExtra");
+}
+
+- (void)setting
+{
+    NSLog(@"setting");
+    SettingViewController *settingVC = [[SettingViewController alloc] init];
+    [self.navigationController pushViewController:settingVC animated:YES];
+    [settingVC release];
+}
+
+#pragma  mark - about contact
+- (void)message:(UIButton *)sender
+{
+    NSLog(@"message");
+}
+
+- (void)email:(UIButton *)sender
+{
+    NSLog(@"email");
+}
+
+- (void)chat:(UIButton *)sender
+{
+    MyInfoController *myInfoController = [[MyInfoController alloc] init];
+    [self.navigationController pushViewController:myInfoController animated:YES];
+    [myInfoController release];
+}
+
+#pragma mark - tap on head icon
+- (void)tapOnHeadIcon:(UITapGestureRecognizer *)tap
+{
+    NSLog(@"更换头像");
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"设置头像" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:@"拍照" otherButtonTitles:@"从相册选取", nil];
+    [actionSheet showInView:self.view];
+    [actionSheet release];
     
 }
 
-- (void)email:(Contact *)contact
+#pragma mark - action delegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    
+    NSLog(@"buttonIndex; %d", buttonIndex);
+    switch (buttonIndex) {
+        case 0:
+        {
+            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+            picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+            picker.showsCameraControls = YES;
+            picker.allowsEditing = YES;
+            picker.delegate = self;
+            [self presentModalViewController:picker animated:YES];
+            [picker release];
+        }
+            break;
+        case 1:
+        {
+            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+
+            picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            picker.showsCameraControls = YES;
+            picker.allowsEditing = YES;
+            picker.delegate = self;
+            [self presentModalViewController:picker animated:YES];
+            [picker release];
+        }
+            break;
+        case 2:
+            NSLog(@"设置头像取消");
+            break;
+        default:
+            break;
+    }
 }
 
-- (void)chat:(Contact *)contact
+#pragma mark - image picker delegate
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
+    self.headIcon.image=[info valueForKey:UIImagePickerControllerOriginalImage];
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    hud.labelText = @"上传头像";
     
+    CGFloat scale = self.headIcon.image.size.height / 118.f;
+//    UIImage *smallImage = [UIImage imageWithCGImage:self.headIcon.image.CGImage scale:scale orientation:self.headIcon.image.imageOrientation];
+    UIImage *smallImage = [self.headIcon.image scaleToFillSize:CGSizeMake(180.f, 180.f)];
+    //addAndUpdateUserPic.json image userid imageurl
+//    NSNumber *userid = [NSNumber numberWithLong:self.userDetail.userid];
+    NSString *userid = [NSString stringWithFormat:@"%ld", self.userDetail.userid];
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:@"addAndUpdateUserPic.json", @"path",
+                                                                        userid, @"userid",
+                                                                        self.userDetail.picturelinkurl, @"imageurl", nil];
+    
+    NSLog(@"smallImage width: %f, height: %f", smallImage.size.width, smallImage.size.height);
+    
+    [DreamFactoryClient postWithParameters:paraDict image:smallImage success:^(id obj) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:@"上传成功" andImageName:nil];
+    } failure:^{
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:@"上传失败" andImageName:nil];
+    }];
+    
+    [picker dismissModalViewControllerAnimated:YES];
 }
 
 - (void)didReceiveMemoryWarning
@@ -417,11 +656,16 @@
 }
 
 - (void)dealloc {
+    [self removeObserver];
     [_headIcon release];
     [_nameLabel release];
     [_telLabel release];
     [_mailLabel release];
     [_modifyButton release];
+    [_infoTableView release];
+    [_messageButton release];
+    [_mailButton release];
+    [_chatButton release];
     [super dealloc];
 }
 @end

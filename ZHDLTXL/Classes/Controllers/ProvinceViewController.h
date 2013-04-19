@@ -20,6 +20,10 @@
 @property (nonatomic, retain) NSMutableDictionary *areaInfoDict;
 
 @property (nonatomic, assign) BOOL isAddResident;
+@property (nonatomic, retain) NSMutableArray *selectCityArray;
 @property (nonatomic, retain) UIViewController *homePageVC;
+
+@property (nonatomic, retain) NSMutableDictionary *addResidentProvinceIdDict;
+
 
 @end

@@ -52,7 +52,7 @@
     [self.backBarButton setImage:[UIImage imageNamed:@"retreat.png"] forState:UIControlStateNormal];
     [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
     self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     //bottom image view
@@ -60,7 +60,6 @@
     self.bottomImageView.frame = CGRectMake(0, self.view.frame.size.height-45-44, 320, 45);
     self.bottomImageView.userInteractionEnabled = YES;
     [self.view addSubview:self.bottomImageView];
-    [self.bottomImageView release];
     
     //send message Button;
     self.sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -70,7 +69,7 @@
     self.sendButton.frame = CGRectMake(10, 5, 101, 34);
     [self.sendButton setTitle:@"确认发送" forState:UIControlStateNormal];
     [self.sendButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    UILabel *sendLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)];
+    UILabel *sendLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)] autorelease];
     sendLabel.text = @"确认发送";
     [sendLabel setFont:[UIFont systemFontOfSize:16]];
     sendLabel.backgroundColor = [UIColor clearColor];
@@ -85,7 +84,7 @@
     [self.cancelButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [self.cancelButton addTarget:self action:@selector(cancelSend:) forControlEvents:UIControlEventTouchUpInside];
     self.cancelButton.frame = CGRectMake(209, 5, 101, 34);
-    UILabel *cancelLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)];
+    UILabel *cancelLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)] autorelease];
     cancelLabel.text = @"取消";
     [cancelLabel setFont:[UIFont systemFontOfSize:16]];
     cancelLabel.backgroundColor = [UIColor clearColor];
@@ -129,13 +128,12 @@
     else{
         self.textViewHeight = 220;
     }
-    self.textViewEditingHeight = self.textViewHeight - 130;
-    
-    self.messageTextView = [[UIPlaceHolderTextView alloc] initWithFrame:CGRectMake(5, 10, self.textViewBgImage.frame.size.width-10, self.textViewHeight)];
+//    self.textViewEditingHeight = self.textViewHeight - 130;
+//    
+//    self.messageTextView = [[[UIPlaceHolderTextView alloc] initWithFrame:CGRectMake(5, 10, self.textViewBgImage.frame.size.width-10, self.textViewHeight)] autorelease];
     self.messageTextView.delegate = self;
-    self.messageTextView.placeholder = @"短信";
-    [self.textViewBgImage addSubview:self.messageTextView];
-    [self.messageTextView release];
+//    self.messageTextView.placeholder = @"短信";
+//    [self.textViewBgImage addSubview:self.messageTextView];
     
     //add person button
     self.addButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -144,7 +142,6 @@
     [self.addButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
     [self.addButton addTarget:self action:@selector(addContact:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.addButton];
-    [self.addButton release];
     
     
 }
@@ -209,12 +206,20 @@
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
-    textView.frame = CGRectMake(textView.frame.origin.x, textView.frame.origin.y, textView.frame.size.width, self.textViewEditingHeight);
+//    textView.frame = CGRectMake(textView.frame.origin.x, textView.frame.origin.y, textView.frame.size.width, self.textViewEditingHeight);
+    textView.textColor = [UIColor blackColor];
+    textView.text = @"";
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    textView.frame = CGRectMake(textView.frame.origin.x, textView.frame.origin.y, textView.frame.size.width, self.textViewHeight);
+//    textView.frame = CGRectMake(textView.frame.origin.x, textView.frame.origin.y, textView.frame.size.width, self.textViewHeight);
+    if([textView.text length] == 0)
+    {
+        textView.text = @"编辑邮件";
+        textView.textColor = [UIColor lightGrayColor];
+        textView.tag = 0;
+    }
 }
 
 #pragma mark - observer method

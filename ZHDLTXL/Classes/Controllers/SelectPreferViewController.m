@@ -8,6 +8,7 @@
 
 #import "SelectPreferViewController.h"
 #import "Pharmacology.h"
+#import "PreferInfo.h"
 #import "PharCell.h"
 
 @interface SelectPreferViewController ()
@@ -29,7 +30,9 @@
 {
     [super viewDidLoad];
     self.preferArray = [[[NSMutableArray alloc] init] autorelease];
-    self.selectArray = [[[NSMutableArray alloc] init] autorelease];
+    if (!self.selectArray) {
+        self.selectArray = [[[NSMutableArray alloc] init] autorelease];
+    }
     
     
     self.title = @"类别偏好";
@@ -40,21 +43,46 @@
     [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
     self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     
-	self.preferTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-44) style:UITableViewStylePlain] autorelease];
+    self.preferTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, self.view.frame.size.height-44-45) style:UITableViewStylePlain] autorelease];
+    UIImageView *bottomImageView = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"bottom_bg.png"]] autorelease];
+    bottomImageView.userInteractionEnabled = YES;
+    bottomImageView.frame = CGRectMake(0, self.view.frame.size.height-45-44, 320, 45);
+    UIButton *confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [confirmButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+    [confirmButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
+    confirmButton.frame = CGRectMake(110, 5, 101, 34);
+    [confirmButton addTarget:self action:@selector(confirmSelect:) forControlEvents:UIControlEventTouchUpInside];
+    [bottomImageView addSubview:confirmButton];
+    
+    UILabel *label = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)] autorelease];
+    label.backgroundColor = [UIColor clearColor];
+    label.text = @"确认";
+    label.textColor = [UIColor whiteColor];
+    label.textAlignment = NSTextAlignmentCenter;
+    [confirmButton addSubview:label];
+    [self.view addSubview:bottomImageView];
     self.preferTableView.delegate = self;
     self.preferTableView.dataSource = self;
     [self.preferTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [self.view addSubview:self.preferTableView];
     
     
+    
+    
     [self getPreferJsonData];
     
     
     
+}
+
+- (void)confirmSelect:(UIButton *)sender
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSelectPharFinished object:self.selectArray];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -82,6 +110,7 @@
             phar.picturelinkurl = [pharDict objectForKey:@"picturelinkurl"];
             phar.col4 = [[pharDict objectForKey:@"col4"] intValue];
             [self.preferArray addObject:phar];
+            [phar release];
         }];
         [self.preferTableView reloadData];
         
@@ -109,6 +138,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSLog(@"prefer array: %@", self.preferArray);
+    NSLog(@"select array: %@", self.selectArray);
     static NSString *cellId = @"pharCell";
     PharCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId];
     if (cell == nil) {
@@ -118,7 +149,7 @@
 
     
     Pharmacology *phar = [self.preferArray objectAtIndex:indexPath.row];
-    if ([self.selectArray containsObject:phar]) {
+    if ([self haveSelectThePrefer:phar]) {
         cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
     }
     else{
@@ -132,16 +163,49 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSLog(@"prefer array: %@", self.preferArray);
     NSLog(@"select array: %@", self.selectArray);
-    
     Pharmacology *phar = [self.preferArray objectAtIndex:indexPath.row];
-    if (![self.selectArray containsObject:phar]) {
-        [self.selectArray addObject:phar];
+    if (self.selectArray.count == 2 && ![self haveSelectThePrefer:phar]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"最多选择两个偏好" message:nil delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
+        [alert show];
+        [alert release];
+        return;
+    }
+    
+    __block PreferInfo *selectPhar = nil;
+    if ([self haveSelectThePrefer:phar]) {
+
+        [self.selectArray enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
+            if ([prefer.prefername isEqualToString:phar.content]) {
+                selectPhar = prefer;
+                *stop = YES;
+            }
+        }];
+        
+        [self.selectArray removeObject:selectPhar];
     }
     else{
-        [self.selectArray removeObject:phar];
+        PreferInfo *prefer = [[PreferInfo alloc] init];
+        prefer.prefername = phar.content;
+        prefer.preferId = phar.pharId;
+        [self.selectArray addObject:prefer];
+        [prefer release];
     }
     [self.preferTableView reloadData];
+}
+
+- (BOOL)haveSelectThePrefer:(Pharmacology *)phar
+{
+    __block BOOL isSelect = NO;
+    [self.selectArray enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
+        if ([prefer.prefername isEqualToString:phar.content]) {
+            isSelect = YES;
+            *stop = YES;
+        }
+        
+    }];
+    return isSelect;
 }
 
 - (void)didReceiveMemoryWarning

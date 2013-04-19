@@ -13,10 +13,12 @@
 @interface CityViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, retain) NSMutableArray *cityArray;
+@property (nonatomic, retain) NSMutableArray *selectCityArray;
 @property (nonatomic, retain) UITableView *cityTableView;
 @property (nonatomic, retain) UIButton *backBarButton;
 
 @property (nonatomic, assign) BOOL isAddResident;
 @property (nonatomic, retain) UIViewController *homePageVC;
+@property (nonatomic, retain) NSString *provinceid;
 
 @end

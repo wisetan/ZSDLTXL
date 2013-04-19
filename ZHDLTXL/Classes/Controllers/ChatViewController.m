@@ -34,11 +34,11 @@
     [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
     self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     
-    self.messages = [[NSMutableArray alloc] init];
+    self.messages = [[[NSMutableArray alloc] init] autorelease];
     self.delegate = self;
     self.dataSource = self;
 	// Do any additional setup after loading the view.

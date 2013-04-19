@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Contact.h"
 
 @interface GroupSendViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
@@ -16,6 +17,11 @@
 @property (nonatomic, retain) UIView *bottomImageView;
 @property (nonatomic, retain) UIButton *confirmSelectButton;
 @property (nonatomic, retain) UIButton *backBarButton;
+
+@property (nonatomic, copy) NSString *curProvinceId;
+@property (nonatomic, copy) NSString *curCityId;
+
+@property (nonatomic, retain) Contact *originContact;
 
 //@property (nonatomic, retain) NSMutableDictionary *selectedContactDict;
 

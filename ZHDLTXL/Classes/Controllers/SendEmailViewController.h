@@ -11,21 +11,23 @@
 
 @interface SendEmailViewController : UIViewController <UITextViewDelegate, UITextFieldDelegate>
 
-@property (nonatomic, retain) UIButton *sendButton;
-@property (nonatomic, retain) UIButton *cancelButton;
-@property (nonatomic, retain) UIImageView *bottomImageView;
+@property (nonatomic, retain) IBOutlet UIButton *sendButton;
+@property (nonatomic, retain) IBOutlet UIButton *cancelButton;
 @property (nonatomic, retain) UIButton *backBarButton;
 
-@property (nonatomic, retain) UILabel *sendTargetLabel;
-@property (nonatomic, retain) UILabel *nameLabel;
-@property (nonatomic, retain) UIPlaceHolderTextView *messageTextView;
-@property (nonatomic, retain) UIImageView *textViewBgImage;
+@property (nonatomic, retain) IBOutlet UILabel *nameLabel;
+@property (nonatomic, retain) IBOutlet UIImageView *textViewBgImage;
 @property (nonatomic, retain) Contact *currentContact;
-@property (nonatomic, retain) NSMutableArray *contactArray;
-@property (nonatomic, retain) UIButton *addButton;
-@property (nonatomic, retain) UITextField *emailTitleTextField;
+@property (nonatomic, retain) NSMutableArray *contactArray; //群发联系人
+@property (nonatomic, retain) IBOutlet UIButton *addButton;
+@property (nonatomic, retain) IBOutlet UITextField *emailTitleTextField;
+@property (retain, nonatomic) IBOutlet UIImageView *textfieldBgImage;
 
+@property (retain, nonatomic) IBOutlet UITextView *mailTextView;
 @property (nonatomic, retain) NSDictionary *contactDict;
+
+@property (nonatomic, copy) NSString *provinceId;
+@property (nonatomic, copy) NSString *cityId;
 
 
 @end

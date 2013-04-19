@@ -28,7 +28,8 @@
 
 - (void)dealloc {
     [_areaNameLabel release];
-    [_selectButton release];
+    [_selectImage release];
+    [_separatorImage release];
     [super dealloc];
 }
 @end

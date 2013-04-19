@@ -23,4 +23,8 @@
 @property (retain, nonatomic) IBOutlet UITableView *mTableView;
 @property (retain, nonatomic) NSMutableArray *registInfo;
 
+
+
+
+
 @end

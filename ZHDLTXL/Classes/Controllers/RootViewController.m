@@ -18,6 +18,10 @@
 #import "UIImageView+WebCache.h"
 #import "MyHomePageViewController.h"
 #import "MyFriendViewController.h"
+//#import "SelectViewController.h"
+
+#import "ZhaoshangAndDailiViewController.h"
+#import "UIImageView+WebCache.h"
 
 @interface RootViewController ()
 
@@ -38,7 +42,12 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    
+    if ([self isLogined]) {
+        self.loginLabel.text = @"我的主页";
+    }
+    else{
+        self.loginLabel.text = @"登录";
+    }
 }
 
 - (void)viewDidLoad
@@ -58,8 +67,8 @@
     [self.locationManager startUpdatingLocation];
     
     //contact array
-    self.contactArray = [[NSMutableArray alloc] init];
-    self.contactDictSortByAlpha = [NSMutableDictionary new];
+    self.contactArray = [[[NSMutableArray alloc] init] autorelease];
+    self.contactDictSortByAlpha = [[NSMutableDictionary new] autorelease];
     
     //nav bar image
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
@@ -71,7 +80,7 @@
     self.bottomImageView.userInteractionEnabled = YES;
     
     [self.view addSubview:self.bottomImageView];
-    [self.bottomImageView release];
+
     
     //login button
     self.loginButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -81,9 +90,9 @@
     self.loginButton.frame = CGRectMake(5, 5, 101, 34);
     [self.loginButton setTitle:@"登录" forState:UIControlStateNormal];
     [self.loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    self.loginLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)];
+    self.loginLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 101.f, 34.f)] autorelease];
     
-    if (self.hasRegisted) {
+    if ([self isLogined]) {
         self.loginLabel.text = @"我的主页";
         [self.loginButton addTarget:self action:@selector(showMyHomepage:) forControlEvents:UIControlEventTouchUpInside];
     }
@@ -106,7 +115,7 @@
     [self.selButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [self.selButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
     self.selButton.frame = CGRectMake(214, 5, 101, 34);
-    UILabel *selLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)];
+    UILabel *selLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)] autorelease];
     selLabel.text = @"筛选";
     [selLabel setFont:[UIFont systemFontOfSize:16]];
     selLabel.backgroundColor = [UIColor clearColor];
@@ -129,7 +138,7 @@
     [self.areaButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [self.areaButton addTarget:self action:@selector(selectArea:) forControlEvents:UIControlEventTouchUpInside];
     self.areaButton.frame = CGRectMake(0, 0, 101, 34);
-    self.areaLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, 101, 34)];
+    self.areaLabel = [[[UILabel alloc] initWithFrame:CGRectMake(15, 0, 101, 34)] autorelease];
     self.areaLabel.text = self.currentCity;
     [self.areaLabel setFont:[UIFont systemFontOfSize:16]];
     self.areaLabel.backgroundColor = [UIColor clearColor];
@@ -137,14 +146,14 @@
     self.areaLabel.textAlignment = NSTextAlignmentCenter;
     [self.areaButton addSubview:self.areaLabel];
     
-    UIImageView *areaIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"location_icon.png"]];
+    UIImageView *areaIcon = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"location_icon.png"]] autorelease];
     areaIcon.frame = CGRectMake(7, 3, 28, 28);
     areaIcon.userInteractionEnabled = YES;
     UITapGestureRecognizer *tapOnIcon = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnLocationIcon)];
     [areaIcon addGestureRecognizer:tapOnIcon];
     [self.areaButton addSubview:areaIcon];
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.areaButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.areaButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     //left friend barbutton
@@ -153,7 +162,7 @@
     [self.friendButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [self.friendButton addTarget:self action:@selector(myFriend:) forControlEvents:UIControlEventTouchUpInside];
     self.friendButton.frame = CGRectMake(0, 0, 101, 34);
-    UILabel *friendLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)];
+    UILabel *friendLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 101, 34)] autorelease];
     friendLabel.text = @"我的好友";
     [friendLabel setFont:[UIFont systemFontOfSize:16]];
     friendLabel.backgroundColor = [UIColor clearColor];
@@ -161,7 +170,7 @@
     friendLabel.textAlignment = NSTextAlignmentCenter;
     [self.friendButton addSubview:friendLabel];
     
-    UIBarButtonItem *rBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.friendButton];
+    UIBarButtonItem *rBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.friendButton] autorelease];
     [self.navigationItem setRightBarButtonItem:rBarButton];
     
 //    [self getInvestmentUserList];
@@ -170,16 +179,8 @@
 
 - (BOOL)isLogined
 {
-    NSString *isLogined = [PersistenceHelper dataForKey:@"isLogined"];
-    return [isLogined isEqualToString:@"YES"];
-}
-
-- (void)addContactHimView
-{
-    self.contactHimView = [[ContactHimView alloc] initWithFrame:CGRectMake(0, 0, 256, 56)];
-    [self.view addSubview:self.contactHimView];
-    self.contactHimView.center = CGPointMake(self.contactTableView.center.x + 320, self.contactTableView.center.y);
-    self.contactHimView.delegate = self;
+    NSString *userid = [PersistenceHelper dataForKey:@"userid"];
+    return [userid isValid];
 }
 
 - (void)tapOnLocationIcon
@@ -192,6 +193,7 @@
     NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
     NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
     NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
+    [areaJsonData release];
     
     NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
     [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
@@ -201,6 +203,9 @@
             if ([[cityDict objectForKey:@"cityname"] isEqualToString:self.currentCity]) {
                 self.curProvinceId = [cityDict objectForKey:@"provinceid"];
                 self.curCityId = [cityDict objectForKey:@"cityid"];
+                
+                [PersistenceHelper setData:self.curCityId forKey:@"currentCityId"];
+                [PersistenceHelper setData:self.curProvinceId forKey:@"currentProvinceId"];
             }
         }];
     }];
@@ -221,6 +226,7 @@
     
     MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
     hub.labelText = @"获取商家列表";
+    NSLog(@"dict: %@", dict);
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
@@ -228,9 +234,10 @@
 //            NSLog(@"商家列表：%@", json);
             NSMutableArray *contactArray = [NSMutableArray new];
             [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                //                NSLog(@"contact Dict: %@", contactDict);
+//                NSLog(@"contact Dict: %@", contactDict);) {
+
                 Contact *contact = [Contact new];
-                contact.userid = [[contactDict objectForKey:@"id"] longValue];
+                contact.userid = [NSNumber numberWithLong:[[contactDict objectForKey:@"id"] longValue]];
                 contact.username = [contactDict objForKey:@"username"];
                 contact.tel = [contactDict objForKey:@"tel"];
                 contact.mailbox = [contactDict objectForKey:@"mailbox"];
@@ -238,6 +245,10 @@
                 contact.col1 = [contactDict objectForKey:@"col1"];
                 contact.col2 = [contactDict objectForKey:@"col2"];
                 contact.col2 = [contactDict objectForKey:@"col2"];
+                if ([contact.picturelinkurl isValid]) {
+                    NSLog(@"pic url: %@", contact.picturelinkurl);
+                }
+                
                 [contactArray addObject:contact];
                 [contact release];
             }];
@@ -268,14 +279,7 @@
         [myHomeVC release];
     }
     else{
-        LoginViewController *loginVC = nil;
-        if (IS_IPHONE_5) {
-            loginVC = [[LoginViewController alloc] initWithNibName:@"LoginViewController_ip5" bundle:nil];
-        }
-        else{
-            loginVC = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
-        }
-        
+        LoginViewController *loginVC = [[LoginViewController alloc] init];
         [self.navigationController pushViewController:loginVC animated:YES];
         [loginVC release];
     }
@@ -293,6 +297,9 @@
 - (void)select:(UIButton *)sender
 {
     NSLog(@"select");
+    ZhaoshangAndDailiViewController *zdVC = [[ZhaoshangAndDailiViewController alloc] init];
+    [self.navigationController pushViewController:zdVC animated:YES];
+    [zdVC release];
 }
 
 - (void)selectArea:(UIButton *)sender
@@ -352,22 +359,30 @@
         cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
     }
     cell.selectionStyle = UITableViewCellEditingStyleNone;
-//    cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
     
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    NSString *imageUrl = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] picturelinkurl];
+    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+    if ([contact.picturelinkurl isValid]) {
+        NSLog(@"table pic url");
+    }
+
+    if ([contact.picturelinkurl isValid]) {
+        [cell.headIcon setImageWithURL:[NSURL URLWithString:contact.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType) {
+            [[SDImageCache sharedImageCache] storeImage:cell.headIcon.image forKey:contact.picturelinkurl toDisk:YES];
+        }];
+    }
     
     
-    [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
+//    [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl]
+//                  placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
+    
+
     
     if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
-        
         cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
     }
     
-    self.currentContact = nil;  //[self.contactArray objectAtIndex:indexPath.row];
-    cell.unSelectedImage.alpha = 0.f;
-//    cell.selectButton = nil;
+    cell.unSelectedImage.hidden = YES;
 
     return cell;
 }
@@ -384,40 +399,22 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    OtherHomepageViewController *homeVC = [[OtherHomepageViewController alloc] init];
-
+    OtherHomepageViewController *homeVC = nil;
+    if (IS_IPHONE_5) {
+        homeVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController_ip5" bundle:nil];
+    }
+    else{
+        homeVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController" bundle:nil];
+    }
+    
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
-    homeVC.userName = username;
-    homeVC.contactDict = self.contactDictSortByAlpha;
     homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     [self.navigationController pushViewController:homeVC animated:YES];
     [homeVC release];
 }
 
 
-//- (void)contactHim:(CellButton *)sender
-//{
-////    NSLog(@"sender.index: %d, cur index: %d", sender.index, self.currentCellButtonIndex);
-//    if (sender.indexRow == self.currentCellButtonIndex && self.contactHimView.isAppeared == YES) {
-//        return;
-//    }
-//    else{
-//        self.currentCellButtonIndex = sender.index;
-//    }
-//    if (self.contactHimView.isAppeared) {
-//        self.contactHimView.isAppeared = NO;
-//        [UIView animateWithDuration:1.f animations:^{
-//            self.contactHimView.center = CGPointMake(self.contactHimView.center.x+320, self.contactHimView.center.y);
-//        }];
-//        return;
-//    }
-//    self.contactHimView.isAppeared = YES;
-//    [UIView animateWithDuration:1.f animations:^{
-//        self.contactHimView.center = self.contactTableView.center;
-//    }];
-//    self.contactTableView.scrollEnabled = NO;
-//}
+
 
 #pragma mark - contactHimView delegate
 
@@ -472,6 +469,8 @@
 - (void)investmentUserListRefreshed:(NSNotification *)noti
 {
 //    NSLog(@"__func__: %@", noti);
+
+    
     [self.contactArray removeAllObjects];
     [self.contactArray addObjectsFromArray:[[noti object] objectForKey:@"contactArray"]];
     //按字母分组
@@ -479,13 +478,44 @@
     for (NSString *indexKey in [theCollation sectionTitles]) {
         NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] init];
         [self.contactDictSortByAlpha setObject:contactArrayTmp forKey:indexKey];
+        [contactArrayTmp release];
 //        [contactArrayTmp release];
     }
         
     [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
         NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
         [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact];
+        if ([contact.picturelinkurl isValid]) {
+            NSLog(@"pic url: %@", contact.picturelinkurl);
+        }
     }];
+    
+    
+    self.curProvinceId = [PersistenceHelper dataForKey:@"provinceid"];
+    self.curCityId = [PersistenceHelper dataForKey:@"cityid"];
+    NSString *fileName = [NSString stringWithFormat:@"%@_%@.dat",self.curProvinceId, self.curCityId];
+    NSString *userDataFile = [[NSString alloc] initWithString:[kDocumentory stringByAppendingPathComponent:fileName]];
+
+    
+    NSString *oldFile = [PersistenceHelper dataForKey:kUserDataFile];
+    NSLog(@"oldFile %@", oldFile);
+    NSLog(@"newFile %@", userDataFile);
+    
+    if (![userDataFile isEqualToString:oldFile]) {
+
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        if ([fileManager fileExistsAtPath:oldFile])
+        {
+            NSError *error;
+            if (![fileManager removeItemAtPath:oldFile error:&error])
+            {
+                NSLog(@"Error removing file: %@", error);
+            };
+        }
+        [PersistenceHelper setData:userDataFile forKey:kUserDataFile];
+        [NSKeyedArchiver archiveRootObject:self.contactDictSortByAlpha toFile:userDataFile];
+    }
+    
     self.currentCity = [noti.object objectForKey:@"cityName"];
     self.areaLabel.text = self.currentCity;
     [self.contactTableView reloadData];

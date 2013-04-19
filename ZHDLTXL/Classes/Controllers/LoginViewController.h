@@ -1,19 +1,25 @@
 //
 //  LoginViewController.h
-//  ZHDLTXL
+//  ZXCXBlyt
 //
-//  Created by LiuYue on 13-4-9.
-//  Copyright (c) 2013年 zxcx. All rights reserved.
+//  Created by zly on 12-3-28.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
+#import "ELCTextfieldCell.h"
 
-@interface LoginViewController : UIViewController <UITextFieldDelegate>
+@interface LoginViewController : UIViewController<ELCTextFieldDelegate> {
+    UITableView *mTableView;
+    BOOL isAutoLogin;
+    UITextField *userName;
+    UITextField *password;
+}
+
+@property (retain, nonatomic) IBOutlet UIButton *autoLoginButton;
+@property (retain, nonatomic) IBOutlet UITableView *mTableView;
+@property (assign, nonatomic) BOOL isAutoLogin;
 
 @property (nonatomic, retain) UIButton *backBarButton;
-@property (retain, nonatomic) IBOutlet UIButton *loginButton;
-@property (retain, nonatomic) IBOutlet UIButton *registButton;
-@property (retain, nonatomic) IBOutlet UITextField *usernameTextfield;
-@property (retain, nonatomic) IBOutlet UITextField *passwordTextfield;
 
 @end

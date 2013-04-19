@@ -10,4 +10,9 @@
 
 @implementation Pharmacology
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"%@", self.content];
+}
+
 @end

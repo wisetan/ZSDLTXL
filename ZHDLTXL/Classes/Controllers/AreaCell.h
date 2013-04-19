@@ -11,7 +11,8 @@
 
 @interface AreaCell : UITableViewCell
 @property (retain, nonatomic) IBOutlet UILabel *areaNameLabel;
-@property (assign, nonatomic) BOOL isSelected;
-@property (retain, nonatomic) IBOutlet CellButton *selectButton;
+
+@property (retain, nonatomic) IBOutlet UIImageView *selectImage;
+@property (retain, nonatomic) IBOutlet UIImageView *separatorImage;
 
 @end

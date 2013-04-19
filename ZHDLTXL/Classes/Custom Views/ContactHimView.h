@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "Contact.h"
+#import "CustomBadge.h"
 
 @protocol ContactHimViewDelegate <NSObject>
 
@@ -29,5 +30,9 @@
 @property (nonatomic, retain) UIImageView *messageIcon;
 @property (nonatomic, retain) UIImageView *emailIcon;
 @property (nonatomic, retain) UIImageView *chatIcon;
+
+@property (nonatomic, assign) BOOL hasBadge;
+
+@property (nonatomic, retain) NSArray *badgeNumberArray;
 
 @end

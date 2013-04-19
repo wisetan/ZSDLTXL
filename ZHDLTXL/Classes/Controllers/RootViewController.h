@@ -27,13 +27,16 @@
 @property (nonatomic, retain) UILabel *areaLabel;
 @property (nonatomic, retain) UILabel *loginLabel;
 
-@property (nonatomic, assign) BOOL hasRegisted;
 @property (nonatomic, copy) NSString *currentCity;
 @property (nonatomic, copy) NSString *originCity;
 
 
 @property (nonatomic, copy) NSString *curProvinceId;
 @property (nonatomic, copy) NSString *curCityId;
+
+@property (nonatomic, copy) NSString *username;
+@property (nonatomic, copy) NSString *mail;
+@property (nonatomic, copy) NSString *tel;
 
 @property (nonatomic, retain) NSMutableDictionary *contactDictSortByAlpha;
 

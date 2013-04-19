@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface Contact : NSObject
+@interface Contact : NSObject <NSCoding>
 
-@property (nonatomic, assign) long userid;
+@property (nonatomic, retain) NSNumber *userid;
 @property (nonatomic, copy) NSString *username;
 @property (nonatomic, copy) NSString *tel;
 @property (nonatomic, copy) NSString *mailbox;
@@ -19,5 +19,8 @@
 @property (nonatomic, copy) NSString *col1;
 @property (nonatomic, copy) NSString *col2;
 @property (nonatomic, copy) NSString *col3;
+@property (nonatomic, retain) NSNumber *type;
+@property (nonatomic, retain) NSNumber *invagency;
+@property (nonatomic, copy) NSString *remark;
 
 @end

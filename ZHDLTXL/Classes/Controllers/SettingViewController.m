@@ -8,6 +8,7 @@
 
 #import "SettingViewController.h"
 #import "MenuCell.h"
+#import "LoginViewController.h"
 
 @interface SettingViewController ()
 
@@ -36,7 +37,7 @@
     [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
     self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     UIImageView *bgImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"debut_light.png"]];
@@ -45,7 +46,7 @@
     [bgImageView release];
     
     UIImage *tableBgImage = [[UIImage imageNamed:@"underframe.png"] stretchableImageWithLeftCapWidth:290 topCapHeight:56];
-    UIImageView *tableBgImageView = [[UIImageView alloc] initWithImage:tableBgImage];
+    UIImageView *tableBgImageView = [[[UIImageView alloc] initWithImage:tableBgImage] autorelease];
     tableBgImageView.userInteractionEnabled = YES;
     tableBgImageView.frame = CGRectMake(20, 20, 280, 306);
     [self.view addSubview:tableBgImageView];
@@ -60,10 +61,10 @@
     self.menuTableView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:self.menuTableView];
     
-    self.menuNameArray = [[NSMutableArray alloc] initWithObjects:@"注销登录", @"修改密码", @"意见反馈", @"新手引导", @"应用推荐", @"关于", nil];
-    self.selectorNameArray = [[NSMutableArray alloc] initWithObjects:@"registAndLogin", @"modifyPassword", @"feedback", @"newcomer", @"appCommand", @"about", nil];
+    self.menuNameArray = [[[NSMutableArray alloc] initWithObjects:@"注销登录", @"修改密码", @"意见反馈", @"新手引导", @"应用推荐", @"关于", nil] autorelease];
+    self.selectorNameArray = [[[NSMutableArray alloc] initWithObjects:@"logoff", @"modifyPassword", @"feedback", @"newcomer", @"appCommand", @"about", nil] autorelease];
     
-    self.selectorArray = [[NSMutableArray alloc] init];
+    self.selectorArray = [[[NSMutableArray alloc] init] autorelease];
     [self.selectorNameArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [self.selectorArray addObject:[NSValue valueWithPointer:NSSelectorFromString([self.selectorNameArray objectAtIndex:idx])]];
     }];
@@ -113,9 +114,16 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)registAndLogin
+- (void)logoff
 {
     NSLog(@"registAndLogin");
+    [PersistenceHelper setData:@"" forKey:@"username"];
+    [PersistenceHelper setData:@"" forKey:@"userid"];
+    [PersistenceHelper setData:@"" forKey:@"password"];
+    
+    LoginViewController *loginVC = [[LoginViewController alloc] init];
+    [self.navigationController pushViewController:loginVC animated:YES];
+    [loginVC release];
 }
 
 - (void)modifyPassword

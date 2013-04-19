@@ -8,12 +8,8 @@
 #import "DreamFactoryClient.h"
 #import "AFJSONRequestOperation.h"
 
-//NSString * const kAFGowallaBaseURLString = @"http://www.baolaitong.com:9101/BLYTCloud";
-//NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLYTCloud";
-//NSString * const kAFGowallaBaseURLString = @"http://192.168.1.126:9080/BLYTCloud";
-
-//NSString * const kAFGowallaBaseURLString = @"http://www.boracloud.com:9101/BLYTCloud";
 NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud";
+//NSString * const kAFGowallaBaseURLString = @"http://www.baolaitong.com:9101/BLZTCloud";
 
 @implementation DreamFactoryClient
 
@@ -44,10 +40,6 @@ NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud
     if (parameters && [parameters isKindOfClass:[NSDictionary class]]) {
         //set main para
         
-//        [mutableParameters setValue:[kAppDelegate uuid] forKey:@"uuid"];
-//        [mutableParameters setValue:@"iphone" forKey:@"via"];
-//        [mutableParameters setValue:kClientVersion forKey:@"version"];
-        
         NSString *userid = [PersistenceHelper dataForKey:@"userid"];
         if ([userid isValid]) {
             [mutableParameters setValue:userid forKey:@"myuserid"];
@@ -58,7 +50,7 @@ NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud
     if (![path isValid]) {
         path = @"/BLZTCloud";
     } else {
-        path = [NSString stringWithFormat:@"/BLZTCloud/%@", path] ;
+        path = [NSString stringWithFormat:@"/BLZTCloud/%@", path];
     }
     
     [mutableParameters removeObjectForKey:@"path"];
@@ -100,15 +92,15 @@ NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud
     NSMutableURLRequest *request = [[DreamFactoryClient sharedClient] multipartFormRequestWithMethod:@"POST" path:path parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData>formData) {
         [formData appendPartWithFileData:imageData name:@"image" fileName:@"imgFile001" mimeType:@"image/jpeg"];
         
-        [formData appendPartWithFormData:[[kAppDelegate uuid] dataUsingEncoding:NSUTF8StringEncoding] name:@"uuid"];
-        [formData appendPartWithFormData:[@"iphone" dataUsingEncoding:NSUTF8StringEncoding] name:@"via"];
-        [formData appendPartWithFormData:[kClientVersion dataUsingEncoding:NSUTF8StringEncoding] name:@"version"];
+//        [formData appendPartWithFormData:[[kAppDelegate uuid] dataUsingEncoding:NSUTF8StringEncoding] name:@"uuid"];
+//        [formData appendPartWithFormData:[@"iphone" dataUsingEncoding:NSUTF8StringEncoding] name:@"via"];
+//        [formData appendPartWithFormData:[kClientVersion dataUsingEncoding:NSUTF8StringEncoding] name:@"version"];
         
-        NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
-        if ([myUid isValid]) {
-            [formData appendPartWithFormData:[myUid dataUsingEncoding:NSUTF8StringEncoding] name:@"userid"];
-            [formData appendPartWithFormData:[myUid dataUsingEncoding:NSUTF8StringEncoding] name:@"myuserid"];
-        }
+//        NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+//        if ([myUid isValid]) {
+//            [formData appendPartWithFormData:[myUid dataUsingEncoding:NSUTF8StringEncoding] name:@"userid"];
+//            [formData appendPartWithFormData:[myUid dataUsingEncoding:NSUTF8StringEncoding] name:@"myuserid"];
+//        }
         
         for (NSString *key in [parameters allKeys]) {
             [formData appendPartWithFormData:[[parameters objForKey:key] dataUsingEncoding:NSUTF8StringEncoding] name:key];            

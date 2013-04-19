@@ -1,0 +1,36 @@
+//
+//  MyInfoCell.h
+//  ZXCXBlyt
+//
+//  Created by zly on 12-4-28.
+//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol MyInfoDelegate;
+@interface MyInfoCell : UITableViewCell<EGOImageViewDelegate> {
+    id<MyInfoDelegate> delegate;
+    NSIndexPath *indexPath;
+    UILabel *labName;
+    UILabel *labSubTitle;
+    UILabel *labTime;
+    UILabel *labInfoCount;
+}
+
+@property (retain, nonatomic) IBOutlet UILabel *labName;
+@property (retain, nonatomic) IBOutlet UILabel *labSubTitle;
+@property (retain, nonatomic) IBOutlet UILabel *labTime;
+@property (retain, nonatomic) IBOutlet EGOImageView *avatar;
+@property (retain, nonatomic) IBOutlet UILabel *labInfoCount;
+@property (assign, nonatomic) id<MyInfoDelegate> delegate;
+@property (retain, nonatomic) NSIndexPath *indexPath;
+@property (retain, nonatomic) IBOutlet UIImageView *bgInfoCount;
+
+@end
+
+@protocol MyInfoDelegate <NSObject>
+
+- (void)myInfoCell:(MyInfoCell *)cell clickAvatarAtIndexPath:(NSIndexPath *)indexPath;
+
+@end

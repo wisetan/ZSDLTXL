@@ -50,6 +50,10 @@
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIUserInteractionEnabled">NO</bool>
 								<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
+								<object class="NSCustomResource" key="IBUIImage">
+									<string key="NSClassName">NSImage</string>
+									<string key="NSResourceName">AC_talk_icon.png</string>
+								</object>
 							</object>
 							<object class="IBUILabel" id="562262922">
 								<reference key="NSNextResponder" ref="241262570"/>
@@ -285,6 +289,7 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
+			<string key="AC_talk_icon.png">{74, 74}</string>
 			<string key="separator.png">{564, 2}</string>
 			<string key="unselected.png">{68, 68}</string>
 		</dictionary>

@@ -11,6 +11,7 @@
 #import "Contact.h"
 #import "CellButton.h"
 #import "CellTapGestureRecognizer.h"
+#import "UIImageView+WebCache.h"
 
 @interface GroupSendViewController ()
 
@@ -32,12 +33,16 @@
     [super viewDidLoad];
 	
     self.title = @"群发人员";
-    self.selectedContactArray = [[NSMutableArray new] autorelease];
-    self.contactTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-44-45) style:UITableViewStylePlain];
+    NSString *userDataFile = [PersistenceHelper dataForKey:kUserDataFile];
+    
+    NSLog(@"self.selectContactArray %@", self.selectedContactArray);
+    
+    self.contactDictSortByAlpha = [NSKeyedUnarchiver unarchiveObjectWithFile:userDataFile];
+    self.contactTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-44-45) style:UITableViewStylePlain] autorelease];
     self.contactTableView.delegate = self;
     self.contactTableView.dataSource = self;
+    self.contactTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     [self.view addSubview:self.contactTableView];
-    [self.contactTableView release];
     
     //back button
     self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -45,7 +50,7 @@
     [self.backBarButton addTarget:self action:@selector(popVC:) forControlEvents:UIControlEventTouchUpInside];
     self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     //bottom image view
@@ -54,7 +59,6 @@
     self.bottomImageView.userInteractionEnabled = YES;
     
     [self.view addSubview:self.bottomImageView];
-    [self.bottomImageView release];
     
     //login button
     self.confirmSelectButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -62,7 +66,7 @@
     [self.confirmSelectButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     
     self.confirmSelectButton.frame = CGRectMake(110, 5, 100.f, 34);
-    UILabel *confirmLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 100.f, 34.f)];
+    UILabel *confirmLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 100.f, 34.f)] autorelease];
     confirmLabel.backgroundColor = [UIColor clearColor];
     confirmLabel.text = @"确认发送";
     confirmLabel.textColor = [UIColor whiteColor];
@@ -124,25 +128,30 @@
         cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
     }
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-//    CellTapGestureRecognizer *tap = [[CellTapGestureRecognizer alloc] initWithTarget:self action:@selector(selectContact:)];
-//    tap.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-//    tap.indexRow = indexPath.row;
-//    tap.indexSection = indexPath.section;
-//    cell.unSelectedImage.userInteractionEnabled = YES;
-//    [cell.unSelectedImage addGestureRecognizer:tap];
+    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
-        cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
+        cell.nameLabel.text = contact.username;
     }
     
-//    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexPath] objectAtIndex:indexPath.row];
-//    if ([[self.selectedContactDict allKeys] containsObject:[NSNumber numberWithLong:contact.userid]]
-//        && !cell.unSelectedImage.isSelected) {
-//        [[[cell.unSelectedImage subviews] objectAtIndex:0] removeFromSuperview];
-//    }
+    if ([contact.picturelinkurl isValid]) {
+        [[SDImageCache sharedImageCache] queryDiskCacheForKey:contact.picturelinkurl done:^(UIImage *image, SDImageCacheType cacheType) {
+            if (image != nil) {
+                cell.headIcon.image = image;
+            }
+            else {
+                [cell.headIcon setImageWithURL:[NSURL URLWithString:contact.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
+            }
+        }];
+        NSLog(@"contact pic url; %@", contact.picturelinkurl);
+    }
     
-    Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-    if ([self.selectedContactArray containsObject:contact]) {
+    Contact *findContact = [self containTheContact:contact];
+    if (findContact) {
         cell.unSelectedImage.image = [UIImage imageNamed:@"selected.png"];
+        if ([self isTheOriginContact:contact]) {
+//            NSLog(@"contact.userid %@, contactTmp.userid %@", self.originContact.userid, contact.userid);
+            cell.userInteractionEnabled = NO;
+        }
     }
     else{
         cell.unSelectedImage.image = [UIImage imageNamed:@"unselected.png"];
@@ -168,8 +177,9 @@
 {
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
     Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-    if ([self.selectedContactArray containsObject:contact]) {
-        [self.selectedContactArray removeObject:contact];
+    Contact *findContact = [self containTheContact:contact];
+    if (findContact) {
+        [self.selectedContactArray removeObject:findContact];
     }
     else{
         [self.selectedContactArray addObject:contact];
@@ -178,31 +188,30 @@
     
 }
 
-//- (void)selectContact:(CellTapGestureRecognizer *)sender
-//{
-//    NSNumber *userId = [NSNumber numberWithLong:sender.contact.userid];
-//    if ([self.selectedContactDict objectForKey:userId]) {
-//        [self.selectedContactDict removeObjectForKey:userId];
-//    }
-//    else{
-//        [self.selectedContactDict setObject:sender.contact forKey:userId];
-//    }
-//    
-//    
-//    SelectImageView *selectedImageView = (SelectImageView *)sender.view;
-//    
-//    BOOL isSelected = [selectedImageView isSelected];
-//    if (!isSelected) {
-//        UIImageView *selectedImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"selected.png"]];
-//        selectedImage.frame = CGRectMake(0, 0, sender.view.frame.size.width, sender.view.frame.size.height);
-//        [selectedImageView addSubview:selectedImage];
-//    }
-//    else{
-//        [[[sender.view subviews] objectAtIndex:0] removeFromSuperview];
-//    }
-//    selectedImageView.isSelected = !isSelected;
-//
-//}
+#pragma mark - help method
+
+- (Contact *)containTheContact:(Contact *)contactTmp
+{
+    __block Contact *findContact = nil;
+    [self.selectedContactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+
+        if (contact.userid.longValue == contactTmp.userid.longValue) {
+            NSLog(@"contact.userid %@, contactTmp.userid %@", contact.userid, contactTmp.userid);
+            findContact = contact;
+            *stop = YES;
+        }
+    }];
+    return findContact;
+}
+
+- (BOOL)isTheOriginContact:(Contact *)contactTmp
+{
+//    NSLog(@"contact.userid %@, contactTmp.userid %@", self.originContact.userid, contactTmp.userid);
+    if ([self.originContact.userid isEqualToNumber:contactTmp.userid]) {
+        return YES;
+    }
+    return NO;
+}
 
 
 
@@ -215,9 +224,6 @@
 - (void)dealloc
 {
     [super dealloc];
-//    self.contactTableView = nil;
-//    self.selectedContactArray = nil;
-    
 }
 
 @end

@@ -36,6 +36,8 @@
 #define kContentBlueColor RGBCOLOR(20,100,170);
 #define kContentGrayColor RGBCOLOR(200,200,200);
 
+#define kDefaultPageSizeString         @"20"
+
 typedef struct
 {
 	double lat;
@@ -55,5 +57,16 @@ typedef struct
 #define kAddResidentNotification @"kAddResidentNotification"
 #define kSelectPharFinished @"kSelectPharFinished"
 #define kDeleteFriend @"kDeleteFriend"
+
+#define kUserDataFile @"kUserDataFile"
+
+
+#define kDocumentory ([NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0])
+
+
+
+//Persist Data, password userid
+
+
 
 #endif

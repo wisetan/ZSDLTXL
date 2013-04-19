@@ -23,26 +23,25 @@
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     
     self.uuid = [[UIDevice currentDevice] uniqueDeviceIdentifier];
-    self.geocoder = [[CLGeocoder alloc] init];
+    self.geocoder = [[[CLGeocoder alloc] init] autorelease];
     [self initGPS];
     
-    RootViewController *rootVC = [[RootViewController alloc] init];
-    if ([userId isValid]) {
-        rootVC.hasRegisted = YES;
-    }
-    else{
-        rootVC.hasRegisted = NO;
-    }
+    RootViewController *rootVC = [[[RootViewController alloc] init] autorelease];
+//    if ([userId isValid]) {
+//        rootVC.hasRegisted = YES;
+//    }
+//    else{
+//        rootVC.hasRegisted = NO;
+//    }
     
     if (self.isGpsError) {
         self.newCity = @"北京";
     }
     
     rootVC.currentCity = self.newCity;
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:rootVC];
+    UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:rootVC] autorelease];
     self.window.rootViewController = nav;
-    [rootVC release];
-    [nav release];
+
 
     
     self.window.backgroundColor = [UIColor whiteColor];
@@ -171,7 +170,7 @@
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
-    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+    CLGeocoder *geocoder = [[[CLGeocoder alloc] init] autorelease];
     CLLocationCoordinate2D coord = [[locations objectAtIndex:0] coordinate];
     NSLog(@"lat: %f, lon: %f", coord.latitude, coord.longitude);
     CLLocation *location = [[[CLLocation alloc] initWithLatitude:coord.latitude longitude:coord.longitude] autorelease];
