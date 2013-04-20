@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
+#import "RootViewController.h"
 
 #define kNetworkErrorMessage        @"您的网络不好哦，检查一下"
 #define kEventMyLatlonChanged       @"kEventMyLatlonChanged"
@@ -20,8 +21,7 @@
     MBProgressHUD *HUD;
     CLLocationManager *locationManager;
     BOOL isGpsError;
-    double gLat;
-    double gLon;
+
     NSString *uuid;
 
 //    UIImage *pickedPhotoImage;
@@ -37,21 +37,14 @@
     
 }
 
+
+@property (nonatomic, retain) RootViewController *rootVC;
 @property (strong, nonatomic) UIWindow *window;
 
-
-
-//@property (nonatomic, copy)   NSString *tokenAsString;
-
-//@property (nonatomic, assign) BOOL alreadyCheckin;
-//@property (nonatomic, retain) NSDate *lastUpdateDate;
 @property (nonatomic, copy)   NSString *hotspotContent;
 
-//@property (nonatomic, retain) UIImage *pickedPhotoImage;
 
 @property (nonatomic, assign) BOOL isGpsError;
-@property (nonatomic, assign) double gLat;
-@property (nonatomic, assign) double gLon;
 
 @property (nonatomic, retain) CLLocationManager *locationManager;
 @property (nonatomic, copy)   NSString *uuid;

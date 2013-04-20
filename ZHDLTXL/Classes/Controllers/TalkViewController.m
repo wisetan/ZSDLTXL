@@ -84,7 +84,7 @@
 - (void)getMessageLoop:(NSTimer*)theTimer {
     
     if ([[self lastTalkTime] isValid]) {
-        NSString *userid = [PersistenceHelper dataForKey:@"userid"];
+        NSString *userid = [PersistenceHelper dataForKey:kUserId];
         NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessageloop.json", @"path", userid, @"userid", fid, @"destuserid", [self lastTalkTime], @"time", nil];
         [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
             NSArray *array = [json objForKey:@"MessageList"];
@@ -113,11 +113,12 @@
 }
 
 - (void)moreAction {
-    NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+    NSString *myUid = [PersistenceHelper dataForKey:kUserId];
     
     NSString *pageSize = @"5";
     currentPage++;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessage.json", @"path", myUid, @"userid", fid, @"destuserid", [NSString stringWithFormat:@"%d", currentPage], @"page", pageSize, @"maxrow", nil];
+    NSLog(@"dict %@", dict);
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
 
         @try {
@@ -149,7 +150,7 @@
     [self.mTableView reloadData];
     
     NSString *pageSize = @"5";
-    NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+    NSString *myUid = [PersistenceHelper dataForKey:kUserId];
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessage.json", @"path", myUid, @"userid", fid, @"destuserid", [NSString stringWithFormat:@"%d", currentPage], @"page", pageSize, @"maxrow", nil];
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
 
@@ -185,14 +186,16 @@
     [textView resignFirstResponder];
     
     self.doneButton.enabled = NO;
-    NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+    NSString *myUid = [PersistenceHelper dataForKey:kUserId];
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"addMessage.json", @"path", myUid, @"userid", fid, @"destuserid", content, @"content",nil];
+    
+    NSLog(@"add message dict %@", dict);
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([GET_RETURNCODE(json) isEqualToString:@"0"]) {
             self.doneButton.enabled = YES;
             [textView clearText];
-            NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
-            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:myUid, @"userid", content, @"content", @"", @"time",nil];
+            NSString *myUid = [PersistenceHelper dataForKey:kUserId];
+            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:myUid, kUserId, content, @"content", @"", @"time",nil];
             [self.dataSourceArray addObject:dict];
             [self.mTableView reloadData];
             if ([self.dataSourceArray count] > 0) {
@@ -335,9 +338,10 @@
     UITableViewCell *cell = nil;
     NSDictionary *dict = nil;
 
-    dict = [self.dataSourceArray objectAtIndex:indexPath.row];        
+    dict = [self.dataSourceArray objectAtIndex:indexPath.row];
 
-    NSString *uid = [[dict objForKey:@"userid"] stringValue];
+    NSLog(@"message dict %@", dict);
+    NSString *uid = [[dict objForKey:kUserId] stringValue];
     
     if ([uid isEqualToString:fid]) {
         cell = (OtherTalkCell *)[_tableView dequeueReusableCellWithIdentifier:kOtherCell];

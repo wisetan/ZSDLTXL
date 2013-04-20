@@ -252,6 +252,8 @@
 		35C87CDC1719630300CB34F0 /* GroupSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C87CDB1719630200CB34F0 /* GroupSendViewController.m */; };
 		35C87CDF1719845000CB34F0 /* SelectImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C87CDE1719844F00CB34F0 /* SelectImageView.m */; };
 		35C87CE21719860800CB34F0 /* cellTapGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C87CE11719860800CB34F0 /* cellTapGestureRecognizer.m */; };
+		35F11ABC17228682001360B5 /* CLocation.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 35F11ABB17228681001360B5 /* CLocation.gpx */; };
+		35F11AC017228B69001360B5 /* SendMessageViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 35F11ABF17228B69001360B5 /* SendMessageViewController.xib */; };
 		35F198BC171A975E0023C2B5 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35F198BB171A975E0023C2B5 /* MessageUI.framework */; };
 		35F1D0BF17154F660004F069 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35F1D0BE17154F660004F069 /* AudioToolbox.framework */; };
 		35F1D0EE17154F790004F069 /* JSBubbleMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F1D0C217154F790004F069 /* JSBubbleMessageCell.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -653,6 +655,8 @@
 		35C87CDE1719844F00CB34F0 /* SelectImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SelectImageView.m; path = "Custom Views/SelectImageView.m"; sourceTree = "<group>"; };
 		35C87CE01719860600CB34F0 /* cellTapGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cellTapGestureRecognizer.h; path = "Custom Views/cellTapGestureRecognizer.h"; sourceTree = "<group>"; };
 		35C87CE11719860800CB34F0 /* cellTapGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = cellTapGestureRecognizer.m; path = "Custom Views/cellTapGestureRecognizer.m"; sourceTree = "<group>"; };
+		35F11ABB17228681001360B5 /* CLocation.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = CLocation.gpx; sourceTree = "<group>"; };
+		35F11ABF17228B69001360B5 /* SendMessageViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SendMessageViewController.xib; sourceTree = "<group>"; };
 		35F198BB171A975E0023C2B5 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		35F1D0BE17154F660004F069 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		35F1D0C117154F790004F069 /* JSBubbleMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSBubbleMessageCell.h; sourceTree = "<group>"; };
@@ -880,6 +884,7 @@
 		359703C517126AA1001980B5 = {
 			isa = PBXGroup;
 			children = (
+				35F11ABB17228681001360B5 /* CLocation.gpx */,
 				352F042517153DAE00949A96 /* icon@2x.png */,
 				352F042317153D9E00949A96 /* icon.png */,
 				359703D717126AA1001980B5 /* ZHDLTXL */,
@@ -1033,6 +1038,7 @@
 				3599E5411720EEF50000DD5B /* SendEmailViewController.xib */,
 				35C5CBD917150D6300E719C9 /* SendMessageViewController.h */,
 				35C5CBDA17150D6400E719C9 /* SendMessageViewController.m */,
+				35F11ABF17228B69001360B5 /* SendMessageViewController.xib */,
 				359671D0171C33FD00B5D5CD /* SettingViewController.h */,
 				359671D1171C33FE00B5D5CD /* SettingViewController.m */,
 				35A5B666171E5A2700FC2F32 /* TalkViewController.h */,
@@ -1620,6 +1626,8 @@
 				3599E546172118FB0000DD5B /* icon_info@2x.png in Resources */,
 				3599E54B172142440000DD5B /* OtherHomepageViewController_ip5.xib in Resources */,
 				3599E54C172142440000DD5B /* OtherHomepageViewController.xib in Resources */,
+				35F11ABC17228682001360B5 /* CLocation.gpx in Resources */,
+				35F11AC017228B69001360B5 /* SendMessageViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

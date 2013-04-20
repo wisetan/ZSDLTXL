@@ -195,11 +195,12 @@
     else{
         NSString *cityId = [[self.cityArray objectAtIndex:indexPath.row] cityid];
         NSString *provinceId = [[self.cityArray objectAtIndex:indexPath.row] provinceid];
-        [PersistenceHelper setData:cityId forKey:@"cityid"];
-        [PersistenceHelper setData:provinceId forKey:@"provinceid"];
+        [PersistenceHelper setData:cityId forKey:kCityId];
+        [PersistenceHelper setData:provinceId forKey:kProvinceId];
+        [PersistenceHelper setData:city.cityname forKey:kCityName];
         
-        long userId = [kAppDelegate.userId longLongValue];
-        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityId, @"cityid", provinceId, @"provinceid", [NSNumber numberWithLong:userId], @"userid", @"getInvestmentUserList.json", @"path", nil];
+        NSString *userId = kAppDelegate.userId;
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityId, @"cityid", provinceId, @"provinceid", userId, @"userid", @"getInvestmentUserList.json", @"path", nil];
         NSLog(@"parameter: %@", dict);
         
         MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
@@ -222,7 +223,7 @@
                 [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
                     //                NSLog(@"contact Dict: %@", contactDict);
                     Contact *contact = [Contact new];
-                    contact.userid = [NSNumber numberWithLong:[[contactDict objectForKey:@"id"] longValue]];
+                    contact.userid = [[contactDict objForKey:@"id"] stringValue];
                     contact.username = [contactDict objForKey:@"username"];
                     contact.tel = [contactDict objForKey:@"tel"];
                     contact.mailbox = [contactDict objectForKey:@"mailbox"];
@@ -237,90 +238,10 @@
                 NSString *cityName = [[self.cityArray objectAtIndex:indexPath.row] cityname];
                 NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityName, @"cityName", contactArray, @"contactArray", nil];
                 
-                //选择成功后 provinceid cityid 保存到本地
-                [PersistenceHelper setData:cityId forKey:@"currentCityId"];
-                [PersistenceHelper setData:provinceId forKey:@"currentProvinceId"];
-                
-                
-                
                 [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
                 
                 [self.navigationController popToRootViewControllerAnimated:YES];
                 
-            } else {
-                [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-                [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
-            }
-        } failure:^(NSError *error) {
-            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-        }];
-    }
-}
-
-- (void)selectCity:(CellButton *)sender
-{
-    //parameter: provinceid, cityid, userid(用来取备注),
-    if (self.isAddResident) {
-        CityInfo *city = [self.cityArray objectAtIndex:sender.indexRow];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAddResidentNotification object:city];
-        [self.navigationController popToViewController:self.homePageVC animated:YES];
-    }
-    else{
-        NSString *cityId = [[self.cityArray objectAtIndex:sender.indexRow] cityid];
-        NSString *provinceId = [[self.cityArray objectAtIndex:sender.indexRow] provinceid];
-        long userId = [kAppDelegate.userId longLongValue];
-        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityId, @"cityid", provinceId, @"provinceid", [NSNumber numberWithLong:userId], @"userid", @"getInvestmentUserList.json", @"path", nil];
-        NSLog(@"parameter: %@", dict);
-        
-        MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-        hub.labelText = @"获取商家列表";
-        [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
-            if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
-                [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-                
-                //            self.username = nil;
-                //            self.tel = nil;
-                //            self.mailbox = nil;
-                //            self.picturelinkurl = nil;
-                //            self.col1 = nil;
-                //            self.col2 = nil;
-                //            self.col3 = nil;;
-                
-                
-                //            NSLog(@"商家列表：%@", json);
-                NSMutableArray *contactArray = [NSMutableArray new];
-                [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                    //                NSLog(@"contact Dict: %@", contactDict);
-                    Contact *contact = [Contact new];
-                    contact.userid = [NSNumber numberWithLong:[[contactDict objectForKey:@"id"] longValue]];
-                    contact.username = [contactDict objForKey:@"username"];
-                    contact.tel = [contactDict objForKey:@"tel"];
-                    contact.mailbox = [contactDict objectForKey:@"mailbox"];
-                    contact.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
-                    contact.col1 = [contactDict objectForKey:@"col1"];
-                    contact.col2 = [contactDict objectForKey:@"col2"];
-                    contact.col2 = [contactDict objectForKey:@"col2"];
-                    [contactArray addObject:contact];
-                    [contact release];
-                }];
-                
-                NSString *cityName = [[self.cityArray objectAtIndex:sender.indexRow] cityname];
-                NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:cityName, @"cityName", contactArray, @"contactArray", nil];
-                
-                //选择成功后 provinceid cityid 保存到本地
-                [PersistenceHelper setData:cityId forKey:@"currentCityId"];
-                [PersistenceHelper setData:provinceId forKey:@"currentProvinceId"];
-                
-                
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
-                
-                [self.navigationController popToRootViewControllerAnimated:YES];
-                
-                
-                
-                //            [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:kRegistSucceed object:nil];
             } else {
                 [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
                 [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];

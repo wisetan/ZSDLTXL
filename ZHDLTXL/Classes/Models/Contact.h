@@ -10,7 +10,7 @@
 
 @interface Contact : NSObject <NSCoding>
 
-@property (nonatomic, retain) NSNumber *userid;
+@property (nonatomic, copy) NSString *userid;
 @property (nonatomic, copy) NSString *username;
 @property (nonatomic, copy) NSString *tel;
 @property (nonatomic, copy) NSString *mailbox;

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "ContactHimView.h"
 
-@interface OtherHomepageViewController : UIViewController <ContactHimViewDelegate, UITextFieldDelegate>
+@interface OtherHomepageViewController : UIViewController <ContactHimViewDelegate, UITextFieldDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, retain) Contact *contact;
 

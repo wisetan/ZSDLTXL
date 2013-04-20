@@ -171,18 +171,13 @@
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             NSString *userId = [[json objForKey:@"Userid"] stringValue];
             [kAppDelegate setUserId:userId];
-            [PersistenceHelper setData:userId forKey:@"userid"];
-            [PersistenceHelper setData:name forKey:@"name"];
-            [PersistenceHelper setData:[pwd md5] forKey:@"password"];
-//            if (isAutoLogin) {
-//                [PersistenceHelper setData:@"YES" forKey:@"autoLogin"];
-//            } else {
-//                [PersistenceHelper setData:@"" forKey:@"autoLogin"];
-//            }
+            [PersistenceHelper setData:userId forKey:kUserId];
+            [PersistenceHelper setData:name forKey:KUserName];
+            [PersistenceHelper setData:pwd forKey:KPassWord];
             
             [self backToRootVC:nil];
-//            [kAppDelegate loginFinishedWithAnimation:YES];
         } else {
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
         }
     } failure:^(NSError *error) {

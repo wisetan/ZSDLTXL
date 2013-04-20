@@ -73,7 +73,7 @@
     NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] initWithArray:self.contactArray];
     __block Contact *deleteContact = nil;
     [contactArrayTmp enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
-        if (contact.userid.longValue == userid) {
+        if ([contact.userid longLongValue] == userid) {
             deleteContact = contact;
             *stop = YES;
         }
@@ -105,7 +105,7 @@
             NSMutableArray *friendArray = [[NSMutableArray alloc] init];
             [friendArrayJson enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
                 Contact *contact = [Contact new];
-                contact.userid = [NSNumber numberWithLong:[[contactDict objectForKey:@"id"] longValue]];
+                contact.userid = [contactDict objectForKey:@"id"];
                 contact.username = [contactDict objForKey:@"username"];
                 contact.tel = [contactDict objForKey:@"tel"];
                 contact.mailbox = [contactDict objectForKey:@"mailbox"];

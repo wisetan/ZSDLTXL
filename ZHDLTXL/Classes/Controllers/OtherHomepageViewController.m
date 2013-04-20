@@ -14,6 +14,7 @@
 #import "CityInfo.h"
 #import "PreferInfo.h"
 #import "TalkViewController.h"
+#import "LoginViewController.h"
 
 #define VIEW_GAP 10
 #define VIEW_LEFT_MARGIN (20)
@@ -80,10 +81,10 @@
     ///getUserpageDetail.json, peoperid, userid, provinceid, cityid
     
     
-    NSNumber *peoperid =  [NSNumber numberWithLong:self.contact.userid];
-    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
-    NSString *cityid = [PersistenceHelper dataForKey:@"currentCityId"];
-    NSString *provinceid = [PersistenceHelper dataForKey:@"currentProvinceId"];
+    NSString *peoperid = self.contact.userid;
+    NSString *userid = [kAppDelegate userId];
+    NSString *cityid = [PersistenceHelper dataForKey:kCityId];
+    NSString *provinceid = [PersistenceHelper dataForKey:kProvinceId];
     NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:peoperid, @"peoperid",
                                                                         userid, @"userid",
                                                                         cityid, @"cityid",
@@ -140,7 +141,7 @@
             self.contact.col1 = [userDetail objForKey:@"col1"];
             self.contact.col2 = [userDetail objForKey:@"col2"];
             self.contact.col3 = [userDetail objForKey:@"col3"];
-            self.contact.userid = [NSNumber numberWithLong:[[userDetail objForKey:@"id"] longValue]];
+            self.contact.userid = [[userDetail objForKey:@"id"] stringValue];
             self.contact.invagency = [NSNumber numberWithLong:[[userDetail objForKey:@"invagency"] intValue]];
             self.contact.mailbox = [userDetail objForKey:@"mailbox"];
             self.contact.picturelinkurl = [userDetail objForKey:@"picturelinkurl"];
@@ -177,8 +178,8 @@
         
         //添加关注, addZsAttentionUser.json, userid, attentionid provinceid cityid
         
-        NSNumber *attentionid =  [NSNumber numberWithLong:self.contact.userid];
-        NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+        NSString *attentionid =  self.contact.userid;
+        NSString *userid = [kAppDelegate userId];
         NSString *cityid = [PersistenceHelper dataForKey:@"currentCityId"];
         NSString *provinceid = [PersistenceHelper dataForKey:@"currentProvinceId"];
         NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:attentionid, @"attentionid",
@@ -208,8 +209,8 @@
         
         //添加关注, delZsAttentionUser.json, userid, attentionid provinceid cityid
         
-        NSNumber *attentionid =  [NSNumber numberWithLong:self.contact.userid];
-        NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+        NSString *attentionid =  self.contact.userid;
+        NSString *userid = [kAppDelegate userId];
         NSString *cityid = [PersistenceHelper dataForKey:@"currentCityId"];
         NSString *provinceid = [PersistenceHelper dataForKey:@"currentProvinceId"];
         NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:attentionid, @"attentionid",
@@ -267,8 +268,8 @@
     NSLog(@"text field edit end");
     //comment friend
     //para dict; changeuserremark.json userid destid remark
-    NSNumber *destid = self.contact.userid;
-    NSNumber *userid = [NSNumber numberWithLong:[kAppDelegate.userId longLongValue]];
+    NSString *destid = self.contact.userid;
+    NSString *userid = kAppDelegate.userId;
     
     NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid",
                                                                         destid, @"destid",
@@ -306,6 +307,11 @@
 - (void)message:(UIButton *)sender
 {
     NSLog(@"send message");
+
+    if ([self showLoginAlert]) {
+        return;
+    } 
+    
     SendMessageViewController *smVC = [[SendMessageViewController alloc] init];
     smVC.currentContact = self.contact;
 //    smVC.contactDict = self.contactDict;
@@ -316,6 +322,9 @@
 - (void)email:(UIButton *)sender
 {
     NSLog(@"send email");
+    if ([self showLoginAlert]) {
+        return;
+    }
     SendEmailViewController *seVC = [[SendEmailViewController alloc] init];
     seVC.currentContact = self.contact;
     [self.navigationController pushViewController:seVC animated:YES];
@@ -325,10 +334,38 @@
 - (void)chat:(UIButton *)sender
 {
     NSLog(@"chat");
+    if ([self showLoginAlert]) {
+        return;
+    }
+    
+    
     TalkViewController *talk = [[[TalkViewController alloc] initWithNibName:@"TalkViewController" bundle:nil] autorelease];
-    talk.fid = [NSString stringWithFormat:@"%ld", self.contact.userid.longValue];
+    talk.fid = self.contact.userid;
+    NSLog(@"talk.fid %@", talk.fid);
     [self.navigationController pushViewController:talk animated:YES];
     
+}
+
+- (BOOL)showLoginAlert
+{
+    BOOL shouldShow = NO;
+    if ([[kAppDelegate userId] isEqualToString:@"0"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"亲" message:@"请先登录" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        [alert show];
+        [alert release];
+        shouldShow = YES;
+    }
+    return shouldShow;
+}
+
+#pragma mark - alert delegate
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1) {
+        LoginViewController *loginVC = [[LoginViewController alloc] init];
+        [self.navigationController pushViewController:loginVC animated:YES];
+        [loginVC release];
+    }
 }
 
 - (void)didReceiveMemoryWarning

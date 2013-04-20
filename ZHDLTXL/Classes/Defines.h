@@ -58,7 +58,16 @@ typedef struct
 #define kSelectPharFinished @"kSelectPharFinished"
 #define kDeleteFriend @"kDeleteFriend"
 
-#define kUserDataFile @"kUserDataFile"
+
+//about persist
+#define kUserDataFile @"kUserDataFile" //联系人列表文件名
+#define kCityId @"kCityId"
+#define kProvinceId @"kProvinceId"
+#define kUserId @"userid"
+#define KUserName @"KUserName"
+#define KPassWord @"KPassWord"
+#define kCityName @"kCityName"
+
 
 
 #define kDocumentory ([NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0])

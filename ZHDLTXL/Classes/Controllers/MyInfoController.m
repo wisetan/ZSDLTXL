@@ -84,7 +84,7 @@
 }
 
 - (NSDictionary *)urlDictForRefresh {  
-    NSString *myUid = [PersistenceHelper dataForKey:@"userid"];
+    NSString *myUid = [PersistenceHelper dataForKey:kUserId];
     
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setValue:@"getMessagePeopers.json" forKey:@"path"];
@@ -102,7 +102,7 @@
 - (void)agreeWithDict:(NSDictionary *)companyDict {
     if (companyDict) {
         NSString *companyName = [companyDict objForKey:@"username"];
-        NSString *userId = [PersistenceHelper dataForKey:@"userid"];
+        NSString *userId = [PersistenceHelper dataForKey:kUserId];
         NSString *companyId = [companyDict objForKey:@"userid"];
         NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"comfirmCompanyUserlink.json", @"path", userId, @"userid", companyId, @"companyid", companyName, @"companyname", nil];
         [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
@@ -119,7 +119,7 @@
 
 - (void)disAgreeWithDict:(NSDictionary *)companyDict {
     if (companyDict) {
-        NSString *userId = [PersistenceHelper dataForKey:@"userid"];
+        NSString *userId = [PersistenceHelper dataForKey:kUserId];
         NSString *companyId = [companyDict objForKey:@"userid"];
         NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"delCompanyUserlink.json", @"path", userId, @"userid", companyId, @"companyid", nil];
         [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {

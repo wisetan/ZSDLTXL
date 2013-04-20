@@ -34,10 +34,12 @@
 	
     self.title = @"群发人员";
     NSString *userDataFile = [PersistenceHelper dataForKey:kUserDataFile];
+    NSLog(@"userDataFile %@", userDataFile);
     
     NSLog(@"self.selectContactArray %@", self.selectedContactArray);
     
     self.contactDictSortByAlpha = [NSKeyedUnarchiver unarchiveObjectWithFile:userDataFile];
+    NSLog(@"self.contactDictSortByAlpha: %@", self.contactDictSortByAlpha);
     self.contactTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-44-45) style:UITableViewStylePlain] autorelease];
     self.contactTableView.delegate = self;
     self.contactTableView.dataSource = self;
@@ -80,12 +82,12 @@
 - (void)popVC:(UIButton *)sender
 {
     [self.navigationController popViewControllerAnimated:YES];
+    NSLog(@"select contact: %@", self.selectedContactArray);
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSendMessageAddFriendNotification object:self.selectedContactArray];
 }
 
 - (void)confirmSelect:(UIButton *)sender
 {
-    NSLog(@"select contact: %@", self.selectedContactArray);
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSendMessageAddFriendNotification object:self.selectedContactArray];
     [self popVC:nil];
 }
 
@@ -133,25 +135,12 @@
         cell.nameLabel.text = contact.username;
     }
     
-    if ([contact.picturelinkurl isValid]) {
-        [[SDImageCache sharedImageCache] queryDiskCacheForKey:contact.picturelinkurl done:^(UIImage *image, SDImageCacheType cacheType) {
-            if (image != nil) {
-                cell.headIcon.image = image;
-            }
-            else {
-                [cell.headIcon setImageWithURL:[NSURL URLWithString:contact.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
-            }
-        }];
-        NSLog(@"contact pic url; %@", contact.picturelinkurl);
-    }
+    [cell.headIcon setImageWithURL:[NSURL URLWithString:contact.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
     
+    NSLog(@"contact.id %@", contact.userid);
     Contact *findContact = [self containTheContact:contact];
     if (findContact) {
         cell.unSelectedImage.image = [UIImage imageNamed:@"selected.png"];
-        if ([self isTheOriginContact:contact]) {
-//            NSLog(@"contact.userid %@, contactTmp.userid %@", self.originContact.userid, contact.userid);
-            cell.userInteractionEnabled = NO;
-        }
     }
     else{
         cell.unSelectedImage.image = [UIImage imageNamed:@"unselected.png"];
@@ -179,10 +168,18 @@
     Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     Contact *findContact = [self containTheContact:contact];
     if (findContact) {
+        if ([self isTheOriginContact:contact]) {
+            return;
+        }
         [self.selectedContactArray removeObject:findContact];
     }
     else{
         [self.selectedContactArray addObject:contact];
+        if (self.selectedContactArray.count >= 50) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"警告" message:@"最多选择50个联系人" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
+            [alert show];
+            [alert release];
+        }
     }
     [self.contactTableView reloadData];
     
@@ -195,7 +192,7 @@
     __block Contact *findContact = nil;
     [self.selectedContactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
 
-        if (contact.userid.longValue == contactTmp.userid.longValue) {
+        if ([contact.userid isEqualToString:contactTmp.userid]) {
             NSLog(@"contact.userid %@, contactTmp.userid %@", contact.userid, contactTmp.userid);
             findContact = contact;
             *stop = YES;
@@ -206,8 +203,8 @@
 
 - (BOOL)isTheOriginContact:(Contact *)contactTmp
 {
-//    NSLog(@"contact.userid %@, contactTmp.userid %@", self.originContact.userid, contactTmp.userid);
-    if ([self.originContact.userid isEqualToNumber:contactTmp.userid]) {
+    NSLog(@"contact.userid %@, contactTmp.userid %@", self.originContact.userid, contactTmp.userid);
+    if ([self.originContact.userid isEqualToString:contactTmp.userid]) {
         return YES;
     }
     return NO;

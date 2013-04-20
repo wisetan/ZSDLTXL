@@ -122,7 +122,7 @@
 - (void)getPersonalInfo
 {
     //paradict getMypageDetail.json userid
-    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+    NSString *userid = [kAppDelegate userId];
     NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid", @"getMypageDetail.json", @"path", nil];
     NSLog(@"get personinfo Dict: %@", paraDict);
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
@@ -350,7 +350,7 @@
     
     //上传数据
     //para: changezsarea.json provcityid userid
-    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+    NSString *userid = [kAppDelegate userId];
     NSMutableString *provinceid = [[NSMutableString alloc] init];
     [self.residentArray enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
         [provinceid appendFormat:@"%@:%@,", city.provinceid, city.cityid];
@@ -429,7 +429,7 @@
     
     //上传数据
     //para: changezsarea.json provcityid userid
-    NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+    NSString *userid = [kAppDelegate userId];
     NSMutableString *preferid = [[NSMutableString alloc] init];
     [self.preferArray enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
         [preferid appendFormat:@"%ld,", prefer.preferId];
@@ -630,7 +630,6 @@
 //    UIImage *smallImage = [UIImage imageWithCGImage:self.headIcon.image.CGImage scale:scale orientation:self.headIcon.image.imageOrientation];
     UIImage *smallImage = [self.headIcon.image scaleToFillSize:CGSizeMake(180.f, 180.f)];
     //addAndUpdateUserPic.json image userid imageurl
-//    NSNumber *userid = [NSNumber numberWithLong:self.userDetail.userid];
     NSString *userid = [NSString stringWithFormat:@"%ld", self.userDetail.userid];
     NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:@"addAndUpdateUserPic.json", @"path",
                                                                         userid, @"userid",

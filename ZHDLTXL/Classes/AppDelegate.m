@@ -9,7 +9,6 @@
 #import "AppDelegate.h"
 #import "RootViewController.h"
 
-
 @implementation AppDelegate
 
 - (void)dealloc
@@ -26,26 +25,26 @@
     self.geocoder = [[[CLGeocoder alloc] init] autorelease];
     [self initGPS];
     
-    RootViewController *rootVC = [[[RootViewController alloc] init] autorelease];
-//    if ([userId isValid]) {
-//        rootVC.hasRegisted = YES;
-//    }
-//    else{
-//        rootVC.hasRegisted = NO;
-//    }
-    
+
     if (self.isGpsError) {
         self.newCity = @"北京";
+        self.rootVC = [[[RootViewController alloc] init] autorelease];
+        self.rootVC.currentCity = self.newCity;
+        UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:self.rootVC] autorelease];
+        self.window.rootViewController = nav;
     }
     
-    rootVC.currentCity = self.newCity;
-    UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:rootVC] autorelease];
-    self.window.rootViewController = nav;
+
 
 
     
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+
+    
+    
+    
     return YES;
 }
 
@@ -59,6 +58,19 @@
 {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+//    NSString *userDataFile = [PersistenceHelper dataForKey:kUserDataFile];
+//    if ([[NSFileManager defaultManager] fileExistsAtPath:userDataFile]) {
+//        if ([[NSFileManager defaultManager] fileExistsAtPath:userDataFile])
+//        {
+//            NSError *error;
+//            if (![[NSFileManager defaultManager] removeItemAtPath:userDataFile error:&error])
+//            {
+//                NSLog(@"Error removing file: %@", error);
+//            };
+//        }
+//    }
+//    [PersistenceHelper setData:nil forKey:kUserDataFile];
+    
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -92,10 +104,11 @@
 
 - (NSString *)userId
 {
-    if (![userId isValid]) {
-        return (NSString *)[PersistenceHelper dataForKey:@"userid"];
+    NSString *userIdTmp = [PersistenceHelper dataForKey:kUserId];
+    if (![userIdTmp isValid]) {
+        return @"0";
     }
-    return nil;
+    return userIdTmp;
 }
 
 - (void)doShowAlertWithText:(NSString *)text imageByName:(NSString *)image {
@@ -145,7 +158,6 @@
     if ([CLLocationManager locationServicesEnabled]   &&   [CLLocationManager authorizationStatus] != kCLAuthorizationStatusDenied) {
         [self.locationManager startUpdatingLocation];
         self.isGpsError = NO;
-//        [self getCurrentCity];
     }
     else{
         self.isGpsError = YES;
@@ -157,15 +169,16 @@
     }
 }
 
-- (void)getCurrentCity
+- (NSString *)getCurrentCity
 {
-    [self.geocoder reverseGeocodeLocation: locationManager.location completionHandler:
+    __block NSString *city = nil;
+    [self.geocoder reverseGeocodeLocation:locationManager.location completionHandler:
      ^(NSArray *placemarks, NSError *error) {
          CLPlacemark *placemark = [placemarks objectAtIndex:0];
-         NSLog(@"place: %@", placemarks);
-         self.newCity = placemark.locality;
-         NSLog(@"city: %@", placemark.locality);
+         city = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
+         city = [city substringToIndex:[city length] -1];
      }];
+    return city;
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
@@ -178,28 +191,20 @@
     [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
         CLPlacemark *placemark = [placemarks objectAtIndex:0];
         self.newCity = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
-        self.newCity = [self.newCity substringToIndex:[self.newCity length] -1];
-        if ([self cityChanged]) {
-            if (![self.newCity isValid]) {
-                self.newCity = @"北京";
-            }
-            [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:kCityChangedNotification object:self.newCity]];
-            NSLog(@"lastcity: %@, newCity: %@",self.lastCity, self.newCity);
-            self.lastCity = self.newCity;
+        if ([self.newCity isValid]) {
+            self.newCity = [self.newCity substringToIndex:[self.newCity length] -1];
         }
-        NSLog(@"city: %@", self.newCity);
+        else{
+            self.newCity = @"北京";
+        }
+
+        self.rootVC = [[[RootViewController alloc] init] autorelease];
+        self.rootVC.currentCity = self.newCity;
+        UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:self.rootVC] autorelease];
+        self.window.rootViewController = nav;
     }];
     [manager stopUpdatingLocation];
 }
-
-//- (void)displayPlacemarks:(NSArray *)placemarks
-//{
-//    CLPlacemark *placemark = [placemarks objectAtIndex:0];
-//    NSLog(@"placemark, %@", placemark);
-//    NSLog(@"placemark dict: %@", placemark.addressDictionary);
-//    self.newCity = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
-//    NSLog(@"city: %@", self.newCity);
-//}
 
 - (BOOL)cityChanged
 {

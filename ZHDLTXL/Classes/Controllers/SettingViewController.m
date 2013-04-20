@@ -117,9 +117,9 @@
 - (void)logoff
 {
     NSLog(@"registAndLogin");
-    [PersistenceHelper setData:@"" forKey:@"username"];
-    [PersistenceHelper setData:@"" forKey:@"userid"];
-    [PersistenceHelper setData:@"" forKey:@"password"];
+    [PersistenceHelper setData:@"" forKey:KUserName];
+    [PersistenceHelper setData:@"" forKey:kUserId];
+    [PersistenceHelper setData:@"" forKey:KPassWord];
     
     LoginViewController *loginVC = [[LoginViewController alloc] init];
     [self.navigationController pushViewController:loginVC animated:YES];

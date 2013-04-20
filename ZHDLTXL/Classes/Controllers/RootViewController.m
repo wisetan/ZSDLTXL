@@ -173,13 +173,14 @@
     UIBarButtonItem *rBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.friendButton] autorelease];
     [self.navigationItem setRightBarButtonItem:rBarButton];
     
-//    [self getInvestmentUserList];
+    [PersistenceHelper setData:self.currentCity forKey:kCityName];
+    [self getInvestmentUserList];
     
 }
 
 - (BOOL)isLogined
 {
-    NSString *userid = [PersistenceHelper dataForKey:@"userid"];
+    NSString *userid = [PersistenceHelper dataForKey:kUserId];
     return [userid isValid];
 }
 
@@ -204,8 +205,9 @@
                 self.curProvinceId = [cityDict objectForKey:@"provinceid"];
                 self.curCityId = [cityDict objectForKey:@"cityid"];
                 
-                [PersistenceHelper setData:self.curCityId forKey:@"currentCityId"];
-                [PersistenceHelper setData:self.curProvinceId forKey:@"currentProvinceId"];
+                [PersistenceHelper setData:self.curCityId forKey:kCityId];
+                [PersistenceHelper setData:self.curProvinceId forKey:kProvinceId];
+                *stop = YES;
             }
         }];
     }];
@@ -216,12 +218,10 @@
     [self setProvinceIdAndCityIdOfCity:self.currentCity];
     NSLog(@"current city; %@", self.currentCity);
     //parameter: provinceid, cityid, userid(用来取备注),
-    long userId = [kAppDelegate.userId longLongValue];
-    [PersistenceHelper setData:self.curCityId forKey:@"currentCityId"];
-    [PersistenceHelper setData:self.curProvinceId forKey:@"currentProvinceId"];
+    NSString *userid = kAppDelegate.userId;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:self.curProvinceId, @"provinceid",
                                                                     self.curCityId, @"cityid",
-                                                                    [NSNumber numberWithLong:userId], @"userid",
+                                                                    userid, @"userid",
                                                                     @"getInvestmentUserList.json", @"path", nil];
     
     MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
@@ -237,7 +237,7 @@
 //                NSLog(@"contact Dict: %@", contactDict);) {
 
                 Contact *contact = [Contact new];
-                contact.userid = [NSNumber numberWithLong:[[contactDict objectForKey:@"id"] longValue]];
+                contact.userid = [[contactDict objectForKey:@"id"] stringValue];
                 contact.username = [contactDict objForKey:@"username"];
                 contact.tel = [contactDict objForKey:@"tel"];
                 contact.mailbox = [contactDict objectForKey:@"mailbox"];
@@ -245,9 +245,9 @@
                 contact.col1 = [contactDict objectForKey:@"col1"];
                 contact.col2 = [contactDict objectForKey:@"col2"];
                 contact.col2 = [contactDict objectForKey:@"col2"];
-                if ([contact.picturelinkurl isValid]) {
-                    NSLog(@"pic url: %@", contact.picturelinkurl);
-                }
+//                if ([contact.picturelinkurl isValid]) {
+//                    NSLog(@"pic url: %@", contact.picturelinkurl);
+//                }
                 
                 [contactArray addObject:contact];
                 [contact release];
@@ -257,6 +257,7 @@
             NSDictionary *contactDict = [NSDictionary dictionaryWithObjectsAndKeys:self.currentCity, @"cityName", contactArray, @"contactArray", nil];
             [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:contactDict];
             [contactArray release];
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         } else {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
@@ -362,21 +363,9 @@
     
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
     Contact *contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-    if ([contact.picturelinkurl isValid]) {
-        NSLog(@"table pic url");
-    }
-
-    if ([contact.picturelinkurl isValid]) {
-        [cell.headIcon setImageWithURL:[NSURL URLWithString:contact.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType) {
-            [[SDImageCache sharedImageCache] storeImage:cell.headIcon.image forKey:contact.picturelinkurl toDisk:YES];
-        }];
-    }
+//    NSLog(@"contact url: %@", contact.picturelinkurl);
     
-    
-//    [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl]
-//                  placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
-    
-
+    [cell.headIcon setImageWithURL:[NSURL URLWithString:contact.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
     
     if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
         cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
@@ -447,23 +436,31 @@
 
 - (void)addObserver
 {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(cityChanged:) name:kCityChangedNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(investmentUserListRefreshed:) name:kInvestmentUserListRefreshed object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(registSucceed:) name:kRegistSuccedd object:nil];
+    
+    //inspect city
+    [kAppDelegate addObserver:self forKeyPath:@"newCity" options:NSKeyValueObservingOptionNew context:nil];
+    
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    NSLog(@"city changed");
+    id newValue = [change objectForKey:@"new"];
+    NSLog(@"city :%@", newValue);
+    if ((newValue != [NSNull null]) && [(NSString *)newValue isValid]){
+        self.currentCity = newValue;
+        [PersistenceHelper setData:self.currentCity forKey:kCityName];
+        self.areaLabel.text = self.currentCity;
+        [self getInvestmentUserList];
+    }
 }
 
 - (void)registSucceed:(NSNotification *)noti
 {
     NSLog(@"regist succeed");
     self.loginLabel.text = @"我的主页";
-}
-
-- (void)cityChanged:(NSNotification *)noti
-{
-    NSString *newCity = (NSString *)[noti object];
-    self.currentCity = newCity;
-    self.areaLabel.text = self.currentCity;
-    [self getInvestmentUserList];
 }
 
 - (void)investmentUserListRefreshed:(NSNotification *)noti
@@ -479,20 +476,19 @@
         NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] init];
         [self.contactDictSortByAlpha setObject:contactArrayTmp forKey:indexKey];
         [contactArrayTmp release];
-//        [contactArrayTmp release];
     }
         
     [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
         NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
         [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact];
-        if ([contact.picturelinkurl isValid]) {
-            NSLog(@"pic url: %@", contact.picturelinkurl);
-        }
+//        if ([contact.picturelinkurl isValid]) {
+//            NSLog(@"pic url: %@", contact.picturelinkurl);
+//        }
     }];
     
     
-    self.curProvinceId = [PersistenceHelper dataForKey:@"provinceid"];
-    self.curCityId = [PersistenceHelper dataForKey:@"cityid"];
+    self.curProvinceId = [PersistenceHelper dataForKey:kProvinceId];
+    self.curCityId = [PersistenceHelper dataForKey:kCityId];
     NSString *fileName = [NSString stringWithFormat:@"%@_%@.dat",self.curProvinceId, self.curCityId];
     NSString *userDataFile = [[NSString alloc] initWithString:[kDocumentory stringByAppendingPathComponent:fileName]];
 
@@ -501,7 +497,10 @@
     NSLog(@"oldFile %@", oldFile);
     NSLog(@"newFile %@", userDataFile);
     
-    if (![userDataFile isEqualToString:oldFile]) {
+    if ([oldFile isValid] && ![[NSFileManager defaultManager] fileExistsAtPath:oldFile]) {
+        [NSKeyedArchiver archiveRootObject:self.contactDictSortByAlpha toFile:userDataFile];
+    }
+    else if (![userDataFile isEqualToString:oldFile]) {
 
         NSFileManager *fileManager = [NSFileManager defaultManager];
         if ([fileManager fileExistsAtPath:oldFile])
@@ -516,7 +515,7 @@
         [NSKeyedArchiver archiveRootObject:self.contactDictSortByAlpha toFile:userDataFile];
     }
     
-    self.currentCity = [noti.object objectForKey:@"cityName"];
+    self.currentCity = [PersistenceHelper dataForKey:kCityName];
     self.areaLabel.text = self.currentCity;
     [self.contactTableView reloadData];
 }

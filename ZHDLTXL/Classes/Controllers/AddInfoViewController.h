@@ -23,7 +23,7 @@
 
 @property (retain, nonatomic) IBOutlet UITableView *mTableView;
 
-@property (retain, nonatomic) NSNumber *userid;
+@property (retain, nonatomic) NSString *userid;
 @property (retain, nonatomic) NSNumber *zhaoshangOrDaili;   //修改招商代理类型
 @property (retain, nonatomic) NSMutableString *provcityid;         //修改常驻地区
 @property (retain, nonatomic) NSMutableString *preferid;           //修改个人偏好

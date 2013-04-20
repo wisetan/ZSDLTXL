@@ -90,7 +90,7 @@
         NSString *provinceId = [PersistenceHelper dataForKey:@"currentProvinceId"];
         NSString *cityId = [PersistenceHelper dataForKey:@"currentCityId"];
         
-        NSNumber *userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
+        NSString *userid = [kAppDelegate userId];
         NSMutableString *preferid = [[NSMutableString alloc] init];
         [self.selectArray enumerateObjectsUsingBlock:^(Pharmacology *phar, NSUInteger idx, BOOL *stop) {
             [preferid appendFormat:@"%ld、", phar.pharId];
@@ -120,7 +120,7 @@
                 NSMutableArray *friendArray = [[NSMutableArray alloc] init];
                 [friendArrayJson enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
                     Contact *contact = [Contact new];
-                    contact.userid = [NSNumber numberWithLong:[[contactDict objectForKey:@"id"] longValue]];
+                    contact.userid = [contactDict objectForKey:@"id"];
                     contact.username = [contactDict objForKey:@"username"];
                     contact.tel = [contactDict objForKey:@"tel"];
                     contact.mailbox = [contactDict objectForKey:@"mailbox"];

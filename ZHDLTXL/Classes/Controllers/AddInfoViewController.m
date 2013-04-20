@@ -144,7 +144,7 @@
         NSLog(@"regist json: %@", json);
         if ([[json objectForKey:@"returnCode"] longValue] == 0) {
 //            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            self.userid = [NSNumber numberWithLong:[[json objectForKey:@"Userid"] longLongValue]];
+            self.userid = [[json objectForKey:@"Userid"] stringValue];
             [self submitAction];
         } else {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
@@ -162,8 +162,6 @@
 }
 
 - (void)submitAction {
-    
-//    self.userid = [NSNumber numberWithLong:[[kAppDelegate userId] longLongValue]];
     
     //修改招商代理
     NSDictionary *invAgencyDict = [NSDictionary dictionaryWithObjectsAndKeys:@"changeInvAgency.json", @"path", self.zdValue, @"invagency", self.userid, @"userid", nil];
@@ -232,13 +230,12 @@
             NSLog(@"完善信息成功");
             
             
-            NSString *userid = [NSString stringWithFormat:@"%d", self.userid.intValue];
             [PersistenceHelper setData:self.preferArray forKey:@"prefer_array"];
             [PersistenceHelper setData:self.residentArray forKey:@"resident_array"];
             [PersistenceHelper setData:self.zdValue forKey:@"zd_value"];
-            [PersistenceHelper setData:userid forKey:@"userid"];
+            [PersistenceHelper setData:self.userid forKey:kUserId];
             
-            NSString *alertMessage = [NSString stringWithFormat:@"您的宝通号：%@\n",userid];
+            NSString *alertMessage = [NSString stringWithFormat:@"您的宝通号：%@\n",self.userid];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"注册成功" message:alertMessage delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
             [alert show];
             [alert release];

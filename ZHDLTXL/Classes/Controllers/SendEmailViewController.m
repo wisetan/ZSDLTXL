@@ -64,7 +64,6 @@
     self.nameLabel.font = [UIFont systemFontOfSize:14];
     self.nameLabel.textColor = [UIColor colorWithRed:98.f/255.f green:98.f/255.f blue:98.f/255.f alpha:1.f];
     self.nameLabel.textAlignment = NSTextAlignmentLeft;
-    [self.view addSubview:self.nameLabel];
     
     //add person button
     [self.addButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
@@ -117,8 +116,6 @@
 }
 
 #pragma mark - textview delegate
-
-
 
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView
 {
