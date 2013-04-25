@@ -154,6 +154,7 @@
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessage.json", @"path", myUid, @"userid", fid, @"destuserid", [NSString stringWithFormat:@"%d", currentPage], @"page", pageSize, @"maxrow", nil];
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
 
+        NSLog(@"talk history %@", json);
         @try {
             if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
                 self.lastTime = [[json objForKey:@"LastTime"] stringValue];
@@ -401,7 +402,16 @@
 	CGRect containerFrame = containerView.frame;
     containerFrame.origin.y = self.view.bounds.size.height - (keyboardBounds.size.height + containerFrame.size.height);
     CGRect tableViewFrame = self.mTableView.frame;
-    tableViewFrame.size.height = 416 - keyboardBounds.size.height - 40;
+    CGFloat viewHeight = 0.f;
+    if (IS_IPHONE_5) {
+        viewHeight = 504.f;
+    }
+    else{
+        viewHeight = 416.f;
+    }
+    
+    
+    tableViewFrame.size.height = viewHeight - keyboardBounds.size.height - 40;
 	// animations settings
 	[UIView beginAnimations:nil context:NULL];
 	[UIView setAnimationBeginsFromCurrentState:YES];
@@ -429,7 +439,15 @@
     containerFrame.origin.y = self.view.bounds.size.height - containerFrame.size.height;
 	
     CGRect tableViewFrame = self.mTableView.frame;
-    tableViewFrame.size.height = 460 - 44 - 40;
+    CGFloat viewHeight = 0.f;
+    if (IS_IPHONE_5) {
+        viewHeight = 548.f;
+    }
+    else{
+        viewHeight = 460;
+    }
+    
+    tableViewFrame.size.height = viewHeight - 44 - 40;
     
 	// animations settings
 	[UIView beginAnimations:nil context:NULL];

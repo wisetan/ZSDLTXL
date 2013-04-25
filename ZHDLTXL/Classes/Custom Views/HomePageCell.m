@@ -30,6 +30,7 @@
     [_nameLabel release];
     [_addButton release];
     [_separatorImage release];
+    [_detailLabel release];
     [super dealloc];
 }
 @end

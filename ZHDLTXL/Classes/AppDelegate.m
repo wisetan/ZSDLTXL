@@ -8,8 +8,15 @@
 
 #import "AppDelegate.h"
 #import "RootViewController.h"
+#import "Reachability.h"
+#import "CMDEncryptedSQLiteStore.h"
+#import "CityInfo.h"
 
 @implementation AppDelegate
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+@synthesize managedObjectModel = _managedObjectModel;
 
 - (void)dealloc
 {
@@ -26,26 +33,46 @@
     [self initGPS];
     
 
+    Reachability* reach = [Reachability reachabilityWithHostname:@"www.boracloud.com"];
     if (self.isGpsError) {
         self.newCity = @"北京";
-        self.rootVC = [[[RootViewController alloc] init] autorelease];
-        self.rootVC.currentCity = self.newCity;
-        UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:self.rootVC] autorelease];
-        self.window.rootViewController = nav;
+    }
+    else{
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(reachabilityChanged:)
+                                                     name:kReachabilityChangedNotification
+                                                   object:nil];
+        
+        [reach startNotifier];
     }
     
-
-
-
+//    [self importProAndCityDataJsonIntoDB];
     
+    self.rootVC = [[[RootViewController alloc] init] autorelease];
+    self.rootVC.currentCity = self.newCity;
+    UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:self.rootVC] autorelease];
+    self.window.rootViewController = nav;
+
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
-
-    
-    
-    
     return YES;
+}
+
+- (void)reachabilityChanged:(NSNotification *)noti
+{
+    Reachability * reach = [noti object];
+    
+    if([reach isReachable])
+    {
+        [self getCurrentCity];
+        NSLog(@"网络可行");
+    }
+    else
+    {
+        NSLog(@"网络不可行");
+        [self showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -56,20 +83,6 @@
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-//    NSString *userDataFile = [PersistenceHelper dataForKey:kUserDataFile];
-//    if ([[NSFileManager defaultManager] fileExistsAtPath:userDataFile]) {
-//        if ([[NSFileManager defaultManager] fileExistsAtPath:userDataFile])
-//        {
-//            NSError *error;
-//            if (![[NSFileManager defaultManager] removeItemAtPath:userDataFile error:&error])
-//            {
-//                NSLog(@"Error removing file: %@", error);
-//            };
-//        }
-//    }
-//    [PersistenceHelper setData:nil forKey:kUserDataFile];
     
 }
 
@@ -88,18 +101,18 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
-- (void)loginFinishedWithAnimation:(BOOL)animate {
-//    UIViewController *currentController = [[[self.leveyTabBarController viewControllers] objectAtIndex:self.leveyTabBarController.selectedIndex] topViewController];
-//    [currentController dismissModalViewControllerAnimated:animate];
-//    
-//    if ([currentController isKindOfClass:[zxHomeViewController class]]) {
-//        [currentController performSelector:@selector(moveToCurrentLocation) withObject:nil afterDelay:0.5];
-//    }
-//    
-//    [leveyTabBarController hidesTabBar:NO animated:YES];
-//    [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadName:@"kNotifactionLoginSuccess" object:nil];
-//    
-//    [self updateDeviceToken];
+- (void)saveContext
+{
+    NSError *error = nil;
+    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
+    if (managedObjectContext != nil) {
+        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
+            // Replace this implementation with code to handle the error appropriately.
+            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+            abort();
+        }
+    }
 }
 
 - (NSString *)userId
@@ -109,6 +122,15 @@
         return @"0";
     }
     return userIdTmp;
+}
+
+- (BOOL)isLogined
+{
+    NSString *userIdTmp = [PersistenceHelper dataForKey:kUserId];
+    if (![userIdTmp isValid] || [userIdTmp isEqualToString:@"0"]) {
+        return NO;
+    }
+    return YES;
 }
 
 - (void)doShowAlertWithText:(NSString *)text imageByName:(NSString *)image {
@@ -169,47 +191,101 @@
     }
 }
 
-- (NSString *)getCurrentCity
+- (void)getCurrentCity  //有网的时候
 {
     __block NSString *city = nil;
-    [self.geocoder reverseGeocodeLocation:locationManager.location completionHandler:
-     ^(NSArray *placemarks, NSError *error) {
+    [self.geocoder reverseGeocodeLocation:locationManager.location completionHandler:^(NSArray *placemarks, NSError *error) {
          CLPlacemark *placemark = [placemarks objectAtIndex:0];
          city = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
          city = [city substringToIndex:[city length] -1];
-     }];
-    return city;
-}
-
-- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
-{
-    CLGeocoder *geocoder = [[[CLGeocoder alloc] init] autorelease];
-    CLLocationCoordinate2D coord = [[locations objectAtIndex:0] coordinate];
-    NSLog(@"lat: %f, lon: %f", coord.latitude, coord.longitude);
-    CLLocation *location = [[[CLLocation alloc] initWithLatitude:coord.latitude longitude:coord.longitude] autorelease];
-    
-    [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
-        CLPlacemark *placemark = [placemarks objectAtIndex:0];
-        self.newCity = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
-        if ([self.newCity isValid]) {
-            self.newCity = [self.newCity substringToIndex:[self.newCity length] -1];
-        }
-        else{
-            self.newCity = @"北京";
-        }
-
-        self.rootVC = [[[RootViewController alloc] init] autorelease];
-        self.rootVC.currentCity = self.newCity;
-        UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:self.rootVC] autorelease];
-        self.window.rootViewController = nav;
+         if ([city isValid]) {
+            self.newCity = city;
+         }
+         else{
+             self.newCity = @"北京";
+         }
+        [PersistenceHelper setData:self.newCity forKey:kCityName];
     }];
-    [manager stopUpdatingLocation];
+    
+
 }
 
-- (BOOL)cityChanged
+//- (void)importProAndCityDataJsonIntoDB
+//{
+//    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
+//    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
+//    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
+//    [areaJsonData release];
+//    
+//    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
+//    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
+//        
+//        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
+//        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+//            CityInfo *cityInfo = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:self.managedObjectContext];
+//            [cityInfo setValuesForKeysWithDictionary:cityDict];
+//        }];
+//        NSError *error = nil;
+//        if (![self.managedObjectContext save:&error]) {
+//            NSLog(@"error %@", error);
+//            abort();
+//        }
+//    }];
+//}
+
+
+
+#pragma mark - Core Data stack
+
+
+- (NSManagedObjectContext *)managedObjectContext
 {
-    NSLog(@"lastcity: %@, newCity: %@",self.lastCity, self.newCity);
-    return ![self.lastCity isEqualToString:self.newCity];
+    if (_managedObjectContext != nil) {
+        return _managedObjectContext;
+    }
+    
+    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+    if (coordinator != nil) {
+        _managedObjectContext = [[NSManagedObjectContext alloc] init];
+        [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+    }
+    return _managedObjectContext;
 }
 
+
+- (NSManagedObjectModel *)managedObjectModel
+{
+    if (_managedObjectModel != nil) {
+        return _managedObjectModel;
+    }
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"zhdltxl" withExtension:@"momd"];
+    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+    return _managedObjectModel;
+}
+
+
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
+{
+    if (_persistentStoreCoordinator != nil) {
+        return _persistentStoreCoordinator;
+    }
+    
+    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"zhdltxl.sqlite"];
+    
+    NSError *error = nil;
+//    _persistentStoreCoordinator = [CMDEncryptedSQLiteStore makeStore:[self managedObjectModel]:kCoreDataKey];
+    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
+
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    return _persistentStoreCoordinator;
+}
+
+- (NSURL *)applicationDocumentsDirectory
+{
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
 @end

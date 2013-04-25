@@ -85,27 +85,65 @@
 - (void)sendMessage:(UIButton *)sender
 {
     NSLog(@"send message");
-    NSMutableArray *telNumArray = [[NSMutableArray alloc] init];
+    NSMutableArray *contactArray = [[NSMutableArray alloc] init];
     [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
-        [telNumArray addObject:contact.tel];
+        NSLog(@"tel %@", contact.tel);
+        NSNumber *contactId = [NSNumber numberWithLongLong:[contact.userid longLongValue]];
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:contactId, @"id", contact.tel, @"telphone", nil];
+        [contactArray addObject:dict];
     }];
     
     
-    MFMessageComposeViewController *controller = [[[MFMessageComposeViewController alloc] init] autorelease];
-    if([MFMessageComposeViewController canSendText])
-    {
-        if ([self.textView.text isEqualToString:@"编辑短信"]) {
-            controller.body = @"";
+//    MFMessageComposeViewController *controller = [[[MFMessageComposeViewController alloc] init] autorelease];
+//    if([MFMessageComposeViewController canSendText])
+//    {
+//        if ([self.textView.text isEqualToString:@"编辑短信"]) {
+//            controller.body = @"";
+//        }
+//        else{
+//            controller.body = self.textView.text;
+//        }
+//        controller.recipients = telNumArray;
+//        controller.messageComposeDelegate = self;
+//        [self presentViewController:controller animated:YES completion:^{
+//            return ;
+//        }];
+//    }
+    
+    NSNumber *userid = [NSNumber numberWithLongLong:[kAppDelegate.userId longLongValue]];
+    NSString *content = self.textView.text;
+    NSNumber *count = [NSNumber numberWithInt:contactArray.count];
+    NSString *tel = [PersistenceHelper dataForKey:KTel];
+    
+    NSDictionary *jsonData = @{@"content":content, @"count":count, @"peoplelist":contactArray, @"tel":tel};
+    NSString *jsonDataStr = [jsonData JSONString];
+    NSLog(@"jsondata str %@", jsonDataStr);
+    
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:jsonDataStr, @"jsondata", userid, @"userid", @"sendSMSforPeople.json", @"path", nil];
+    
+//    NSLog(@"sms dict %@", paraDict);
+    
+    
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    hud.labelText = @"正在发送";
+    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            [kAppDelegate showWithCustomAlertViewWithText:@"发送成功" andImageName:nil];
         }
         else{
-            controller.body = self.textView.text;
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
         }
-        controller.recipients = telNumArray;
-        controller.messageComposeDelegate = self;
-        [self presentViewController:controller animated:YES completion:^{
-            return ;
-        }];
-    }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
+    
+    
+    
+    
+    
 }
 
 - (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result

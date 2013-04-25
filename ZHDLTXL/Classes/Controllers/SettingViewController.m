@@ -45,7 +45,7 @@
     [self.view addSubview:bgImageView];
     [bgImageView release];
     
-    UIImage *tableBgImage = [[UIImage imageNamed:@"underframe.png"] stretchableImageWithLeftCapWidth:290 topCapHeight:56];
+    UIImage *tableBgImage = [[UIImage imageNamed:@"table_underframe.png"] stretchableImageWithLeftCapWidth:290 topCapHeight:56];
     UIImageView *tableBgImageView = [[[UIImageView alloc] initWithImage:tableBgImage] autorelease];
     tableBgImageView.userInteractionEnabled = YES;
     tableBgImageView.frame = CGRectMake(20, 20, 280, 306);
@@ -120,10 +120,53 @@
     [PersistenceHelper setData:@"" forKey:KUserName];
     [PersistenceHelper setData:@"" forKey:kUserId];
     [PersistenceHelper setData:@"" forKey:KPassWord];
+    NSString *userDataFile = [PersistenceHelper dataForKey:kUserDataFile];
+    NSFileManager *fileManger = [NSFileManager defaultManager];
+    if ([fileManger fileExistsAtPath:userDataFile]) {
+        NSError *error;
+        if (![fileManger removeItemAtPath:userDataFile error:&error]) {
+            NSLog(@"log off, remove userdata %@", error);
+        }
+    }
+    
+    [self clearData];
     
     LoginViewController *loginVC = [[LoginViewController alloc] init];
+//    [self.navigationController popToRootViewControllerAnimated:NO];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.MyHomeVC name:kAddResidentNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.MyHomeVC name:kSelectPharFinished object:nil];
     [self.navigationController pushViewController:loginVC animated:YES];
     [loginVC release];
+}
+
+- (void)clearData
+{
+    //clear all user info
+    NSFetchRequest * allUsers = [[NSFetchRequest alloc] init];
+    [allUsers setEntity:[NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext]];
+    [allUsers setIncludesPropertyValues:NO]; //only fetch the managedObjectID
+    
+    NSError * error = nil;
+    NSArray * cars = [kAppDelegate.managedObjectContext executeFetchRequest:allUsers error:&error];
+    [allUsers release];
+    for (NSManagedObject * user in cars) {
+        [kAppDelegate.managedObjectContext deleteObject:user];
+    }
+    error = nil;
+    
+    NSFetchRequest *myInfoRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *myInfo = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+    [myInfoRequest setEntity:myInfo];
+    NSArray *myInfos = [kAppDelegate.managedObjectContext executeFetchRequest:myInfoRequest error:&error];
+    [myInfo release];
+    
+    for (NSManagedObject *myinfo in myInfos) {
+        [kAppDelegate.managedObjectContext deleteObject:myinfo];
+    }
+    
+    
+    NSError *saveError = nil;
+    [kAppDelegate.managedObjectContext save:&saveError];
 }
 
 - (void)modifyPassword

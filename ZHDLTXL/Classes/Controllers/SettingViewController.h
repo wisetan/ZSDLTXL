@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MyHomePageViewController.h"
+
 
 @interface SettingViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
@@ -15,5 +17,7 @@
 @property (nonatomic, retain) NSMutableArray *selectorArray;
 @property (nonatomic, retain) NSMutableArray *selectorNameArray;
 @property (nonatomic, retain) UIButton *backBarButton;
+
+@property (nonatomic, retain) MyHomePageViewController *MyHomeVC;
 
 @end

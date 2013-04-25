@@ -10,7 +10,8 @@
 #import "ContactHimView.h"
 #import <CoreLocation/CoreLocation.h>
 
-@interface RootViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ContactHimViewDelegate, CLLocationManagerDelegate>
+
+@interface RootViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ContactHimViewDelegate, CLLocationManagerDelegate, NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, retain) UIImageView *bottomImageView;
 @property (nonatomic, retain) UIButton *loginButton;
@@ -20,7 +21,6 @@
 @property (nonatomic, retain) UITableView *contactTableView;
 @property (nonatomic, retain) NSMutableArray *contactArray;
 @property (nonatomic, retain) Contact *currentContact;
-@property (nonatomic, retain) ContactHimView *contactHimView;
 @property (nonatomic, assign) NSInteger currentCellButtonIndex;
 @property (nonatomic, retain) CLLocationManager *locationManager;
 
@@ -40,7 +40,11 @@
 
 @property (nonatomic, retain) NSMutableDictionary *contactDictSortByAlpha;
 
-- (void)getInvestmentUserList;
+@property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
+
+@property (nonatomic, retain) NSPredicate *predicate;
+
+//- (void)getInvestmentUserList;
 - (void)setProvinceIdAndCityIdOfCity:(NSString *)city;
 - (BOOL)isLogined;
 

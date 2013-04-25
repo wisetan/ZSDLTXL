@@ -11,11 +11,11 @@
 #import "TalkViewController.h"
 #import "UIAlertView+MKBlockAdditions.h"
 
-@interface MyInfoController ()
+@interface MyinfoController ()
 
 @end
 
-@implementation MyInfoController
+@implementation MyinfoController
 @synthesize mCompanyDict;
 @synthesize delegate;
 - (void)dealloc
@@ -87,7 +87,7 @@
     NSString *myUid = [PersistenceHelper dataForKey:kUserId];
     
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    [dict setValue:@"getMessagePeopers.json" forKey:@"path"];
+    [dict setValue:@"getMessageZsPeople.json" forKey:@"path"];
     [dict setValue:myUid forKey:@"userid"];
     [dict setValue:[NSString stringWithFormat:@"%d", currentPage] forKey:@"page"];
     [dict setValue:kDefaultPageSizeString forKey:@"maxrow"];
@@ -159,6 +159,7 @@
     
     TalkViewController *talk = [[[TalkViewController alloc] initWithNibName:@"TalkViewController" bundle:nil] autorelease];
     talk.fid = [dict objForKey:@"userid"];
+    NSLog(@"talk.fid %@", talk.fid);
     NSString *avatarUrl = [dict objForKey:@"picturelinkurl"];
     talk.fAvatarUrl = avatarUrl;
     return talk;
@@ -178,7 +179,7 @@
     if (cell == nil) {
         NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MyInfoCell" owner:self options:nil];
         cell = (MyInfoCell *)[nib objectAtIndex:0];
-        cell.avatar.placeholderImage = [UIImage imageByName:@"default_avatar"];
+        cell.avatar.placeholderImage = [UIImage imageByName:@"AC_talk_icon.png"];
         [Utility plainTableView:_tableView changeBgForCell:cell atIndexPath:indexPath];
     }
     
@@ -212,14 +213,6 @@
     @catch (NSException *exception) {
         
     }
-}
-
-- (void)myInfoCell:(MyInfoCell *)cell clickAvatarAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *dict = [self.dataSourceArray objectAtIndex:indexPath.row];
-    
-//    OthersProfileViewController *otherProfile = [[[OthersProfileViewController alloc] initWithUserId:urerId userName:userName] autorelease];
-//    
-//    [self.navigationController pushViewController:otherProfile animated:YES];
 }
 
 @end

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Contact.h"
 
-@interface SendEmailViewController : UIViewController <UITextViewDelegate, UITextFieldDelegate>
+@interface SendEmailViewController : UIViewController <UITextViewDelegate, UITextFieldDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, retain) IBOutlet UIButton *sendButton;
 @property (nonatomic, retain) IBOutlet UIButton *cancelButton;
@@ -28,6 +28,9 @@
 
 @property (nonatomic, copy) NSString *provinceId;
 @property (nonatomic, copy) NSString *cityId;
+
+@property (nonatomic, copy) NSString *mailSendFrom;
+@property (nonatomic, copy) NSString *mailTo;
 
 
 @end

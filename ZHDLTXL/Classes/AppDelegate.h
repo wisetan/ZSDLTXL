@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
+#import <CoreData/CoreData.h>
 #import "RootViewController.h"
 
 #define kNetworkErrorMessage        @"您的网络不好哦，检查一下"
@@ -21,22 +22,11 @@
     MBProgressHUD *HUD;
     CLLocationManager *locationManager;
     BOOL isGpsError;
-
-    NSString *uuid;
-
-//    UIImage *pickedPhotoImage;
-    NSString *hotspotContent;
-    NSString *userId;
-    BOOL shakeDetected;
-//    BOOL alreadyCheckin;
-    NSDate *lastUpdateDate;
-    NSInteger requestIndex;
-    NSInteger lastMessageCount;
-    NSInteger lastInnerMessageCount;
-//    NSString *tokenAsString;
-    
 }
 
+@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 @property (nonatomic, retain) RootViewController *rootVC;
 @property (strong, nonatomic) UIWindow *window;
@@ -51,16 +41,16 @@
 @property (nonatomic, copy)   NSString *userId;
 @property (nonatomic, copy)   NSString *cityId;
 @property (nonatomic, copy)   NSString *provinceId;
-@property (nonatomic, retain) NSMutableDictionary *reviewedNews;
+@property (nonatomic, copy)   NSString *newCity;
 
-@property (nonatomic, copy) NSString *lastCity;
-@property (nonatomic, copy) NSString *newCity;
+
 @property (nonatomic, retain) CLGeocoder *geocoder;
 
-- (void)showWithCustomAlertViewWithText:(NSString *)text andImageName:(NSString *)image;
 
-//about GPS
+- (void)showWithCustomAlertViewWithText:(NSString *)text andImageName:(NSString *)image;
 - (void)initGPS;
-- (BOOL)cityChanged;
+- (void)saveContext;
+- (BOOL)isLogined;
+- (NSURL *)applicationDocumentsDirectory;
 
 @end

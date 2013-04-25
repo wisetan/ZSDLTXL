@@ -22,6 +22,7 @@
 @end
 
 @implementation SelectViewController
+@synthesize fetchedResultsController = _fetchedResultsController;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -36,6 +37,9 @@
 {
     [super viewDidLoad];
     self.title = @"筛选";
+    self.managedObjectContext = kAppDelegate.managedObjectContext;
+    self.fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Pharmacology"];
+    
     self.cateArray = [[[NSMutableArray alloc] init] autorelease];
     self.selectArray = [[[NSMutableArray alloc] init] autorelease];
     
@@ -71,10 +75,40 @@
     [self.navigationItem setRightBarButtonItem:rBarButton];
     
     
+    self.selectTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, self.view.frame.size.height-45-44) style:UITableViewStylePlain] autorelease];
+    self.selectTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.selectTableView.dataSource = self;
+    self.selectTableView.delegate = self;
+    [self.view addSubview:self.selectTableView];
     
+    UIImageView *bottomImage = [[UIImageView alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height-45-44, 320, 45)];
+    bottomImage.image = [UIImage imageNamed:@"bottom_bg.png"];
+    bottomImage.userInteractionEnabled = YES;
+    [self.view addSubview:bottomImage];
+    
+    self.confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.confirmButton.frame = CGRectMake(110, 5, 100, 35);
+    [self.confirmButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+    [bottomImage addSubview:self.confirmButton];
     [self.confirmButton addTarget:self action:@selector(confirmSelect:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self getPreferJsonData];
+    UILabel *confirmLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 35)];
+    confirmLabel.backgroundColor = [UIColor clearColor];
+    confirmLabel.text = @"确认选择";
+    confirmLabel.textAlignment = NSTextAlignmentCenter;
+    confirmLabel.textColor = [UIColor whiteColor];
+    [self.confirmButton addSubview:confirmLabel];
+    
+    [self getPharFromDB];
+}
+
+- (void)getPharFromDB
+{
+    NSError *error;
+    self.cateArray = [NSMutableArray arrayWithArray:[self.managedObjectContext executeFetchRequest:self.fetchRequest error:&error]];
+    if (self.cateArray.count == 0) {
+        [self getPreferJsonData];
+    }
 }
 
 - (void)confirmSelect:(UIButton *)sender
@@ -87,16 +121,16 @@
     }
     else{
         //para dict: getZsUserByprefer.json userid provinceid cityid invagency preferid
-        NSString *provinceId = [PersistenceHelper dataForKey:@"currentProvinceId"];
-        NSString *cityId = [PersistenceHelper dataForKey:@"currentCityId"];
+        NSString *provinceId = [PersistenceHelper dataForKey:kProvinceId];
+        NSString *cityId = [PersistenceHelper dataForKey:kCityId];
         
         NSString *userid = [kAppDelegate userId];
         NSMutableString *preferid = [[NSMutableString alloc] init];
         [self.selectArray enumerateObjectsUsingBlock:^(Pharmacology *phar, NSUInteger idx, BOOL *stop) {
-            [preferid appendFormat:@"%ld、", phar.pharId];
+            [preferid appendFormat:@"%@、", phar.pharid];
         }];
         
-        preferid = (NSMutableString *)[preferid substringToIndex:[preferid length]-1];
+        preferid = [NSMutableString stringWithString:[preferid substringToIndex:[preferid length]-1]];
         NSNumber *preferidInt = [NSNumber numberWithInt:[preferid intValue]];
 //        NSLog(@"preferid: %@", preferid);
         
@@ -109,7 +143,7 @@
                                                                             preferidInt, @"preferid",
                                                                             @"getZsUserByprefer.json", @"path", nil];
 //        NSLog(@"select user dict: %@", paraDict);
-        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+        [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
         [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
             if ([[json objectForKey:@"returnCode"] longValue] == 0) {
                 
@@ -123,11 +157,11 @@
                     contact.userid = [contactDict objectForKey:@"id"];
                     contact.username = [contactDict objForKey:@"username"];
                     contact.tel = [contactDict objForKey:@"tel"];
-                    contact.mailbox = [contactDict objectForKey:@"mailbox"];
-                    contact.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
-                    contact.col1 = [contactDict objectForKey:@"col1"];
-                    contact.col2 = [contactDict objectForKey:@"col2"];
-                    contact.col2 = [contactDict objectForKey:@"col2"];
+                    contact.mailbox = [contactDict objForKey:@"mailbox"];
+                    contact.picturelinkurl = [contactDict objForKey:@"picturelinkurl"];
+                    contact.col1 = [contactDict objForKey:@"col1"];
+                    contact.col2 = [contactDict objForKey:@"col2"];
+                    contact.col2 = [contactDict objForKey:@"col2"];
                     [friendArray addObject:contact];
                     [contact release];
                 }];
@@ -187,7 +221,6 @@
     if (!self.isSelectAll) {
         [self.selectArray removeAllObjects];
         [self.selectArray addObjectsFromArray:self.cateArray];
-
     }
     else{
         [self.selectArray removeAllObjects];
@@ -211,13 +244,16 @@
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         NSArray *pharArray = [json objectForKey:@"PharmacologyList"];
         [pharArray enumerateObjectsUsingBlock:^(NSDictionary *pharDict, NSUInteger idx, BOOL *stop) {
-            Pharmacology *phar = [[Pharmacology alloc] init];
-            phar.content = [pharDict objectForKey:@"content"];
-            phar.pharId = [[pharDict objectForKey:@"id"] longValue];
-            phar.picturelinkurl = [pharDict objectForKey:@"picturelinkurl"];
-            phar.col4 = [[pharDict objectForKey:@"col4"] intValue];
+            Pharmacology *phar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:self.managedObjectContext];
+            phar.content = [pharDict objForKey:@"content"];
+            phar.pharid = [[pharDict objForKey:@"id"] stringValue];
+            phar.picturelinkurl = [pharDict objForKey:@"picturelinkurl"];
+            phar.col4 = [[pharDict objForKey:@"col4"] stringValue];
             [self.cateArray addObject:phar];
-            [phar release];
+            NSError *error;
+            if (![self.managedObjectContext save:&error]) {
+                NSLog(@"error %@", [error localizedDescription]);
+            }
         }];
         [self.selectTableView reloadData];
         
@@ -279,6 +315,44 @@
         [self.selectArray removeObject:phar];
     }
     [self.selectTableView reloadData];
+}
+
+
+- (NSFetchedResultsController *)fetchedResultsController
+{
+    if (_fetchedResultsController != nil) {
+        return _fetchedResultsController;
+    }
+    
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    // Edit the entity name as appropriate.
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Event" inManagedObjectContext:self.managedObjectContext];
+    [fetchRequest setEntity:entity];
+    
+    // Set the batch size to a suitable number.
+    [fetchRequest setFetchBatchSize:20];
+    
+    // Edit the sort key as appropriate.
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timeStamp" ascending:NO];
+    NSArray *sortDescriptors = @[sortDescriptor];
+    
+    [fetchRequest setSortDescriptors:sortDescriptors];
+    
+    // Edit the section name key path and cache name if appropriate.
+    // nil for section name key path means "no sections".
+    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:@"Master"];
+    aFetchedResultsController.delegate = self;
+    self.fetchedResultsController = aFetchedResultsController;
+    
+	NSError *error = nil;
+	if (![self.fetchedResultsController performFetch:&error]) {
+        // Replace this implementation with code to handle the error appropriately.
+        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+	    NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+	    abort();
+	}
+    
+    return _fetchedResultsController;
 }
 
 - (void)didReceiveMemoryWarning

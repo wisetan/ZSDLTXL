@@ -8,8 +8,8 @@
 #import "DreamFactoryClient.h"
 #import "AFJSONRequestOperation.h"
 
-NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud";
-//NSString * const kAFGowallaBaseURLString = @"http://www.baolaitong.com:9101/BLZTCloud";
+//NSString * const kAFGowallaBaseURLString = @"http://192.168.1.234:9101/BLZTCloud";
+NSString * const kAFGowallaBaseURLString = @"http://www.boracloud.com:9101/BLZTCloud";
 
 @implementation DreamFactoryClient
 

@@ -9,7 +9,7 @@
 #import "CustomTableViewBase.h"
 #import "MyInfoCell.h"
 
-@interface MyInfoController : CustomTableViewBase<MyInfoDelegate, EGOImageViewDelegate> {
+@interface MyinfoController : CustomTableViewBase<MyInfoDelegate, EGOImageViewDelegate> {
     NSDictionary *mCompanyDict;
 }
 

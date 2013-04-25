@@ -2,17 +2,18 @@
 //  Pharmacology.m
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-15.
+//  Created by LiuYue on 13-4-25.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
 #import "Pharmacology.h"
 
+
 @implementation Pharmacology
 
-- (NSString *)description
-{
-    return [NSString stringWithFormat:@"%@", self.content];
-}
+@dynamic col4;
+@dynamic content;
+@dynamic pharid;
+@dynamic picturelinkurl;
 
 @end

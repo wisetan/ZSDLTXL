@@ -68,7 +68,8 @@
     [self.mailButton addTarget:self action:@selector(email:) forControlEvents:UIControlEventTouchUpInside];
     [self.chatButton addTarget:self action:@selector(chat:) forControlEvents:UIControlEventTouchUpInside];
     
-    
+    self.headIcon.layer.cornerRadius = 8;
+    self.headIcon.layer.masksToBounds = YES;
     [self.headIcon setImageWithURL:[NSURL URLWithString:self.contact.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_L_icon.png"]];
     //默认不是好友
     self.isFriend = NO;
@@ -81,7 +82,7 @@
     ///getUserpageDetail.json, peoperid, userid, provinceid, cityid
     
     
-    NSString *peoperid = self.contact.userid;
+    NSString *peoperid = self.contact.userid;   //好友id
     NSString *userid = [kAppDelegate userId];
     NSString *cityid = [PersistenceHelper dataForKey:kCityId];
     NSString *provinceid = [PersistenceHelper dataForKey:kProvinceId];
@@ -103,7 +104,7 @@
             NSMutableString *areaString = [[NSMutableString alloc] init];
             NSArray *areaList = [json objectForKey:@"AreaList"];
             [areaList enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-                CityInfo *cityInfo = [[CityInfo alloc] init];
+                CityInfo *cityInfo = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
                 [cityInfo setValuesForKeysWithDictionary:cityDict];
                 [self.areaArray addObject:cityInfo];
                 [areaString appendFormat:@"%@、", cityInfo.cityname];
@@ -121,7 +122,7 @@
             NSArray *preferList = [json objectForKey:@"PreferList"];
             [preferList enumerateObjectsUsingBlock:^(NSDictionary *preferDict, NSUInteger idx, BOOL *stop) {
                 PreferInfo *preferInfo = [[PreferInfo alloc] init];
-                preferInfo.preferId = [[preferDict objectForKey:@"id"] longValue];
+                preferInfo.preferid = [[preferDict objForKey:@"id"] stringValue];
                 preferInfo.prefername = [preferDict objectForKey:@"prefername"];
                 [self.preferArray addObject:preferInfo];
                 [preferString appendFormat:@"%@、", preferInfo.prefername];
@@ -136,21 +137,21 @@
             }
             
             NSDictionary *userDetail = [json objectForKey:@"UserDetail"];
-            self.contact = [[[Contact alloc] init] autorelease];
+            self.contact = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
             self.contact.autograph = [userDetail objForKey:@"autograph"];
             self.contact.col1 = [userDetail objForKey:@"col1"];
             self.contact.col2 = [userDetail objForKey:@"col2"];
             self.contact.col3 = [userDetail objForKey:@"col3"];
             self.contact.userid = [[userDetail objForKey:@"id"] stringValue];
-            self.contact.invagency = [NSNumber numberWithLong:[[userDetail objForKey:@"invagency"] intValue]];
+            self.contact.invagency = [[userDetail objForKey:@"invagency"] stringValue];
             self.contact.mailbox = [userDetail objForKey:@"mailbox"];
             self.contact.picturelinkurl = [userDetail objForKey:@"picturelinkurl"];
             self.contact.remark = [userDetail objForKey:@"remark"];
             self.contact.tel = [userDetail objForKey:@"tel"];
-            self.contact.type = [NSNumber numberWithLong:[[userDetail objForKey:@"type"] intValue]];
+            self.contact.type = [[userDetail objForKey:@"type"] stringValue];
             self.contact.username = [userDetail objForKey:@"username"];
             
-            if (self.contact.type == 0) {
+            if (self.contact.type.intValue == 0) {
                 self.isFriend = NO;
                 self.addFriendbtnTitleLabel.text = @"加为好友";
             }
@@ -180,8 +181,8 @@
         
         NSString *attentionid =  self.contact.userid;
         NSString *userid = [kAppDelegate userId];
-        NSString *cityid = [PersistenceHelper dataForKey:@"currentCityId"];
-        NSString *provinceid = [PersistenceHelper dataForKey:@"currentProvinceId"];
+        NSString *cityid = [PersistenceHelper dataForKey:kCityId];
+        NSString *provinceid = [PersistenceHelper dataForKey:kProvinceId];
         NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:attentionid, @"attentionid",
                                   userid, @"userid",
                                   cityid, @"cityid",
@@ -197,8 +198,14 @@
                 [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
                 self.isFriend = YES;
                 self.addFriendbtnTitleLabel.text = @"删除好友";
+                
+                
+                
             }
-            
+            else{
+                [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+                [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+            }
         } failure:^(NSError *error) {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
@@ -211,8 +218,8 @@
         
         NSString *attentionid =  self.contact.userid;
         NSString *userid = [kAppDelegate userId];
-        NSString *cityid = [PersistenceHelper dataForKey:@"currentCityId"];
-        NSString *provinceid = [PersistenceHelper dataForKey:@"currentProvinceId"];
+        NSString *cityid = [PersistenceHelper dataForKey:kCityId];
+        NSString *provinceid = [PersistenceHelper dataForKey:kProvinceId];
         NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:attentionid, @"attentionid",
                                   userid, @"userid",
                                   cityid, @"cityid",
@@ -237,7 +244,6 @@
             [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
         }];
     }
-
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -253,7 +259,7 @@
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     CGRect frame = self.view.frame;
-    [UIView animateWithDuration:0.5f animations:^{
+    [UIView animateWithDuration:0.2f animations:^{
         self.view.frame = CGRectMake(frame.origin.x, frame.origin.y-160.f, frame.size.width, frame.size.height);
     }];
     
@@ -261,7 +267,7 @@
 
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
-    [UIView animateWithDuration:0.5f animations:^{
+    [UIView animateWithDuration:0.2f animations:^{
         self.view.frame = CGRectMake(0, 0, 320, [kAppDelegate window].frame.size.height-64);
     }];
     

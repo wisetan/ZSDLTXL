@@ -69,7 +69,7 @@
 
 - (void)didDeleteFriend:(NSNotification *)noti
 {
-    long userid = [noti.object longValue];
+    long userid = [noti.object longLongValue];
     NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] initWithArray:self.contactArray];
     __block Contact *deleteContact = nil;
     [contactArrayTmp enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
@@ -95,6 +95,8 @@
                                                                         self.provinceid, @"provinceid",
                                                                         self.cityid, @"cityid",
                                                                         @"getZsAttentionUserByArea.json", @"path", nil];
+    
+    NSLog(@"my friend dict %@", paraDict);
     
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
     hud.labelText = @"获取好友";
@@ -203,7 +205,6 @@
     }
     
     cell.unSelectedImage.alpha = 0.f;
-    //    cell.selectButton = nil;
     
     return cell;
 }
@@ -220,12 +221,15 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    OtherHomepageViewController *homeVC = [[OtherHomepageViewController alloc] init];
+    OtherHomepageViewController *homeVC = nil;
+    if (IS_IPHONE_5) {
+        homeVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController_ip5" bundle:nil];
+    }
+    else{
+        homeVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController" bundle:nil];
+    }
     
     NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
-//    homeVC.userName = username;
-//    homeVC.contactDict = self.contactDictSortByAlpha;
     homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     [self.navigationController pushViewController:homeVC animated:YES];
     [homeVC release];

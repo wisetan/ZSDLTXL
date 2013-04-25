@@ -2,17 +2,19 @@
 //  Pharmacology.h
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-15.
+//  Created by LiuYue on 13-4-25.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@interface Pharmacology : NSObject
 
-@property (nonatomic, copy) NSString *content;
-@property (nonatomic, assign) long pharId;
-@property (nonatomic, copy) NSString *picturelinkurl;
-@property (nonatomic, assign) int col4;
+@interface Pharmacology : NSManagedObject
+
+@property (nonatomic, retain) NSString * col4;
+@property (nonatomic, retain) NSString * content;
+@property (nonatomic, retain) NSString * pharid;
+@property (nonatomic, retain) NSString * picturelinkurl;
 
 @end

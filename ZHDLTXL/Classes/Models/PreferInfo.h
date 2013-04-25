@@ -10,7 +10,7 @@
 
 @interface PreferInfo : NSObject
 
-@property (nonatomic, assign) long preferId;
+@property (nonatomic, copy) NSString *preferid;
 @property (nonatomic, copy) NSString *prefername;
 
 @end

@@ -68,4 +68,6 @@ char indexTitleOfString(unsigned short string);
 + (void)groupTableView:(UITableView *)_tableView changeBgForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 
 + (void)plainTableView:(UITableView *)_tableView changeBgForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
+
++ (NSString *)getCityIdByCityName:(NSString *)cityName;
 @end

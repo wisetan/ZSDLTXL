@@ -879,4 +879,26 @@ char indexTitleOfString(unsigned short string) {
     ((UIImageView *)cell.selectedBackgroundView).image = selectionBackground;
 }
 
++ (NSString *)getCityIdByCityName:(NSString *)cityName
+{
+    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
+    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
+    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
+    [areaJsonData release];
+    
+    __block NSString *cityId = nil;
+    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
+    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
+        
+        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
+        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+            if ([[cityDict objectForKey:@"cityname"] isEqualToString:cityName]) {
+                cityId = [cityDict objectForKey:@"cityid"];
+                *stop = YES;
+            }
+        }];
+    }];
+    return cityId;
+}
+
 @end

@@ -8,7 +8,7 @@
 
 #import "AddInfoViewController.h"
 #import "ZhaoshangAndDailiViewController.h"
-#import "SelectPreferViewController.h"
+#import "SelectPharViewController.h"
 #import "ProvinceViewController.h"
 #import "AddInfoCell.h"
 #import "CityInfo.h"
@@ -111,7 +111,8 @@
 
 - (void)removeObserver
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kAddResidentNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSelectPharFinished object:nil];
 }
 
 - (void)backAction
@@ -142,9 +143,9 @@
     [DreamFactoryClient getWithURLParameters:self.registDict success:^(NSDictionary *json) {
 
         NSLog(@"regist json: %@", json);
-        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
-//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        if ([[[json objectForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             self.userid = [[json objectForKey:@"Userid"] stringValue];
+            [PersistenceHelper setData:[self.registDict objForKey:@"tel"] forKey:KTel];
             [self submitAction];
         } else {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
@@ -154,11 +155,6 @@
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
     }];
-}
-
-- (void)addInfoAction
-{
-    
 }
 
 - (void)submitAction {
@@ -230,9 +226,9 @@
             NSLog(@"完善信息成功");
             
             
-            [PersistenceHelper setData:self.preferArray forKey:@"prefer_array"];
-            [PersistenceHelper setData:self.residentArray forKey:@"resident_array"];
-            [PersistenceHelper setData:self.zdValue forKey:@"zd_value"];
+//            [PersistenceHelper setData:self.preferArray forKey:@"prefer_array"];
+//            [PersistenceHelper setData:self.residentArray forKey:@"resident_array"];
+//            [PersistenceHelper setData:self.zdValue forKey:@"zd_value"];
             [PersistenceHelper setData:self.userid forKey:kUserId];
             
             NSString *alertMessage = [NSString stringWithFormat:@"您的宝通号：%@\n",self.userid];
@@ -318,7 +314,7 @@
 - (void)selectCategory
 {
     NSLog(@"选择偏好");
-    SelectPreferViewController *selectPreferVC = [[SelectPreferViewController alloc] init];
+    SelectPharViewController *selectPreferVC = [[SelectPharViewController alloc] init];
     selectPreferVC.selectArray = self.preferArray;
     [self.navigationController pushViewController:selectPreferVC animated:YES];
     [selectPreferVC release];
@@ -339,7 +335,7 @@
     NSMutableString *preferStr = [[NSMutableString alloc] init];
     [self.preferArray enumerateObjectsUsingBlock:^(PreferInfo *prefer, NSUInteger idx, BOOL *stop) {
         [preferStr appendFormat:@"%@、", prefer.prefername];
-        [self.preferid appendFormat:@"%ld,", prefer.preferId];
+        [self.preferid appendFormat:@"%@,", prefer.preferid];
     }];
     if ([preferStr isValid]) {
         preferStr = [NSMutableString stringWithString:[preferStr substringToIndex:[preferStr length] -  1]];

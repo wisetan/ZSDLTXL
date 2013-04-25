@@ -334,9 +334,11 @@
     } else {
         currentPage++;
     }
-    NSDictionary *dict = [self urlDictForRefresh];    
+    NSDictionary *dict = [self urlDictForRefresh];
+    NSLog(@"message dict %@", dict);
     if (dict) {
         [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+            NSLog(@"message json %@", json);
             [MBProgressHUD hideHUDForView:self.view animated:YES];
             if ([self isJsonValid:json]) {
                 [self updateDataSource:json force:isRefresh];

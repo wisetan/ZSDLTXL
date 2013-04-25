@@ -67,6 +67,20 @@ typedef struct
 #define KUserName @"KUserName"
 #define KPassWord @"KPassWord"
 #define kCityName @"kCityName"
+#define KTel @"KTel"
+#define KMail @"KMail"
+#define KBoraMail @"KBoraMail"
+
+#define KGpsCityName @"KGpsCityName"
+#define kGpsCityId @"kGpsCityId"
+
+
+#define kBoraMailIMAPPort @"143"
+#define KBoraMailSmtpPort @"25"
+#define KBoraMailSmtpServer @"smtp.boramail.com"
+#define KBoraMailIMAPServer @"imap.boramail.com"
+
+#define kCoreDataKey @"71cb1fe2f2faba8748e41a9d4485ac1a196797b9C9GJPL7XDTWD"
 
 
 

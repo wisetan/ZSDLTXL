@@ -160,13 +160,15 @@
     hud.labelText = @"正在提交注册";
 
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:telNum, @"tel", password, @"passwd", realName, @"name", email, @"mail", kAppDelegate.uuid, @"uuid", @"addInvestmentUser.json", @"path", nil];
+    NSLog(@"regist dict %@", dict);
+    
     
     
     AddInfoViewController *addInfoVC = [[AddInfoViewController alloc] init];
     addInfoVC.registDict = dict;
     [self.navigationController pushViewController:addInfoVC animated:YES];
     [addInfoVC release];
-    [hud hide:YES afterDelay:1];
+    [hud hide:YES afterDelay:.5];
     
 
 }
@@ -248,7 +250,7 @@
     
     CGFloat keyBoardHeight = keyboardBounds.size.height;
     if (IS_IPHONE_5) {
-        self.mTableView.frame = CGRectMake(0, 0, 320, 568 - 44 - keyBoardHeight);
+        self.mTableView.frame = CGRectMake(0, 0, 320, 548 - 44 - keyBoardHeight);
     }
     else{
         self.mTableView.frame = CGRectMake(0, 0, 320, 460 - 44 - keyBoardHeight);
@@ -273,7 +275,7 @@
         self.mTableView.frame = CGRectMake(0, 0, 320, 548-44);
     }
     else{
-        self.mTableView.frame = CGRectMake(0, 0, 320, 460 - 44);
+        self.mTableView.frame = CGRectMake(0, 0, 320, 460-44);
     }
     [UIView commitAnimations];
 }

@@ -8,9 +8,11 @@
 
 #import <UIKit/UIKit.h>
 #import "UserDetail.h"
+#import "MyInfo.h"
+#import "SBTableAlert.h"
 
 @interface MyHomePageViewController : UIViewController
-<UIAlertViewDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+<UIAlertViewDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, NSFetchedResultsControllerDelegate, SBTableAlertDelegate, SBTableAlertDataSource>
 
 @property (nonatomic, retain) UIButton *backBarButton;
 
@@ -35,12 +37,15 @@
 @property (retain, nonatomic) UserDetail *userDetail;
 
 
+@property (retain, nonatomic) MyInfo *myInfo;
+
+
 
 
 @property (retain, nonatomic) NSMutableArray *residentArray;
-@property (retain, nonatomic) NSMutableArray *preferArray;
+@property (retain, nonatomic) NSMutableArray *pharArray;
 @property (retain, nonatomic) NSMutableArray *residentImageArray;
-@property (retain, nonatomic) NSMutableArray *preferImageArray;
+@property (retain, nonatomic) NSMutableArray *pharImageArray;
 
 @property (nonatomic, retain) UIView *modifyView;
 
@@ -49,9 +54,14 @@
 @property (nonatomic, retain) UITextField *mailField;
 
 @property (nonatomic, retain) NSMutableArray *unreadCountArray;
-//@property (nonatomic, retain) ContactHimView *contactHimView;
 @property (retain, nonatomic) IBOutlet UIButton *messageButton;
 @property (retain, nonatomic) IBOutlet UIButton *mailButton;
 @property (retain, nonatomic) IBOutlet UIButton *chatButton;
+
+@property (nonatomic, retain) NSArray *zdNameArray;
+@property (nonatomic, retain) NSMutableDictionary *zdDict;
+@property (nonatomic, retain) NSNumber *zdValue;
+@property (nonatomic, copy) NSString *zdName;
+
 
 @end

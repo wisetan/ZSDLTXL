@@ -2,20 +2,33 @@
 //  CityInfo.h
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-11.
+//  Created by LiuYue on 13-4-25.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@interface CityInfo : NSObject
+@class UserDetail;
 
-@property (nonatomic, copy) NSString *centerlat;
-@property (nonatomic, copy) NSString *centerlon;
-@property (nonatomic, copy) NSString *cityid;
-@property (nonatomic, copy) NSString *cityname;
-@property (nonatomic, copy) NSString *countylist;
-@property (nonatomic, copy) NSString *provinceid;
-@property (nonatomic, copy) NSString *radius;
+@interface CityInfo : NSManagedObject
+
+@property (nonatomic, retain) NSString * centerlat;
+@property (nonatomic, retain) NSString * centerlon;
+@property (nonatomic, retain) NSString * cityid;
+@property (nonatomic, retain) NSString * cityname;
+@property (nonatomic, retain) NSString * countylist;
+@property (nonatomic, retain) NSString * hasGotData;
+@property (nonatomic, retain) NSString * provinceid;
+@property (nonatomic, retain) NSString * radius;
+@property (nonatomic, retain) NSSet *users;
+@end
+
+@interface CityInfo (CoreDataGeneratedAccessors)
+
+- (void)addUsersObject:(UserDetail *)value;
+- (void)removeUsersObject:(UserDetail *)value;
+- (void)addUsers:(NSSet *)values;
+- (void)removeUsers:(NSSet *)values;
 
 @end

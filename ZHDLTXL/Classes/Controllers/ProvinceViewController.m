@@ -69,13 +69,11 @@
     self.cityArray = [[[NSMutableArray alloc] init] autorelease];
     self.areaInfoDict = [[[NSMutableDictionary alloc] init] autorelease];
     
-
-    
-
-    
     [self getAreaInfo];
     
-
+    
+    
+    
 }
 
 - (void)getSelectProvinceId
@@ -116,10 +114,11 @@
         NSMutableArray *cityArrayTmp = [[NSMutableArray alloc] init];
         [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
 //            NSLog(@"city: %@", cityDict);
-            CityInfo *city = [[[CityInfo alloc] init] autorelease];
+            CityInfo *city = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
             [city setValuesForKeysWithDictionary:cityDict];
             [cityArrayTmp addObject:city];
         }];
+        
         
         [self.areaInfoDict setObject:cityArrayTmp forKey:province.provinceid];
         [cityArrayTmp release];
@@ -172,6 +171,9 @@
         if ([[self.addResidentProvinceIdDict objectForKey:[NSNumber numberWithInt:indexPath.row]] isEqualToString:@"YES"]) {
             cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
         }
+        else{
+            cell.selectImage.image = [UIImage imageNamed:@"unselected.png"];
+        }
     }else{
         if (indexPath.section == self.selIndexSection && indexPath.row == self.selIndexRow) {
             cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
@@ -181,13 +183,7 @@
         }
     }
 
-    
-
-    
-    
-    
-    return cell;
-    
+    return cell;    
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -205,6 +201,7 @@
     cityVC.cityArray = cityArr;
     cityVC.isAddResident = self.isAddResident;
     cityVC.homePageVC = self.homePageVC;
+    cityVC.provinceid = provinceId;
     self.selIndexRow = indexPath.row;
     self.selIndexSection = indexPath.section;
     
@@ -217,25 +214,5 @@
 {
     return 51.f;
 }
-
-
-- (void)selectCity:(CellButton *)sender
-{
-    CityViewController *cityVC = [[[CityViewController alloc] init] autorelease];
-//    cityVC.cityArray = [self.areaDict objectForKey:[self.provinceNameArray objectAtIndex:sender.index]];
-    NSMutableArray *cityArr = [[NSMutableArray alloc] init];
-    NSString *provinceId = [[self.provinceArray objectAtIndex:sender.indexRow] provinceid];
-    [[self.areaInfoDict objectForKey:provinceId] enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
-        [cityArr addObject:city];
-    }];
-    cityVC.cityArray = cityArr;
-    cityVC.isAddResident = self.isAddResident;
-    cityVC.homePageVC = self.homePageVC;
-    
-    [self.navigationController pushViewController:cityVC animated:YES];
-}
-
-
-#pragma mark - table view delegate
 
 @end

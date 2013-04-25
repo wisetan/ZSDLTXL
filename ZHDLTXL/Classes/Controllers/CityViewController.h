@@ -14,6 +14,7 @@
 
 @property (nonatomic, retain) NSMutableArray *cityArray;
 @property (nonatomic, retain) NSMutableArray *selectCityArray;
+@property (nonatomic, retain) NSMutableArray *originCityArray;
 @property (nonatomic, retain) UITableView *cityTableView;
 @property (nonatomic, retain) UIButton *backBarButton;
 

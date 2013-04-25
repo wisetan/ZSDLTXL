@@ -10,15 +10,17 @@
 #import "RegistViewController.h"
 #import "CustomAlertView.h"
 #import "UIAlertView+MKBlockAdditions.h"
+#import "UserDetail.h"
+#import "CityInfo.h"
+#import "MyInfo.h"
+#import "Pharmacology.h"
 
 @interface LoginViewController ()
 
 @end
 
 @implementation LoginViewController
-@synthesize autoLoginButton;
 @synthesize mTableView;
-@synthesize isAutoLogin;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -31,14 +33,14 @@
 
 - (void)registSucceedAction {
     [self.navigationController popViewControllerAnimated:NO];
-//    [kAppDelegate loginFinishedWithAnimation:YES];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    isAutoLogin = YES; //永远自动登陆
+    self.managedContext = kAppDelegate.managedObjectContext;
+    
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(registSucceedAction) name:kRegistSucceed object:nil];
     self.view.backgroundColor = bgGreyColor;
@@ -69,14 +71,12 @@
 - (void)viewDidUnload
 {
     [self setMTableView:nil];
-    [self setAutoLoginButton:nil];
     [super viewDidUnload];
 }
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kRegistSucceed object:nil];
     [mTableView release];
-    [autoLoginButton release];
     [super dealloc];
 }
 
@@ -123,10 +123,6 @@
     return cell;
 }
 
-- (IBAction)autoLoginAction:(id)sender {
-//    isAutoLogin = !isAutoLogin;
-}
-
 - (IBAction)loginAction:(id)sender {
     
     NSString *name = [userName.text removeSpace];
@@ -166,16 +162,75 @@
     NSLog(@"login dict: %@", dict);
     
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
-        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
-            NSString *userId = [[json objForKey:@"Userid"] stringValue];
-            [kAppDelegate setUserId:userId];
-            [PersistenceHelper setData:userId forKey:kUserId];
-            [PersistenceHelper setData:name forKey:KUserName];
-            [PersistenceHelper setData:pwd forKey:KPassWord];
+            self.userid = [[json objForKey:@"Userid"] stringValue];
+            NSLog(@"my info %@", json);
+            MyInfo *myInfo = [NSEntityDescription insertNewObjectForEntityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+            NSDictionary *getMyInfoDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMypageDetail.json", @"path", self.userid, @"userid", nil];
+            [DreamFactoryClient getWithURLParameters:getMyInfoDict success:^(NSDictionary *myInfoJson) {
+                NSLog(@"myinfojson %@", myInfoJson);
+                if ([[[myInfoJson objectForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+                    myInfo.account = [myInfoJson objForKey:@"Account"];
+                    myInfo.unreadCount = [myInfoJson objForKey:@"UnreadCount"];
+                    myInfo.unreadSMSCount = [myInfoJson objForKey:@"UnreadSMSCount"];
+                    
+                    
+                    NSDictionary *userDetailDict = [myInfoJson objForKey:@"UserDetail"];
+                    NSLog(@"user detail dict %@", userDetailDict);
+                    NSError *saveError;
+                    UserDetail *userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+                    userDetail.autograph = [userDetailDict objForKey:@"autograph"];
+                    userDetail.col1 = [userDetailDict objForKey:@"col1"];
+                    userDetail.col2 = [userDetailDict objForKey:@"col2"];
+                    userDetail.col3 = [userDetailDict objForKey:@"col3"];
+                    userDetail.userid = [[userDetailDict objForKey:@"id"] stringValue];
+                    userDetail.invagency = [[userDetailDict objForKey:@"invagency"] stringValue];
+                    userDetail.mailbox = [userDetailDict objForKey:@"mailbox"];
+                    userDetail.picturelinkurl = [userDetailDict objForKey:@"picturelinkurl"];
+                    userDetail.remark = [userDetailDict objForKey:@"remark"];
+                    userDetail.tel = [userDetailDict objForKey:@"tel"];
+                    userDetail.type = [[userDetailDict objForKey:@"type"] stringValue];
+                    userDetail.username = [userDetailDict objForKey:@"username"];
+                    
+                    myInfo.userDetail = userDetail;
+                    
+                    NSArray *areaList = [myInfoJson objForKey:@"AreaList"];
+                    NSMutableSet *areaSet = [[NSMutableSet alloc] init];
+                    [areaList enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+                        CityInfo *city = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+                        [city setValuesForKeysWithDictionary:cityDict];
+                        [areaSet addObject:city];
+                    }];
+                    
+
+                    
+                    [myInfo addAreaList:areaSet];
+                    NSLog(@"myinfo arealist %@", myInfo.areaList);
+                    
+                    NSArray *preferList = [myInfoJson objForKey:@"PreferList"];
+                    NSMutableSet *preferSet = [[NSMutableSet alloc] init];
+                    [preferList enumerateObjectsUsingBlock:^(NSDictionary *prefer, NSUInteger idx, BOOL *stop) {
+                        Pharmacology *phar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:kAppDelegate.managedObjectContext];
+                        phar.content = [prefer objForKey:@"prefername"];
+                        phar.pharid = [[prefer objForKey:@"id"] stringValue];
+                        [preferSet addObject:phar];
+                    }];
+                    
+                    [myInfo addPharList:preferSet];
+                    
+                    if (![kAppDelegate.managedObjectContext save:&saveError]) {
+                        NSLog(@"save error %@", saveError);
+                    }
+                    
+                    [self backToRootVC:nil];
+                }
+            } failure:^(NSError *myInfoError) {
+                NSLog(@"error %@", myInfoError);
+            }];
             
-            [self backToRootVC:nil];
+            [PersistenceHelper setData:self.userid forKey:kUserId];
+            
+
         } else {
             [MBProgressHUD hideHUDForView:self.view animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
@@ -184,6 +239,81 @@
         [MBProgressHUD hideHUDForView:self.view animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
     }];
+}
+
+- (AFJSONRequestOperation *)getUserDetailOp
+{
+    NSDictionary *getMyInfoDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMypageDetail.json", @"path", self.userid, @"userid", nil];
+    NSURL *url = [NSURL URLWithString:[self getUrlWithPara:getMyInfoDict]];
+    AFJSONRequestOperation *op = [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSMutableURLRequest requestWithURL:url] success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+        NSLog(@"get User Detai succeed");
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+        
+    }];
+    return op;
+}
+
+- (AFJSONRequestOperation *)getFriendInfoOp
+{
+//    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:self.userid, @"userid",
+//                              self.provinceid, @"provinceid",
+//                              self.cityid, @"cityid",
+//                              @"getZsAttentionUserByArea.json", @"path", nil];
+//    
+//    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+//    hud.labelText = @"获取好友";
+//    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+//        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
+//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+//            NSArray *friendArrayJson = [json objectForKey:@"DataList"];
+//            NSMutableArray *friendArray = [[NSMutableArray alloc] init];
+//            [friendArrayJson enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
+//                Contact *contact = [Contact new];
+//                contact.userid = [contactDict objectForKey:@"id"];
+//                contact.username = [contactDict objForKey:@"username"];
+//                contact.tel = [contactDict objForKey:@"tel"];
+//                contact.mailbox = [contactDict objectForKey:@"mailbox"];
+//                contact.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
+//                contact.col1 = [contactDict objectForKey:@"col1"];
+//                contact.col2 = [contactDict objectForKey:@"col2"];
+//                contact.col2 = [contactDict objectForKey:@"col2"];
+//                [friendArray addObject:contact];
+//                [contact release];
+//            }];
+//            [self friendListRefreshed:friendArray];
+//            [friendArray release];
+//        }
+//        else{
+//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+//            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+//        }
+//    } failure:^(NSError *error) {
+//        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+//        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+//    }];
+}
+
+- (NSString *)getUrlWithPara:(NSDictionary *)paraDict
+{
+    NSMutableString *baseUrl = [NSMutableString stringWithFormat:@"http://www.boracloud.com:9101/BLZTCloud/%@?", [paraDict objectForKey:@"path"]];
+    [paraDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        NSString *paraPair = [NSString stringWithFormat:@"%@=%@&", key, obj];
+        [baseUrl appendFormat:@"%@", paraPair];
+    }];
+    baseUrl = [NSMutableString stringWithString:[baseUrl substringToIndex:baseUrl.length-1]];
+    return baseUrl;
+}
+
+
+
+- (AFJSONRequestOperation *)getChatRecordOp
+{
+    
+}
+
+- (AFJSONRequestOperation *)getHeadIconOp
+{
+    
 }
 
 - (IBAction)registAction:(id)sender {

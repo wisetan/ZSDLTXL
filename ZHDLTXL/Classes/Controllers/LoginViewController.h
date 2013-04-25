@@ -16,10 +16,11 @@
     UITextField *password;
 }
 
-@property (retain, nonatomic) IBOutlet UIButton *autoLoginButton;
+@property (retain, nonatomic) NSManagedObjectContext *managedContext;
 @property (retain, nonatomic) IBOutlet UITableView *mTableView;
-@property (assign, nonatomic) BOOL isAutoLogin;
 
 @property (nonatomic, retain) UIButton *backBarButton;
+@property (nonatomic, copy) NSString *userid;
+@property (nonatomic, retain) MBProgressHUD *hud;
 
 @end

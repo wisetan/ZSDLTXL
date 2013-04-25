@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ContactHimView.h"
+#import "UserDetail.h"
 
 @interface OtherHomepageViewController : UIViewController <ContactHimViewDelegate, UITextFieldDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, retain) Contact *contact;
+@property (nonatomic, retain) UserDetail *contact;
 
 @property (nonatomic, copy) NSString *residentArea;
 @property (nonatomic, copy) NSString *pharmacologyCategory;

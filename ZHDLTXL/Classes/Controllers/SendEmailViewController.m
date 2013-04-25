@@ -8,6 +8,7 @@
 
 #import "SendEmailViewController.h"
 #import "GroupSendViewController.h"
+#import <MailCore/MailCore.h>
 
 
 @interface SendEmailViewController ()
@@ -36,6 +37,8 @@
     self.contactArray = [[[NSMutableArray alloc] init] autorelease];
     [self.contactArray addObject:self.currentContact];
     
+    self.mailSendFrom = [PersistenceHelper dataForKey:KBoraMail];
+    self.mailTo = self.currentContact.col1;
     
     //nav bar image
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
@@ -90,7 +93,58 @@
 - (void)sendEmail:(UIButton *)sender
 {
     NSLog(@"send message");
+    
+    NSString *mailTile = self.emailTitleTextField.text;
+    if (![mailTile isValid]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"此邮件没有主题" message:@"您确定发送吗" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"发送", nil];
+        [alert show];
+        [alert release];
+    }
+    else{
+//        [self didSendMail];
+    }
+    
+    
+
+    
+    
 }
+
+//- (void)didSendMail
+//{
+//    NSString *mailToName = self.currentContact.username;
+//    NSString *mailSendFromName = [PersistenceHelper dataForKey:KUserName];
+//    NSString *senderPassword = [PersistenceHelper dataForKey:KPassWord];
+//    
+//    NSString *mailTile = self.emailTitleTextField.text;
+//    NSString *mailBody = self.mailTextView.text;
+//    CTCoreMessage *mail = [[CTCoreMessage alloc] init];
+//    [mail setTo:[NSSet setWithObject:[CTCoreAddress addressWithName:mailToName email:self.mailTo]]];
+//    [mail setFrom:[NSSet setWithObject:[CTCoreAddress addressWithName:mailSendFromName email:self.mailSendFrom]]];
+//    [mail setBody:mailBody];
+//    [mail setSubject:mailTile];
+//    
+//    NSError *error;
+//    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+//    [hud hide:YES afterDelay:.5];
+//    hud.labelText = @"正在发送";
+//    BOOL success = [CTSMTPConnection sendMessage:mail
+//                                          server:KBoraMailSmtpServer
+//                                        username:[kAppDelegate userId]
+//                                        password:senderPassword
+//                                            port:[KBoraMailSmtpPort intValue]
+//                                  connectionType:CTSMTPConnectionTypePlain
+//                                         useAuth:YES
+//                                           error:&error];
+//    if (!success) {
+//        [kAppDelegate showWithCustomAlertViewWithText:@"发送失败" andImageName:nil];
+//        NSLog(@"send mail error %@", error);
+//    }
+//    else{
+//        [kAppDelegate showWithCustomAlertViewWithText:@"发送成功" andImageName:nil];
+//    }
+//    
+//}
 
 - (void)cancelSend:(UIButton *)sender
 {
@@ -176,6 +230,14 @@
     }
     NSLog(@"all name: %@", allSendTargetName);
     self.nameLabel.text = allSendTargetName;
+}
+
+#pragma mark - alert view delegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1) {
+        
+    }
 }
 
 - (void)didReceiveMemoryWarning
