@@ -27,6 +27,17 @@
     return self;
 }
 
+- (NSString *)tabImageName
+{
+    return nil;
+}
+
+// Setting the title of the tab.
+- (NSString *)tabTitle
+{
+    return @"筛选";
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];

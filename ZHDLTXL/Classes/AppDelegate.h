@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
 #import <CoreData/CoreData.h>
-#import "RootViewController.h"
+#import "AKTabBarController.h"
+#import "AllContactViewController.h"
 
 #define kNetworkErrorMessage        @"您的网络不好哦，检查一下"
 #define kEventMyLatlonChanged       @"kEventMyLatlonChanged"
@@ -28,7 +29,7 @@
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-@property (nonatomic, retain) RootViewController *rootVC;
+
 @property (strong, nonatomic) UIWindow *window;
 
 @property (nonatomic, copy)   NSString *hotspotContent;
@@ -45,6 +46,8 @@
 
 
 @property (nonatomic, retain) CLGeocoder *geocoder;
+
+@property (nonatomic, retain) AKTabBarController *tabController;
 
 
 - (void)showWithCustomAlertViewWithText:(NSString *)text andImageName:(NSString *)image;

@@ -13,6 +13,8 @@
 #import "ValueForKey.h"
 #import "DAReloadActivityButton.h"
 #import "UIImage+stretch.h"
+#import "MyInfo.h"
+
 @implementation CustomTableViewBase
 
 @synthesize refreshHeaderView, appendingActivityView, dataSourceArray;

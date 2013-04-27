@@ -71,6 +71,8 @@ typedef struct
 #define KMail @"KMail"
 #define KBoraMail @"KBoraMail"
 
+#define kCity @"kCity"
+
 #define KGpsCityName @"KGpsCityName"
 #define kGpsCityId @"kGpsCityId"
 
@@ -87,9 +89,15 @@ typedef struct
 #define kDocumentory ([NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0])
 
 
-
 //Persist Data, password userid
 
-
+enum eContactType {
+    
+    eUnknownContactType = -1,
+    eFriendContatType = 0,
+    eCommendContact = 1,
+    eAllContact = 2,
+    
+};
 
 #endif

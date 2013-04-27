@@ -35,6 +35,7 @@
 @property (retain, nonatomic) NSString *headIconUrl;
 
 @property (retain, nonatomic) UserDetail *userDetail;
+@property (retain, nonatomic) NSMutableDictionary *unreadMessageDict;
 
 
 @property (retain, nonatomic) MyInfo *myInfo;

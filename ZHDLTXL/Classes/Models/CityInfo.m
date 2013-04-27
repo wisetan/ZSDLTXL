@@ -2,12 +2,11 @@
 //  CityInfo.m
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-25.
+//  Created by LiuYue on 13-4-27.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
 #import "CityInfo.h"
-#import "UserDetail.h"
 
 
 @implementation CityInfo
@@ -17,9 +16,7 @@
 @dynamic cityid;
 @dynamic cityname;
 @dynamic countylist;
-@dynamic hasGotData;
 @dynamic provinceid;
 @dynamic radius;
-@dynamic users;
 
 @end

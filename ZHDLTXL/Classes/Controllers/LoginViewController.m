@@ -39,6 +39,8 @@
 {
     [super viewDidLoad];
     
+    [self setHidesBottomBarWhenPushed:YES];
+    
     self.managedContext = kAppDelegate.managedObjectContext;
     
     

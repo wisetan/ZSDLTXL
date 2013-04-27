@@ -46,6 +46,8 @@
     self.selIndexRow = -1;
     self.selIndexSection = -1;
     
+    [self setHidesBottomBarWhenPushed:YES];
+    
     //back button
     self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.backBarButton setImage:[UIImage imageNamed:@"retreat.png"] forState:UIControlStateNormal];

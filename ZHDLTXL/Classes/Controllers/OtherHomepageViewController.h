@@ -7,11 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "UserDetail.h"
+#import "Contact.h"
 
-@interface OtherHomepageViewController : UIViewController <ContactHimViewDelegate, UITextFieldDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, retain) UserDetail *contact;
+
+@interface OtherHomepageViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
+
+@property (nonatomic, retain) Contact *contact;
 
 @property (nonatomic, copy) NSString *residentArea;
 @property (nonatomic, copy) NSString *pharmacologyCategory;
@@ -37,10 +39,12 @@
 @property (nonatomic, retain) NSMutableArray *areaArray;
 @property (nonatomic, retain) NSMutableArray *preferArray;
 
-
+@property (nonatomic, assign) enum eContactType contactyType;
 
 
 @property (nonatomic, assign) BOOL isFriend;
+
+@property (nonatomic, copy) NSString *contactId;
 
 
 @end

@@ -15,6 +15,7 @@
 #import "PreferInfo.h"
 #import "TalkViewController.h"
 #import "LoginViewController.h"
+#import "FriendContact.h"
 
 #define VIEW_GAP 10
 #define VIEW_LEFT_MARGIN (20)
@@ -39,6 +40,8 @@
 {
     [super viewDidLoad];
 	self.title = @"他的主页";
+    
+    self.hidesBottomBarWhenPushed = YES;
     
     self.preferArray = [[[NSMutableArray alloc] init] autorelease];
     self.areaArray = [[[NSMutableArray alloc] init] autorelease];
@@ -97,18 +100,16 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
     hud.labelText = @"获取用户信息";
     [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
-        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
+        if ([[[json objectForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             NSLog(@"friend json data: %@", json);
             
             
             NSMutableString *areaString = [[NSMutableString alloc] init];
             NSArray *areaList = [json objectForKey:@"AreaList"];
             [areaList enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-                CityInfo *cityInfo = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-                [cityInfo setValuesForKeysWithDictionary:cityDict];
-                [self.areaArray addObject:cityInfo];
-                [areaString appendFormat:@"%@、", cityInfo.cityname];
-                [cityInfo release];
+
+                [self.areaArray addObject:[cityDict objForKey:@"cityname"]];
+                
             }];
             
             if ([areaString isValid]) {
@@ -121,12 +122,8 @@
             NSMutableString *preferString = [[NSMutableString alloc] init];
             NSArray *preferList = [json objectForKey:@"PreferList"];
             [preferList enumerateObjectsUsingBlock:^(NSDictionary *preferDict, NSUInteger idx, BOOL *stop) {
-                PreferInfo *preferInfo = [[PreferInfo alloc] init];
-                preferInfo.preferid = [[preferDict objForKey:@"id"] stringValue];
-                preferInfo.prefername = [preferDict objectForKey:@"prefername"];
-                [self.preferArray addObject:preferInfo];
-                [preferString appendFormat:@"%@、", preferInfo.prefername];
-                [preferInfo release];
+
+                [self.preferArray addObject:[preferDict objForKey:@"prefername"]];
 
             }];
 
@@ -174,6 +171,10 @@
 
 - (void)addFriend:(UIButton *)sender
 {
+    if ([self showLoginAlert]) {
+        return;
+    }
+    
     if (!self.isFriend) {
         NSLog(@"添加好友");
         
@@ -199,7 +200,7 @@
                 self.isFriend = YES;
                 self.addFriendbtnTitleLabel.text = @"删除好友";
                 
-                
+                [self updateIsFriend:self.isFriend];
                 
             }
             else{
@@ -237,6 +238,7 @@
                 [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
                 self.isFriend = NO;
                 self.addFriendbtnTitleLabel.text = @"加为好友";
+                [self updateIsFriend:self.isFriend];
             }
             
         } failure:^(NSError *error) {
@@ -246,12 +248,51 @@
     }
 }
 
+- (void)updateIsFriend:(BOOL)isFriend
+{
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
+    fetch.predicate = pred;
+    NSError *error = nil;
+    FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
+    NSLog(@"friend %@", friend);
+    NSLog(@"friend name %@", friend.username);
+    if (error) {
+        NSLog(@"error %@", error);
+    }
+    
+    if (isFriend) {
+        FriendContact *newFriend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
+        
+        newFriend.userid = friend.userid;
+        newFriend.username = friend.username;
+        
+        
+        
+//        [newFriend setValuesForKeysWithDictionary:[friend.entity attributesByName]];
+        NSError *error = nil;
+        if (![kAppDelegate.managedObjectContext save:&error]) {
+            NSLog(@"error %@", error);
+        }
+    }
+    else{
+        
+        NSError *error = nil;
+//        NSLog(@"current = %@, main = %@", [NSThread currentThread], [NSThread mainThread]);
+        [kAppDelegate.managedObjectContext deleteObject:friend];
+        
+        if (![kAppDelegate.managedObjectContext save:&error]) {
+            NSLog(@"error %@", error);
+        }
+    }
+}
+
 - (void)backToRootVC:(UIButton *)sender
 {
     [self.navigationController popViewControllerAnimated:YES];
-    if (!self.isFriend) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:kDeleteFriend object:self.contact.userid];
-    }
+//    if (!self.isFriend) {
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kDeleteFriend object:self.contact.userid];
+//    }
 }
 
 #pragma mark - textfield delegate
@@ -356,7 +397,7 @@
 {
     BOOL shouldShow = NO;
     if ([[kAppDelegate userId] isEqualToString:@"0"]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"亲" message:@"请先登录" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请先登录" message:nil delegate:self cancelButtonTitle:@"知道了" otherButtonTitles:nil];
         [alert show];
         [alert release];
         shouldShow = YES;

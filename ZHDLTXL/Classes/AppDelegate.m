@@ -7,10 +7,10 @@
 //
 
 #import "AppDelegate.h"
-#import "RootViewController.h"
+#import "AllContactViewController.h"
 #import "Reachability.h"
-#import "CMDEncryptedSQLiteStore.h"
 #import "CityInfo.h"
+#import "AKTabBarController.h"
 
 @implementation AppDelegate
 
@@ -32,7 +32,7 @@
     self.geocoder = [[[CLGeocoder alloc] init] autorelease];
     [self initGPS];
     
-
+    //判断网络
     Reachability* reach = [Reachability reachabilityWithHostname:@"www.boracloud.com"];
     if (self.isGpsError) {
         self.newCity = @"北京";
@@ -46,12 +46,28 @@
         [reach startNotifier];
     }
     
-//    [self importProAndCityDataJsonIntoDB];
     
-    self.rootVC = [[[RootViewController alloc] init] autorelease];
-    self.rootVC.currentCity = self.newCity;
-    UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:self.rootVC] autorelease];
-    self.window.rootViewController = nav;
+    self.tabController = [[AKTabBarController alloc] initWithTabBarHeight:45];
+    NSArray *controllerNameArray = @[@"FriendContactViewController", @"CommendContactViewController", @"AllContactViewController", @"ZhaoshangAndDailiViewController"];
+    
+    NSMutableArray *controllerArray = [[NSMutableArray alloc] init];
+    for (NSString *controllerName in controllerNameArray) {
+        Class controllerClass = NSClassFromString(controllerName);
+        id controller = [[controllerClass alloc] init];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:controller];
+        [controllerArray addObject:nav];
+    }
+    
+    [self.tabController setViewControllers:controllerArray];
+    [self.tabController setBackgroundImageName:@"tab_bottom_bg.png"];
+    [self.tabController setTextColor:[UIColor whiteColor]];
+    [self.tabController setSelectedBackgroundImageName:@"tab_touch.png"];
+    [self.tabController setTabEdgeColor:[UIColor clearColor]];
+    [self.tabController setTopEdgeColor:[UIColor clearColor]];
+    [self.tabController setTabColors:@[[UIColor clearColor], [UIColor clearColor]]];
+    
+
+    self.window.rootViewController = self.tabController;
 
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
@@ -77,8 +93,7 @@
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -88,17 +103,17 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+
 }
 
 - (void)saveContext
@@ -107,8 +122,6 @@
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
     if (managedObjectContext != nil) {
         if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
             abort();
         }
@@ -195,45 +208,25 @@
 {
     __block NSString *city = nil;
     [self.geocoder reverseGeocodeLocation:locationManager.location completionHandler:^(NSArray *placemarks, NSError *error) {
-         CLPlacemark *placemark = [placemarks objectAtIndex:0];
-         city = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
-         city = [city substringToIndex:[city length] -1];
-         if ([city isValid]) {
+        CLPlacemark *placemark = [placemarks objectAtIndex:0];
+        city = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
+        city = [city substringToIndex:[city length] -1];
+        if ([city isValid]) {
             self.newCity = city;
-         }
-         else{
-             self.newCity = @"北京";
-         }
+        }
+        else{
+            self.newCity = @"北京";
+        }
+        
+        NSLog(@" app newcity %@", self.newCity);
+
+        NSString *cityId = [Utility getCityIdByCityName:self.newCity];
         [PersistenceHelper setData:self.newCity forKey:kCityName];
+        [PersistenceHelper setData:cityId forKey:kCityId];
     }];
     
 
 }
-
-//- (void)importProAndCityDataJsonIntoDB
-//{
-//    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
-//    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
-//    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
-//    [areaJsonData release];
-//    
-//    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
-//    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
-//        
-//        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
-//        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-//            CityInfo *cityInfo = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:self.managedObjectContext];
-//            [cityInfo setValuesForKeysWithDictionary:cityDict];
-//        }];
-//        NSError *error = nil;
-//        if (![self.managedObjectContext save:&error]) {
-//            NSLog(@"error %@", error);
-//            abort();
-//        }
-//    }];
-//}
-
-
 
 #pragma mark - Core Data stack
 
@@ -287,5 +280,10 @@
 - (NSURL *)applicationDocumentsDirectory
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    [manager stopUpdatingLocation];
 }
 @end

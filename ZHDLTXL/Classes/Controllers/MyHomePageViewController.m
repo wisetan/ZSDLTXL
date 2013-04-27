@@ -32,6 +32,8 @@
 #import "SBTableAlert.h"
 #import "ZDCell.h"
 
+#import "CustomBadge.h"
+
 
 @interface MyHomePageViewController ()
 
@@ -54,6 +56,7 @@
 {
     [super viewDidLoad];
     [self addObserver];
+    self.hidesBottomBarWhenPushed = YES;
     
     self.title = @"个人主页";
     
@@ -131,6 +134,9 @@
     }];
     self.zdValue = [NSNumber numberWithInt:0];
     
+    self.unreadMessageDict = [[[NSMutableDictionary alloc] init] autorelease];
+    [self checkUnreadMessage];
+    
     
     [self.infoTableView reloadData];
 
@@ -145,6 +151,27 @@
     else{
         [self getPersonalInfoFromNet];
     }
+}
+
+- (void)checkUnreadMessage
+{
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getUnreadMessageCount.json", @"path", kAppDelegate.userId, @"userid", nil];
+    //后台查询 不给提示
+    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            NSLog(@"uncheck json %@", json);
+            [self.unreadMessageDict setObject:[json objForKey:@"UnreadCount"] forKey:@"UnReadCount"];
+            [self.unreadMessageDict setObject:[json objForKey:@"UnreadSMSCount"] forKey:@"UnreadSMSCount"];
+            [self showMessageBadge];
+        }
+        else{
+            NSLog(@"check unread error %@", GET_RETURNMESSAGE(json));
+        }
+    } failure:^(NSError *error) {
+        NSLog(@"%@", kNetworkError);
+    }];
+    
+    
 }
 
 - (void)showZD  //显示招商代理
@@ -305,11 +332,12 @@
 - (void)showMessageBadge
 {
     //取得未读消息
-    int unreadCount = self.myInfo.unreadCount.intValue;
-    NSLog(@"unreadcount: %d", unreadCount);
-    if (unreadCount > 0) {
+//    int unreadCount = self.myInfo.unreadCount.intValue;
+//    NSLog(@"unreadcount: %d", unreadCount);
+    NSString *unreadCount = [self.unreadMessageDict objForKey:@"UnreadCount"];
+    if ([unreadCount intValue] > 0) {
         
-        CustomBadge *badge = [CustomBadge customBadgeWithString:[NSString stringWithFormat:@"%d", unreadCount]
+        CustomBadge *badge = [CustomBadge customBadgeWithString:unreadCount
                                                 withStringColor:[UIColor whiteColor]
                                                  withInsetColor:[UIColor redColor]
                                                  withBadgeFrame:YES
@@ -327,9 +355,9 @@
         
     }
     
-    int UnreadSMSCount = self.myInfo.unreadSMSCount.intValue;
-    if (UnreadSMSCount > 0) {
-        CustomBadge *badge = [CustomBadge customBadgeWithString:[NSString stringWithFormat:@"%d", UnreadSMSCount]
+    NSString * UnreadSMSCount = [self.unreadMessageDict objForKey:@"UnreadSMSCount"];
+    if ([UnreadSMSCount intValue] > 0) {
+        CustomBadge *badge = [CustomBadge customBadgeWithString:UnreadSMSCount
                                                 withStringColor:[UIColor whiteColor]
                                                  withInsetColor:[UIColor redColor]
                                                  withBadgeFrame:YES

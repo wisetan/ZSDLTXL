@@ -50,6 +50,8 @@
 {
     [super viewDidLoad];
     
+    [self setHidesBottomBarWhenPushed:YES];
+    
     ////////////////////init registinfo
     
     self.registInfo = [NSMutableArray arrayWithCapacity:2];
