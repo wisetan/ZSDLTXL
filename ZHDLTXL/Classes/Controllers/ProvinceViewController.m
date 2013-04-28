@@ -116,7 +116,7 @@
         NSMutableArray *cityArrayTmp = [[NSMutableArray alloc] init];
         [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
 //            NSLog(@"city: %@", cityDict);
-            CityInfo *city = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+            CityInfo *city = [CityInfo createEntity];
             [city setValuesForKeysWithDictionary:cityDict];
             [cityArrayTmp addObject:city];
         }];

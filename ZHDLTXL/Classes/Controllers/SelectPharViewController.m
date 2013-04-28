@@ -34,7 +34,7 @@
         self.selectArray = [[[NSMutableArray alloc] init] autorelease];
     }
     
-    self.managedObjectContext = kAppDelegate.managedObjectContext;
+//    self.managedObjectContext = kAppDelegate.managedObjectContext;
 //    self.pharEntityDescription = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:self.managedObjectContext];
     
     self.title = @"类别偏好";
@@ -120,10 +120,10 @@
             self.myInfo.pharList = self.newPharSet;
             
             NSError *error = nil;
-            if (![kAppDelegate.managedObjectContext save:&error])
-            {
-                NSLog(@"error %@", error);
-            }
+//            if (![kAppDelegate.managedObjectContext save:&error])
+//            {
+//                NSLog(@"error %@", error);
+//            }
             [[NSNotificationCenter defaultCenter] postNotificationName:kSelectPharFinished object:nil];
             [self.navigationController popViewControllerAnimated:YES];
             [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
@@ -247,10 +247,10 @@
         NSLog(@"self.newPharSet.count = %d", self.newPharSet.count);
     }
     else{
-        Pharmacology *newPhar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:kAppDelegate.managedObjectContext];
-        newPhar.content = phar.content;
-        newPhar.pharid = phar.pharid;
-        [self.newPharSet addObject:newPhar];
+//        Pharmacology *newPhar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//        newPhar.content = phar.content;
+//        newPhar.pharid = phar.pharid;
+//        [self.newPharSet addObject:newPhar];
         NSLog(@"self.newPharSet.count = %d", self.newPharSet.count);
     }
     [self.preferTableView reloadData];

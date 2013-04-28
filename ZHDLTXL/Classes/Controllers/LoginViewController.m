@@ -41,8 +41,6 @@
     
     [self setHidesBottomBarWhenPushed:YES];
     
-    self.managedContext = kAppDelegate.managedObjectContext;
-    
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(registSucceedAction) name:kRegistSucceed object:nil];
     self.view.backgroundColor = bgGreyColor;
@@ -167,7 +165,8 @@
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             self.userid = [[json objForKey:@"Userid"] stringValue];
             NSLog(@"my info %@", json);
-            MyInfo *myInfo = [NSEntityDescription insertNewObjectForEntityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//            MyInfo *myInfo = [NSEntityDescription insertNewObjectForEntityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+            MyInfo *myInfo = [MyInfo createEntity];
             NSDictionary *getMyInfoDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMypageDetail.json", @"path", self.userid, @"userid", nil];
             [DreamFactoryClient getWithURLParameters:getMyInfoDict success:^(NSDictionary *myInfoJson) {
                 NSLog(@"myinfojson %@", myInfoJson);
@@ -180,7 +179,9 @@
                     NSDictionary *userDetailDict = [myInfoJson objForKey:@"UserDetail"];
                     NSLog(@"user detail dict %@", userDetailDict);
                     NSError *saveError;
-                    UserDetail *userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                    UserDetail *userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+                    
+                    UserDetail *userDetail = [UserDetail createEntity];
                     userDetail.autograph = [userDetailDict objForKey:@"autograph"];
                     userDetail.col1 = [userDetailDict objForKey:@"col1"];
                     userDetail.col2 = [userDetailDict objForKey:@"col2"];
@@ -199,7 +200,8 @@
                     NSArray *areaList = [myInfoJson objForKey:@"AreaList"];
                     NSMutableSet *areaSet = [[NSMutableSet alloc] init];
                     [areaList enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-                        CityInfo *city = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                        CityInfo *city = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+                        CityInfo *city = [CityInfo createEntity];
                         [city setValuesForKeysWithDictionary:cityDict];
                         [areaSet addObject:city];
                     }];
@@ -212,7 +214,8 @@
                     NSArray *preferList = [myInfoJson objForKey:@"PreferList"];
                     NSMutableSet *preferSet = [[NSMutableSet alloc] init];
                     [preferList enumerateObjectsUsingBlock:^(NSDictionary *prefer, NSUInteger idx, BOOL *stop) {
-                        Pharmacology *phar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                        Pharmacology *phar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:kAppDelegate.managedObjectContext];
+                        Pharmacology *phar = [Pharmacology createEntity];
                         phar.content = [prefer objForKey:@"prefername"];
                         phar.pharid = [[prefer objForKey:@"id"] stringValue];
                         [preferSet addObject:phar];
@@ -220,9 +223,11 @@
                     
                     [myInfo addPharList:preferSet];
                     
-                    if (![kAppDelegate.managedObjectContext save:&saveError]) {
-                        NSLog(@"save error %@", saveError);
-                    }
+//                    if (![kAppDelegate.managedObjectContext save:&saveError]) {
+//                        NSLog(@"save error %@", saveError);
+//                    }
+                    
+                    [[NSManagedObjectContext MR_context] save:nil];
                     
                     [self backToRootVC:nil];
                 }

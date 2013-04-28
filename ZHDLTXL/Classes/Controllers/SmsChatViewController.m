@@ -201,19 +201,19 @@
     NSNumber *count = [NSNumber numberWithInt:1];
 //    NSString *tel = [PersistenceHelper dataForKey:KTel];
     
-    NSEntityDescription *myInfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-    [fetch setEntity:myInfoEntity];
-    
-    MyInfo *myInfo = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:nil] lastObject];
-    NSString *tel = myInfo.userDetail.tel;
-    
-    
+//    NSEntityDescription *myInfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+//    [fetch setEntity:myInfoEntity];
+//    
+//    MyInfo *myInfo = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:nil] lastObject];
+//    NSString *tel = myInfo.userDetail.tel;
     
     
     
     
-    NSDictionary *jsonData = @{@"content":content, @"count":count, @"peoplelist":contactArray, @"tel":tel};
+    
+    
+    NSDictionary *jsonData = @{@"content":content, @"count":count, @"peoplelist":contactArray, @"tel":@"123"};
     NSString *jsonDataStr = [jsonData JSONString];
     NSLog(@"jsondata str %@", jsonDataStr);
     

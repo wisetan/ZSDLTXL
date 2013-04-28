@@ -37,7 +37,6 @@
 {
     [super viewDidLoad];
     self.title = @"筛选";
-    self.managedObjectContext = kAppDelegate.managedObjectContext;
     self.fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Pharmacology"];
     
     self.cateArray = [[[NSMutableArray alloc] init] autorelease];

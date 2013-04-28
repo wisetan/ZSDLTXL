@@ -186,7 +186,7 @@
 {
     id  sectionInfo =
     [[_fetchedResultsController sections] objectAtIndex:section];
-    NSLog(@"rows %d", [sectionInfo numberOfObjects]);
+//    NSLog(@"rows %d", [sectionInfo numberOfObjects]);
     return [sectionInfo numberOfObjects];
 }
 
@@ -322,41 +322,41 @@
 
 #pragma mark - notification
 
-- (NSFetchedResultsController *)fetchedResultsController
-{
-    if (_fetchedResultsController != nil) {
-        return _fetchedResultsController;
-    }
-    
-    NSLog(@"self.entityname %@", self.entityName);
-    
-    NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName
-                                              inManagedObjectContext:kAppDelegate.managedObjectContext];
-    
-    NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
-    [fetchRequest setEntity:entity];
-    
-    NSSortDescriptor *sort1 = [NSSortDescriptor sortDescriptorWithKey:@"sectionkey" ascending:YES];
-    
-    NSSortDescriptor *sort2 = [NSSortDescriptor sortDescriptorWithKey:@"username"
-                                                           ascending:YES
-                                                            selector:@selector(localizedCaseInsensitiveCompare:)];
-    
-    [fetchRequest setSortDescriptors:@[sort1, sort2]];
-    
-    NSLog(@"city id %@", [PersistenceHelper dataForKey:kCityId]);
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@", [PersistenceHelper dataForKey:kCityId]];
-    [fetchRequest setPredicate:pred];
-    
-    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
-                                                                    managedObjectContext:kAppDelegate.managedObjectContext
-                                                                      sectionNameKeyPath:@"sectionkey"
-                                                                               cacheName:nil];
-    
-    _fetchedResultsController.delegate = self;
-    
-    return _fetchedResultsController;
-}
+//- (NSFetchedResultsController *)fetchedResultsController
+//{
+//    if (_fetchedResultsController != nil) {
+//        return _fetchedResultsController;
+//    }
+//    
+//    NSLog(@"self.entityname %@", self.entityName);
+//    
+//    NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName
+//                                              inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    
+//    NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+//    [fetchRequest setEntity:entity];
+//    
+//    NSSortDescriptor *sort1 = [NSSortDescriptor sortDescriptorWithKey:@"sectionkey" ascending:YES];
+//    
+//    NSSortDescriptor *sort2 = [NSSortDescriptor sortDescriptorWithKey:@"username"
+//                                                           ascending:YES
+//                                                            selector:@selector(localizedCaseInsensitiveCompare:)];
+//    
+//    [fetchRequest setSortDescriptors:@[sort1, sort2]];
+//    
+//    NSLog(@"city id %@", [PersistenceHelper dataForKey:kCityId]);
+//    NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@", [PersistenceHelper dataForKey:kCityId]];
+//    [fetchRequest setPredicate:pred];
+//    
+//    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+//                                                                    managedObjectContext:kAppDelegate.managedObjectContext
+//                                                                      sectionNameKeyPath:@"sectionkey"
+//                                                                               cacheName:nil];
+//    
+//    _fetchedResultsController.delegate = self;
+//    
+//    return _fetchedResultsController;
+//}
 
 - (void)didReceiveMemoryWarning
 {

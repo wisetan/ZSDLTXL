@@ -8,12 +8,24 @@
 
 #import <UIKit/UIKit.h>
 #import "Contact.h"
+#import "FriendContact.h"
+#import "AllContact.h"
+#import "CommendContact.h"
 
+@protocol FriendDidChangeDelegate <NSObject>
 
+- (void)friendDidAdd:(FriendContact *)myFriend;
+- (void)friendDidDelete:(FriendContact *)myFriend;
+
+@end
 
 @interface OtherHomepageViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, retain) Contact *contact;
+
+@property (nonatomic, retain) FriendContact *friendContact;
+@property (nonatomic, retain) CommendContact *commendContact;
+@property (nonatomic, retain) AllContact *allContact;
 
 @property (nonatomic, copy) NSString *residentArea;
 @property (nonatomic, copy) NSString *pharmacologyCategory;
@@ -46,5 +58,11 @@
 
 @property (nonatomic, copy) NSString *contactId;
 
+@property (nonatomic, assign) id<FriendDidChangeDelegate> delegate;
 
 @end
+
+
+
+
+

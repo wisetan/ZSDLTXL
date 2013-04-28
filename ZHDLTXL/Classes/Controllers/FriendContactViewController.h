@@ -8,10 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import "BaseViewController.h"
+#import  "OtherHomepageViewController.h"
 
 
-@interface FriendContactViewController : BaseViewController
+@interface FriendContactViewController : BaseViewController <FriendDidChangeDelegate>
 
 @property (nonatomic, assign) BOOL alertShow;
+
+@property (nonatomic, assign) NSInteger page;
 
 @end

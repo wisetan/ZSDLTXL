@@ -16,6 +16,7 @@
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="userid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="username_p" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="ChatList" representedClassName="ChatList" syncable="YES">
         <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
@@ -58,6 +59,7 @@
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="userid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="username_p" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="Contact" representedClassName="Contact" syncable="YES">
         <attribute name="autograph" optional="YES" attributeType="String" syncable="YES"/>
@@ -75,6 +77,7 @@
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="userid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="username_p" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="FriendContact" representedClassName="FriendContact" syncable="YES">
         <attribute name="autograph" optional="YES" attributeType="String" syncable="YES"/>
@@ -92,6 +95,7 @@
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="userid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="username_p" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="MyInfo" representedClassName="MyInfo" syncable="YES">
         <attribute name="account" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
@@ -140,17 +144,17 @@
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="AllContact" positionX="855" positionY="-342" width="128" height="268"/>
+        <element name="AllContact" positionX="855" positionY="-342" width="128" height="285"/>
         <element name="ChatList" positionX="468" positionY="-414" width="128" height="178"/>
         <element name="ChatRecord" positionX="288" positionY="-441" width="128" height="103"/>
         <element name="CityInfo" positionX="108" positionY="-279" width="128" height="148"/>
-        <element name="CommendContact" positionX="702" positionY="-342" width="128" height="253"/>
-        <element name="FriendContact" positionX="709" positionY="8" width="128" height="270"/>
+        <element name="CommendContact" positionX="702" positionY="-342" width="128" height="270"/>
+        <element name="Contact" positionX="880" positionY="9" width="128" height="285"/>
+        <element name="FriendContact" positionX="709" positionY="8" width="128" height="285"/>
         <element name="MyInfo" positionX="-45" positionY="-151" width="128" height="133"/>
         <element name="Pharmacology" positionX="279" positionY="-139" width="128" height="103"/>
         <element name="SMSList" positionX="538" positionY="-99" width="128" height="178"/>
         <element name="SMSRecord" positionX="306" positionY="-261" width="128" height="103"/>
         <element name="UserDetail" positionX="189" positionY="54" width="128" height="238"/>
-        <element name="Contact" positionX="880" positionY="9" width="128" height="268"/>
     </elements>
 </model>

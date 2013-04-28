@@ -82,15 +82,18 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    NSError *error = nil;
+//    NSError *error = nil;
 
-    _fetchedResultsController = nil;
-    if (![self.fetchedResultsController performFetch:&error]) {
-        NSLog(@"error %@", error);
-    }
+//    _fetchedResultsController = nil;
+//    if (![self.fetchedResultsController performFetch:&error]) {
+//        NSLog(@"error %@", error);
+//    }
 
     if (self.fetchedResultsController.fetchedObjects.count == 0) {
         [self getInvestmentUserListFromServer];
+    }
+    else{
+        NSLog(@"count %d", self.fetchedResultsController.fetchedObjects.count);
     }
 
     [self.mTableView reloadData];
@@ -118,12 +121,11 @@
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             
-
-            [NSFetchedResultsController deleteCacheWithName:nil];
             [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                NSLog(@"contact Dict: %@", contactDict);
-
-                AllContact *contact = [NSEntityDescription insertNewObjectForEntityForName:@"AllContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                NSLog(@"contact Dict: %@", contactDict);
+                
+                AllContact *contact = [AllContact MR_createEntity];
+                
                 contact.userid = [[contactDict objForKey:@"id"] stringValue];
                 contact.username = [contactDict objForKey:@"username"];
                 contact.tel = [contactDict objForKey:@"tel"];
@@ -134,16 +136,24 @@
                 contact.col2 = [contactDict objForKey:@"col2"];
                 contact.cityid = [PersistenceHelper dataForKey:kCityId];
                 contact.loginid = [kAppDelegate userId];
+                contact.username_p = makePinYinOfName(contact.username);
+                
+                
+//                NSLog(@"name pinyin %@", contact.username_p);
                 
                 contact.sectionkey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
                 
 //                NSLog(@"idx %d username %@, sectionkey %@", idx, contact.username, contact.sectionkey);
             }];
             
-            NSError *error = nil;
-            if (![kAppDelegate.managedObjectContext save:&error]) {
-                NSLog(@"save error %@", error);
-            }
+            [[NSManagedObjectContext MR_contextForCurrentThread] MR_saveToPersistentStoreAndWait];
+
+
+            
+//            NSError *error = nil;
+//            if (![kAppDelegate.managedObjectContext save:&error]) {
+//                NSLog(@"save error %@", error);
+//            }
             
 
             [hub hide:YES];
@@ -164,7 +174,7 @@
     cell.selectionStyle = UITableViewCellEditingStyleNone;
     
     
-    UserDetail *userDetail = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    AllContact *userDetail = [self.fetchedResultsController objectAtIndexPath:indexPath];
     
     cell.headIcon.layer.cornerRadius = 4;
     cell.headIcon.layer.masksToBounds = YES;
@@ -175,6 +185,74 @@
     
     cell.unSelectedImage.hidden = YES;
 }
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    OtherHomepageViewController *otherProfileVC = nil;
+    if (IS_IPHONE_5) {
+        otherProfileVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController_ip5" bundle:nil];
+    }
+    else{
+        otherProfileVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController" bundle:nil];
+    }
+    
+    //    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+    //    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+    
+    otherProfileVC.contact = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    otherProfileVC.contactyType = eAllContact;
+    [self.navigationController pushViewController:otherProfileVC animated:YES];
+    [otherProfileVC release];
+}
+
+- (NSFetchedResultsController *)fetchedResultsController
+{
+//    if (_fetchedResultsController != nil) {
+//        return _fetchedResultsController;
+//    }
+//
+//    NSLog(@"self.entityname %@", self.entityName);
+//
+//    NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName
+//                                              inManagedObjectContext:kAppDelegate.managedObjectContext];
+//
+//    NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+//    [fetchRequest setEntity:entity];
+//
+//    NSSortDescriptor *sort1 = [NSSortDescriptor sortDescriptorWithKey:@"sectionkey" ascending:YES];
+//
+//    NSSortDescriptor *sort2 = [NSSortDescriptor sortDescriptorWithKey:@"username"
+//                                                           ascending:YES
+//                                                            selector:@selector(localizedCaseInsensitiveCompare:)];
+//
+//    [fetchRequest setSortDescriptors:@[sort1, sort2]];
+//
+//    NSLog(@"city id %@", [PersistenceHelper dataForKey:kCityId]);
+//    NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@", [PersistenceHelper dataForKey:kCityId]];
+//    [fetchRequest setPredicate:pred];
+//
+//    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+//                                                                    managedObjectContext:kAppDelegate.managedObjectContext
+//                                                                      sectionNameKeyPath:@"sectionkey"
+//                                                                               cacheName:nil];
+//
+//    _fetchedResultsController.delegate = self;
+//
+//    return _fetchedResultsController;
+    
+    if (_fetchedResultsController != nil) {
+        return _fetchedResultsController;
+    }
+    
+//    _fetchedResultsController = [AllContact fetchAllGroupedBy:@"sectionkey" withPredicate:nil sortedBy:@"username" ascending:YES delegate:self];
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@ AND loginid == %@", [PersistenceHelper dataForKey:kCityId], [kAppDelegate userId]];
+    _fetchedResultsController = [AllContact MR_fetchAllGroupedBy:@"sectionkey" withPredicate:pred sortedBy:@"sectionkey,username_p" ascending:YES delegate:self];
+    
+    
+    return _fetchedResultsController;
+}
+
+
 
 - (void)didReceiveMemoryWarning
 {

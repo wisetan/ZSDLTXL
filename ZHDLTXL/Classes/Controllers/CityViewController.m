@@ -95,27 +95,29 @@
 
 - (void)getResidentCity
 {
-    NSEntityDescription *myinfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-    [fetch setEntity:myinfoEntity];
+//    NSEntityDescription *myinfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+//    [fetch setEntity:myinfoEntity];
+//    
+//    NSError *error = nil;
+//    MyInfo *myinfo = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
     
-    NSError *error = nil;
-    MyInfo *myinfo = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
-    [myinfo.areaList enumerateObjectsUsingBlock:^(CityInfo *cityInfo, BOOL *stop) {
+    MyInfo *myInfo = [[MyInfo findAll] lastObject];
+    [myInfo.areaList enumerateObjectsUsingBlock:^(CityInfo *cityInfo, BOOL *stop) {
         [self.selectCityArray addObject:cityInfo];
         [self.originCityArray addObject:cityInfo];
     }];
 }
 
-- (MyInfo *)getMyInfo
-{
-    NSEntityDescription *myinfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-    [fetch setEntity:myinfoEntity];
-    
-    NSError *error = nil;
-    return [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
-}
+//- (MyInfo *)getMyInfo
+//{
+//    NSEntityDescription *myinfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+//    [fetch setEntity:myinfoEntity];
+//    
+//    NSError *error = nil;
+//    return [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
+//}
 
 - (void)confirmSelect:(UIButton *)sender
 {
@@ -167,72 +169,72 @@
     }
 }
 
-- (void)updateDB
-{
-    NSMutableSet *areaList = [[[NSMutableSet alloc] init] autorelease];
-    [self.selectCityArray enumerateObjectsUsingBlock:^(CityInfo *cityInfo, NSUInteger idx, BOOL *stop) {
-        [areaList addObject:cityInfo];
-    }];
-    
-    [self getMyInfo].areaList = areaList;
-    
-    NSMutableArray *notChangeCityArray = [[[NSMutableArray alloc] init] autorelease];
-    for (CityInfo *originCity in self.originCityArray) {
-        for (CityInfo *selectCity in self.selectCityArray) {
-            if ([selectCity.cityid isEqualToString:originCity.cityid]) {
-                [notChangeCityArray addObject:selectCity];
-                continue;
-            }
-        }
-    }
-    
-    //把新地区除去相同的填到常驻地区
-    
-    MyInfo *myInfo = [self getMyInfo];
-    for (CityInfo *originCity in self.originCityArray) {
-        int idx = 0;
-        for (CityInfo *notChangeCity in notChangeCityArray) {
-            if (![notChangeCity.cityid isEqualToString:originCity.cityid]) {
-                idx++;
-                if (idx == notChangeCityArray.count) {
-                    CityInfo *deleteCity = nil;
-                    for (CityInfo *deleteCityTmp in myInfo.areaList) {
-                        if ([deleteCity.cityid isEqualToString:originCity.cityid]) {
-                            if ([deleteCity.cityname isEqualToString:[PersistenceHelper dataForKey:KGpsCityName]]) {
-                                continue;
-                            }
-                            else{
-                                NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-                                NSEntityDescription *entity = [NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
-                                [fetch setEntity:entity];
-                                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"city.cityid == %@", deleteCity.cityid];
-                                [fetch setPredicate:predicate];
-                                
-                                NSError *error = nil;
-                                NSArray *deleteContactArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
-                                if (error) {
-                                    NSLog(@"error %@", error);
-                                }
-                                for (UserDetail *user in deleteContactArray) {
-                                    [kAppDelegate.managedObjectContext deleteObject:user];
-                                }
-                            }
-                        }
-                    }
-                    
-                    
-                    
-                    
-                }
-            }
-        }
-    }
-    
-    NSError *error = nil;
-    if (![kAppDelegate.managedObjectContext save:&error]) {
-        NSLog(@"error %@", error);
-    }
-}
+//- (void)updateDB
+//{
+//    NSMutableSet *areaList = [[[NSMutableSet alloc] init] autorelease];
+//    [self.selectCityArray enumerateObjectsUsingBlock:^(CityInfo *cityInfo, NSUInteger idx, BOOL *stop) {
+//        [areaList addObject:cityInfo];
+//    }];
+//    
+//    [self getMyInfo].areaList = areaList;
+//    
+//    NSMutableArray *notChangeCityArray = [[[NSMutableArray alloc] init] autorelease];
+//    for (CityInfo *originCity in self.originCityArray) {
+//        for (CityInfo *selectCity in self.selectCityArray) {
+//            if ([selectCity.cityid isEqualToString:originCity.cityid]) {
+//                [notChangeCityArray addObject:selectCity];
+//                continue;
+//            }
+//        }
+//    }
+//    
+//    //把新地区除去相同的填到常驻地区
+//    
+//    MyInfo *myInfo = [self getMyInfo];
+//    for (CityInfo *originCity in self.originCityArray) {
+//        int idx = 0;
+//        for (CityInfo *notChangeCity in notChangeCityArray) {
+//            if (![notChangeCity.cityid isEqualToString:originCity.cityid]) {
+//                idx++;
+//                if (idx == notChangeCityArray.count) {
+//                    CityInfo *deleteCity = nil;
+//                    for (CityInfo *deleteCityTmp in myInfo.areaList) {
+//                        if ([deleteCity.cityid isEqualToString:originCity.cityid]) {
+//                            if ([deleteCity.cityname isEqualToString:[PersistenceHelper dataForKey:KGpsCityName]]) {
+//                                continue;
+//                            }
+//                            else{
+//                                NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+//                                NSEntityDescription *entity = [NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                                [fetch setEntity:entity];
+//                                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"city.cityid == %@", deleteCity.cityid];
+//                                [fetch setPredicate:predicate];
+//                                
+//                                NSError *error = nil;
+//                                NSArray *deleteContactArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
+//                                if (error) {
+//                                    NSLog(@"error %@", error);
+//                                }
+//                                for (UserDetail *user in deleteContactArray) {
+//                                    [kAppDelegate.managedObjectContext deleteObject:user];
+//                                }
+//                            }
+//                        }
+//                    }
+//                    
+//                    
+//                    
+//                    
+//                }
+//            }
+//        }
+//    }
+//    
+//    NSError *error = nil;
+//    if (![kAppDelegate.managedObjectContext save:&error]) {
+//        NSLog(@"error %@", error);
+//    }
+//}
 
 - (void)didReceiveMemoryWarning
 {
@@ -308,78 +310,80 @@
     return isSelect;
 }
 
-- (void)getGpsCityUsers:(CityInfo *)city
-{
-    NSString *gpsCityId = [Utility getCityIdByCityName:city.cityname];
-    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-    NSEntityDescription *user = [NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"city.cityid == %@", gpsCityId];
-    [fetch setPredicate:pred];
-    [fetch setEntity:user];
-    NSError *error = nil;
-    NSArray *contactArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"YES", @"getDataFromLocal", contactArray, @"contactArray", nil];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
-    [self.navigationController popToRootViewControllerAnimated:YES];
-}
+//- (void)getGpsCityUsers:(CityInfo *)city
+//{
+//    NSString *gpsCityId = [Utility getCityIdByCityName:city.cityname];
+//    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+//    NSEntityDescription *user = [NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    NSPredicate *pred = [NSPredicate predicateWithFormat:@"city.cityid == %@", gpsCityId];
+//    [fetch setPredicate:pred];
+//    [fetch setEntity:user];
+//    NSError *error = nil;
+//    NSArray *contactArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
+//    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"YES", @"getDataFromLocal", contactArray, @"contactArray", nil];
+//    
+//    [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
+//    [self.navigationController popToRootViewControllerAnimated:YES];
+//}
 
-- (void)getCityUserWhenNotLogined:(CityInfo *)city
-{
-    NSString *userId = kAppDelegate.userId;
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:city.cityid, @"cityid", city.provinceid, @"provinceid", userId, @"userid", @"getInvestmentUserList.json", @"path", nil];
-    NSLog(@"parameter: %@", dict);
-    
-    MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-    hub.labelText = @"获取商家列表";
-    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
-        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
-            //                    [self clearUserDB];
-            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            
-            //            self.username = nil;
-            //            self.tel = nil;
-            //            self.mailbox = nil;
-            //            self.picturelinkurl = nil;
-            //            self.col1 = nil;
-            //            self.col2 = nil;
-            //            self.col3 = nil;;
-            
-            
-            //            NSLog(@"商家列表：%@", json);
-            NSMutableArray *contactArray = [NSMutableArray new];
-            NSMutableSet *residentUserSet = [[[NSMutableSet alloc] init] autorelease];
-            [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                //                NSLog(@"contact Dict: %@", contactDict);
-                UserDetail *userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
-                userDetail.userid = [[contactDict objForKey:@"id"] stringValue];
-                userDetail.username = [contactDict objForKey:@"username"];
-                userDetail.tel = [contactDict objForKey:@"tel"];
-                userDetail.mailbox = [contactDict objectForKey:@"mailbox"];
-                userDetail.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
-                userDetail.col1 = [contactDict objectForKey:@"col1"];
-                userDetail.col2 = [contactDict objectForKey:@"col2"];
-                userDetail.col2 = [contactDict objectForKey:@"col2"];
-//                userDetail.city =  city;
-                [contactArray addObject:userDetail];
-                [residentUserSet addObject:userDetail];
-            }];
-            
-            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:contactArray, @"contactArray", city.cityname, @"cityName", nil];
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
-            
-            [self.navigationController popToRootViewControllerAnimated:YES];
-            
-        } else {
-            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
-        }
-    } failure:^(NSError *error) {
-        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-    }];
-}
+//- (void)getCityUserWhenNotLogined:(CityInfo *)city
+//{
+//    NSString *userId = kAppDelegate.userId;
+//    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:city.cityid, @"cityid", city.provinceid, @"provinceid", userId, @"userid", @"getInvestmentUserList.json", @"path", nil];
+//    NSLog(@"parameter: %@", dict);
+//    
+//    MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+//    hub.labelText = @"获取商家列表";
+//    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+//        if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+//            //                    [self clearUserDB];
+//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+//            
+//            //            self.username = nil;
+//            //            self.tel = nil;
+//            //            self.mailbox = nil;
+//            //            self.picturelinkurl = nil;
+//            //            self.col1 = nil;
+//            //            self.col2 = nil;
+//            //            self.col3 = nil;;
+//            
+//            
+//            //            NSLog(@"商家列表：%@", json);
+//            NSMutableArray *contactArray = [NSMutableArray new];
+//            NSMutableSet *residentUserSet = [[[NSMutableSet alloc] init] autorelease];
+//            [[json objectForKey:@"InvestmentUserList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
+//                //                NSLog(@"contact Dict: %@", contactDict);
+////                UserDetail *userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                
+//                
+//                userDetail.userid = [[contactDict objForKey:@"id"] stringValue];
+//                userDetail.username = [contactDict objForKey:@"username"];
+//                userDetail.tel = [contactDict objForKey:@"tel"];
+//                userDetail.mailbox = [contactDict objectForKey:@"mailbox"];
+//                userDetail.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
+//                userDetail.col1 = [contactDict objectForKey:@"col1"];
+//                userDetail.col2 = [contactDict objectForKey:@"col2"];
+//                userDetail.col2 = [contactDict objectForKey:@"col2"];
+////                userDetail.city =  city;
+//                [contactArray addObject:userDetail];
+//                [residentUserSet addObject:userDetail];
+//            }];
+//            
+//            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:contactArray, @"contactArray", city.cityname, @"cityName", nil];
+//            
+//            [[NSNotificationCenter defaultCenter] postNotificationName:kInvestmentUserListRefreshed object:dict];
+//            
+//            [self.navigationController popToRootViewControllerAnimated:YES];
+//            
+//        } else {
+//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+//            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+//        }
+//    } failure:^(NSError *error) {
+//        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+//        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+//    }];
+//}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -425,29 +429,29 @@
     }
 }
 
-- (void)clearUserDB
-{
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"userid != %@", kAppDelegate.userId];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setPredicate:predicate];
-    [request setEntity:entity];
-    NSError *error = nil;
-    NSArray *contactArray = [kAppDelegate.managedObjectContext executeFetchRequest:request error:&error];
-    if (error)
-    {
-        NSLog(@"fetch error");
-    }
-    else
-    {
-        for (NSManagedObject *contact in contactArray) {
-            [kAppDelegate.managedObjectContext deleteObject:contact];
-        }
-        
-        if (![kAppDelegate.managedObjectContext save:&error]) {
-            NSLog(@"error %@", error);
-        }
-    }
-}
+//- (void)clearUserDB
+//{
+//    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"userid != %@", kAppDelegate.userId];
+//    NSEntityDescription *entity = [NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+//    [request setPredicate:predicate];
+//    [request setEntity:entity];
+//    NSError *error = nil;
+//    NSArray *contactArray = [kAppDelegate.managedObjectContext executeFetchRequest:request error:&error];
+//    if (error)
+//    {
+//        NSLog(@"fetch error");
+//    }
+//    else
+//    {
+//        for (NSManagedObject *contact in contactArray) {
+//            [kAppDelegate.managedObjectContext deleteObject:contact];
+//        }
+//        
+//        if (![kAppDelegate.managedObjectContext save:&error]) {
+//            NSLog(@"error %@", error);
+//        }
+//    }
+//}
 
 @end

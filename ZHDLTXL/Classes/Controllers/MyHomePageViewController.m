@@ -301,25 +301,25 @@
     [self.infoTableView reloadData];
 }
 
-- (void)getPersonalInfoFromDB
-{
-    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-    NSEntityDescription *myInfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    [fetch setEntity:myInfoEntity];
-    [fetch setPredicate:nil];
-    
-    NSError *error = nil;
-    NSArray *myInfoArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
-    if (error) {
-        NSLog(@"fetch error %@", error);
-    }
-    else{
-        NSLog(@"myinfoarrat count %d", myInfoArray.count);
-        self.myInfo = [myInfoArray lastObject];
-
-        NSLog(@"self.myinfo.areaList %@", self.myInfo.areaList);
-    }
-}
+//- (void)getPersonalInfoFromDB
+//{
+//    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
+//    NSEntityDescription *myInfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    [fetch setEntity:myInfoEntity];
+//    [fetch setPredicate:nil];
+//    
+//    NSError *error = nil;
+//    NSArray *myInfoArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
+//    if (error) {
+//        NSLog(@"fetch error %@", error);
+//    }
+//    else{
+//        NSLog(@"myinfoarrat count %d", myInfoArray.count);
+//        self.myInfo = [myInfoArray lastObject];
+//
+//        NSLog(@"self.myinfo.areaList %@", self.myInfo.areaList);
+//    }
+//}
 
 
 - (void)showBasicInfo
@@ -389,7 +389,7 @@
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             NSDictionary *userDetailDict = [json objectForKey:@"UserDetail"];
             
-            self.userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//            self.userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
             
             self.name = [userDetailDict objectForKey:@"username"];
             self.tel = [userDetailDict objectForKey:@"tel"];
@@ -671,12 +671,12 @@
                 self.myInfo.userDetail.tel = tel;
                 
                 NSError *error = nil;
-                if (![kAppDelegate.managedObjectContext save:&error]) {
-                    NSLog(@"error %@", error);
-                }
-                else{
-                    [self showBasicInfo];
-                }
+//                if (![kAppDelegate.managedObjectContext save:&error]) {
+//                    NSLog(@"error %@", error);
+//                }
+//                else{
+//                    [self showBasicInfo];
+//                }
                 
             }
             else{
@@ -914,13 +914,13 @@
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             NSError *error = nil;
             self.myInfo.userDetail.invagency = [NSString stringWithFormat:@"%@",self.zdValue];
-            if (![kAppDelegate.managedObjectContext save:&error])
-            {
-                NSLog(@"error %@", error);
-            }
-            else{
-                [self showZD];
-            }
+//            if (![kAppDelegate.managedObjectContext save:&error])
+//            {
+//                NSLog(@"error %@", error);
+//            }
+//            else{
+//                [self showZD];
+//            }
         }
         else{
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];

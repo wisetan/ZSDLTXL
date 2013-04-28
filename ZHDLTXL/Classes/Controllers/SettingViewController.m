@@ -129,7 +129,7 @@
         }
     }
     
-    [self clearData];
+//    [self clearData];
     
     LoginViewController *loginVC = [[LoginViewController alloc] init];
 //    [self.navigationController popToRootViewControllerAnimated:NO];
@@ -139,35 +139,35 @@
     [loginVC release];
 }
 
-- (void)clearData
-{
-    //clear all user info
-    NSFetchRequest * allUsers = [[NSFetchRequest alloc] init];
-    [allUsers setEntity:[NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext]];
-    [allUsers setIncludesPropertyValues:NO]; //only fetch the managedObjectID
-    
-    NSError * error = nil;
-    NSArray * cars = [kAppDelegate.managedObjectContext executeFetchRequest:allUsers error:&error];
-    [allUsers release];
-    for (NSManagedObject * user in cars) {
-        [kAppDelegate.managedObjectContext deleteObject:user];
-    }
-    error = nil;
-    
-    NSFetchRequest *myInfoRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *myInfo = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-    [myInfoRequest setEntity:myInfo];
-    NSArray *myInfos = [kAppDelegate.managedObjectContext executeFetchRequest:myInfoRequest error:&error];
-    [myInfo release];
-    
-    for (NSManagedObject *myinfo in myInfos) {
-        [kAppDelegate.managedObjectContext deleteObject:myinfo];
-    }
-    
-    
-    NSError *saveError = nil;
-    [kAppDelegate.managedObjectContext save:&saveError];
-}
+//- (void)clearData
+//{
+//    //clear all user info
+//    NSFetchRequest * allUsers = [[NSFetchRequest alloc] init];
+//    [allUsers setEntity:[NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext]];
+//    [allUsers setIncludesPropertyValues:NO]; //only fetch the managedObjectID
+//    
+//    NSError * error = nil;
+//    NSArray * cars = [kAppDelegate.managedObjectContext executeFetchRequest:allUsers error:&error];
+//    [allUsers release];
+//    for (NSManagedObject * user in cars) {
+//        [kAppDelegate.managedObjectContext deleteObject:user];
+//    }
+//    error = nil;
+//    
+//    NSFetchRequest *myInfoRequest = [[NSFetchRequest alloc] init];
+//    NSEntityDescription *myInfo = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//    [myInfoRequest setEntity:myInfo];
+//    NSArray *myInfos = [kAppDelegate.managedObjectContext executeFetchRequest:myInfoRequest error:&error];
+//    [myInfo release];
+//    
+//    for (NSManagedObject *myinfo in myInfos) {
+//        [kAppDelegate.managedObjectContext deleteObject:myinfo];
+//    }
+//    
+//    
+//    NSError *saveError = nil;
+//    [kAppDelegate.managedObjectContext save:&saveError];
+//}
 
 - (void)modifyPassword
 {

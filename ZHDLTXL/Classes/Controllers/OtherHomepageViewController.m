@@ -84,6 +84,34 @@
 {
     ///getUserpageDetail.json, peoperid, userid, provinceid, cityid
     
+//    NSString *peoperid = nil;
+//    switch (self.contactyType) {
+//        case eAllContact:
+//            peoperid = self.allContact.userid;
+//            break;
+//        case eFriendContatType:
+//            peoperid = self.friendContact.userid;
+//            break;
+//        case eCommendContact:
+//            peoperid = self.commendContact.userid;
+//            break;
+//        default:
+//            break;
+//    }
+    
+//    switch (self.contactyType) {
+//        case eAllContact:
+//            self.contact = self.allContact;
+//            break;
+//        case eFriendContatType:
+//            self.contact = self.friendContact;
+//            break;
+//        case eCommendContact:
+//            self.contact = self.commendContact;
+//            break;
+//        default:
+//            break;
+//    }
     
     NSString *peoperid = self.contact.userid;   //好友id
     NSString *userid = [kAppDelegate userId];
@@ -109,6 +137,7 @@
             [areaList enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
 
                 [self.areaArray addObject:[cityDict objForKey:@"cityname"]];
+                [areaString appendFormat:@"%@、", [cityDict objForKey:@"cityname"]];
                 
             }];
             
@@ -124,7 +153,7 @@
             [preferList enumerateObjectsUsingBlock:^(NSDictionary *preferDict, NSUInteger idx, BOOL *stop) {
 
                 [self.preferArray addObject:[preferDict objForKey:@"prefername"]];
-
+                [preferString appendFormat:@"%@、", [preferDict objForKey:@"prefername"]];
             }];
 
             if ([preferString isValid]) {
@@ -134,7 +163,7 @@
             }
             
             NSDictionary *userDetail = [json objectForKey:@"UserDetail"];
-            self.contact = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//            self.contact = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
             self.contact.autograph = [userDetail objForKey:@"autograph"];
             self.contact.col1 = [userDetail objForKey:@"col1"];
             self.contact.col2 = [userDetail objForKey:@"col2"];
@@ -217,7 +246,7 @@
         
         //添加关注, delZsAttentionUser.json, userid, attentionid provinceid cityid
         
-        NSString *attentionid =  self.contact.userid;
+        NSString *attentionid = self.contact.userid;
         NSString *userid = [kAppDelegate userId];
         NSString *cityid = [PersistenceHelper dataForKey:kCityId];
         NSString *provinceid = [PersistenceHelper dataForKey:kProvinceId];
@@ -250,49 +279,160 @@
 
 - (void)updateIsFriend:(BOOL)isFriend
 {
-    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
-    fetch.predicate = pred;
-    NSError *error = nil;
-    FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
-    NSLog(@"friend %@", friend);
-    NSLog(@"friend name %@", friend.username);
-    if (error) {
-        NSLog(@"error %@", error);
-    }
+//    switch (self.contactyType) {
+//        case eAllContact:
+//        {
+////            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
+////            NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
+////            fetch.predicate = pred;
+////            NSError *error = nil;
+////            FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
+////            NSLog(@"friend %@", friend);
+////            NSLog(@"friend name %@", friend.username);
+////            if (error) {
+////                NSLog(@"error %@", error);
+////            }
+//            
+//            
+//            
+//            FriendContact *newFriend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//            
+//            newFriend.loginid = [kAppDelegate userId];
+//            newFriend.userid = self.allContact.userid;
+//            newFriend.username = self.allContact.username;
+//            newFriend.cityid = [PersistenceHelper dataForKey:kCityId];
+//            newFriend.sectionkey = self.allContact.sectionkey;
+//            if (isFriend) {
+//                
+//                newFriend.type = @"1";
+//                
+//                
+//                NSError *error = nil;
+//                if (![kAppDelegate.managedObjectContext save:&error]) {
+//                    NSLog(@"error %@", error);
+//                }
+//            }
+//            else{
+//                
+//                NSError *error = nil;
+//                NSLog(@"current = %@, main = %@", [NSThread currentThread], [NSThread mainThread]);
+//                newFriend.type = @"0";
+//                
+//                if ([kAppDelegate.managedObjectContext hasChanges]) {
+//                    if (![kAppDelegate.managedObjectContext save:&error]) {
+//                        NSLog(@"error %@", error);
+//                    }
+//                }
+//            }
+//        }
+//            break;
+//        case eCommendContact:
+//        {
+//            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
+//            NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
+//            fetch.predicate = pred;
+//            NSError *error = nil;
+//            FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
+//            NSLog(@"friend %@", friend);
+//            NSLog(@"friend name %@", friend.username);
+//            if (error) {
+//                NSLog(@"error %@", error);
+//            }
+//            
+//            if (isFriend) {
+//                FriendContact *newFriend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
+//                
+//                newFriend.userid = friend.userid;
+//                newFriend.username = friend.username;
+//                
+//                
+//                NSError *error = nil;
+//                if (![kAppDelegate.managedObjectContext save:&error]) {
+//                    NSLog(@"error %@", error);
+//                }
+//            }
+//            else{
+//                
+//                NSError *error = nil;
+//                NSLog(@"current = %@, main = %@", [NSThread currentThread], [NSThread mainThread]);
+//                [kAppDelegate.managedObjectContext deleteObject:friend];
+//                
+//                if ([kAppDelegate.managedObjectContext hasChanges]) {
+//                    if (![kAppDelegate.managedObjectContext save:&error]) {
+//                        NSLog(@"error %@", error);
+//                    }
+//                }
+//            }
+//        }
+//            break;
+//            
+//        case eFriendContatType:
+//        {
+//            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
+//            NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.friendContact.userid];
+//            fetch.predicate = pred;
+//            NSError *error = nil;
+//            FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
+//            
+//            if (self.isFriend) {                
+//                friend.type = @"1";
+//            }
+//            else{
+//                friend.type = @"0";
+//            }
+//            error = nil;
+//            if (![kAppDelegate.managedObjectContext save:&error]) {
+//                NSLog(@"error %@", error);
+//            }
+//
+//        }
+//            break;
+//        default:
+//            break;
+//    }
     
-    if (isFriend) {
-        FriendContact *newFriend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
-        
-        newFriend.userid = friend.userid;
-        newFriend.username = friend.username;
-        
-        
-        
-//        [newFriend setValuesForKeysWithDictionary:[friend.entity attributesByName]];
-        NSError *error = nil;
-        if (![kAppDelegate.managedObjectContext save:&error]) {
-            NSLog(@"error %@", error);
-        }
+//    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
+//    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
+//    fetch.predicate = pred;
+//    NSError *error = nil;
+//
+//    NSArray *friendArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
+    
+    FriendContact *friendContact = [FriendContact MR_findFirstByAttribute:@"userid" withValue:self.contact.userid];
+    if (friendContact == nil) {
+//        friend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
+        friendContact = [FriendContact createEntity];
+        friendContact.autograph = self.contact.autograph;
+        friendContact.cityid = [PersistenceHelper dataForKey:kCityId];
+        friendContact.col1 = self.contact.col1;
+        friendContact.col2 = self.contact.col2;
+        friendContact.col3 = self.contact.col3;
+        friendContact.invagency = self.contact.invagency;
+        friendContact.loginid = self.contact.loginid;
+        friendContact.mailbox = self.contact.mailbox;
+        friendContact.picturelinkurl = self.contact.picturelinkurl;
+        friendContact.remark = self.contact.sectionkey;
+        friendContact.sectionkey = self.contact.sectionkey;
+        friendContact.tel = self.contact.tel;
+        friendContact.userid = self.contact.userid;
+        friendContact.username = self.contact.username;
+        friendContact.username_p = self.contact.username_p;
+
+    }
+
+    if (self.isFriend) {
+        friendContact.type = @"1";
     }
     else{
-        
-        NSError *error = nil;
-//        NSLog(@"current = %@, main = %@", [NSThread currentThread], [NSThread mainThread]);
-        [kAppDelegate.managedObjectContext deleteObject:friend];
-        
-        if (![kAppDelegate.managedObjectContext save:&error]) {
-            NSLog(@"error %@", error);
-        }
+        friendContact.type = @"0";
     }
+    [[NSManagedObjectContext MR_defaultContext] saveToPersistentStoreAndWait];
+   
 }
 
 - (void)backToRootVC:(UIButton *)sender
 {
     [self.navigationController popViewControllerAnimated:YES];
-//    if (!self.isFriend) {
-//        [[NSNotificationCenter defaultCenter] postNotificationName:kDeleteFriend object:self.contact.userid];
-//    }
 }
 
 #pragma mark - textfield delegate

@@ -7,52 +7,26 @@
          shouldBeEnabled = "Yes"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "ZHDLTXL/Classes/Controllers/OtherHomepageViewController.m"
-         timestampString = "388746807.835897"
+         filePath = "ZHDLTXL/MagicalRecord/Core/MagicalRecordShorthand.h"
+         timestampString = "388831326.211431"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "284"
-         endingLineNumber = "284"
-         landmarkName = "-updateIsFriend:"
-         landmarkType = "5">
+         startingLineNumber = "66"
+         endingLineNumber = "66"
+         landmarkName = "+fetchAllGroupedBy:withPredicate:sortedBy:ascending:delegate:"
+         landmarkType = "4">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "Yes"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "ZHDLTXL/Classes/Controllers/OtherHomepageViewController.m"
-         timestampString = "388746807.835897"
+         filePath = "ZHDLTXL/Classes/AppDelegate.m"
+         timestampString = "388841798.847626"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "282"
-         endingLineNumber = "282"
-         landmarkName = "-updateIsFriend:"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "ZHDLTXL/Classes/Controllers/BaseViewController.m"
-         timestampString = "388747198.905621"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "260"
-         endingLineNumber = "260"
-         landmarkName = "-controller:didChangeObject:atIndexPath:forChangeType:newIndexPath:"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "ZHDLTXL/Classes/Controllers/FriendContactViewController.m"
-         timestampString = "388748098.332587"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "214"
-         endingLineNumber = "214"
-         landmarkName = "-configureCell:atIndexPath:"
+         startingLineNumber = "114"
+         endingLineNumber = "114"
+         landmarkName = "-applicationWillTerminate:"
          landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>
