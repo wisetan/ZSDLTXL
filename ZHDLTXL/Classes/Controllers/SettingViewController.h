@@ -10,7 +10,7 @@
 #import "MyHomePageViewController.h"
 
 
-@interface SettingViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface SettingViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, retain) UITableView *menuTableView;
 @property (nonatomic, retain) NSMutableArray *menuNameArray;
@@ -19,5 +19,9 @@
 @property (nonatomic, retain) UIButton *backBarButton;
 
 @property (nonatomic, retain) MyHomePageViewController *MyHomeVC;
+
+@property (nonatomic, retain) UITextField *oldPwdField;
+@property (nonatomic, retain) UITextField *theNewPwdField;
+@property (nonatomic, retain) UITextField *reNewPwdField;
 
 @end

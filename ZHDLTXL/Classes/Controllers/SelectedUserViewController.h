@@ -14,5 +14,6 @@
 
 @property (nonatomic, retain) NSMutableDictionary *contactDictSortByAlpha;
 @property (nonatomic, retain) UIButton *backBarButton;
+@property (nonatomic, retain) NSMutableArray *selectedArray;
 
 @end

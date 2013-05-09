@@ -7,7 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MyHomePageViewController.h"
+#import "MyInfo.h"
+
+
+@protocol SelectPharViewControllerDelegate <NSObject>
+
+- (void)finishSelectPhar:(NSSet *)pharSet;
+
+@end
 
 @interface SelectPharViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
@@ -15,15 +22,11 @@
 @property (nonatomic, retain) UIButton *backBarButton;
 @property (nonatomic, retain) NSMutableArray *preferArray;
 @property (nonatomic, retain) NSMutableArray *selectArray;
-
 @property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain) NSEntityDescription *pharEntityDescription;
-
 @property (nonatomic, retain) NSMutableSet *originPharSet;
-@property (nonatomic, retain) NSMutableSet *newPharSet;
-
+@property (nonatomic, retain) NSMutableSet *theNewPharSet;
 @property (nonatomic, retain) MyInfo *myInfo;
-
-
+@property (nonatomic, assign) id<SelectPharViewControllerDelegate> delegate;
 
 @end

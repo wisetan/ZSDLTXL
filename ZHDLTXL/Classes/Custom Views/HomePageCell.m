@@ -26,9 +26,13 @@
     // Configure the view for the selected state
 }
 
+//- (void)setFrame:(CGRect)frame {
+//    frame.size.width = 280;
+//    [super setFrame:frame];
+//}
+
 - (void)dealloc {
     [_nameLabel release];
-    [_addButton release];
     [_separatorImage release];
     [_detailLabel release];
     [super dealloc];

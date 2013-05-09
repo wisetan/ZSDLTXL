@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "HPGrowingTextView.h"
+#import "ChatList.h"
 
 @class OtherTalkCell;
 @class MyTalkCell;
@@ -33,4 +34,6 @@
 @property (retain, nonatomic) NSMutableArray *dataSourceArray;
 @property (copy,   nonatomic) NSString *fid;
 @property (copy,   nonatomic) NSString *fAvatarUrl;
+@property (nonatomic, retain) ChatList *chatList;
+@property (nonatomic, copy)   NSString *username;
 @end

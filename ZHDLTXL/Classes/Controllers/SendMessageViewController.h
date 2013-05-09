@@ -9,11 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "Contact.h"
 #import <MessageUI/MessageUI.h>
+#import "GroupSendViewController.h"
 
-@interface SendMessageViewController : UIViewController <UITextViewDelegate, MFMessageComposeViewControllerDelegate>
+@interface SendMessageViewController : UIViewController <UITextViewDelegate, GroupSendVCDelegate>
 
-@property (nonatomic, retain) IBOutlet UIButton *sendButton;
-@property (nonatomic, retain) IBOutlet UIButton *cancelButton;
 @property (retain, nonatomic) IBOutlet UIButton *addButton;
 
 @property (nonatomic, retain) UIButton *backBarButton;

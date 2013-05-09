@@ -16,10 +16,10 @@
 #import "TalkViewController.h"
 #import "LoginViewController.h"
 #import "FriendContact.h"
+#import "HomePageCell.h"
+#import "UIAlertView+Blocks.h"
+#import "MailInfo.h"
 
-#define VIEW_GAP 10
-#define VIEW_LEFT_MARGIN (20)
-#define VIEW_WIDTH (320-2*(VIEW_LEFT_MARGIN))
 
 @interface OtherHomepageViewController ()
 
@@ -59,9 +59,8 @@
 
     self.nameLabel.text = self.contact.username;
     [self.addFriendButton addTarget:self action:@selector(addFriend:) forControlEvents:UIControlEventTouchUpInside];
-
-    UIImage *commentImage = [[UIImage imageNamed:@"editor_area.png"] stretchableImageWithLeftCapWidth:40 topCapHeight:40];
-    self.commentBg.image = commentImage;
+    
+    self.commentBg.hidden = YES;
     
     [self.messageButton setImage:[UIImage imageByName:@"button_left_message_p.png"] forState:UIControlStateHighlighted];
     [self.mailButton setImage:[UIImage imageByName:@"button_middle_mail_p.png"] forState:UIControlStateHighlighted];
@@ -77,42 +76,104 @@
     //默认不是好友
     self.isFriend = NO;
     
+    
+    //table view source
+    self.leftArray = [NSMutableArray arrayWithArray:@[@"招商代理：", @"常驻地区：", @"类别偏好："]];
+    self.rightArray = [NSMutableArray array];
+    
+    
+    [self.commentTextField setValue:[UIColor darkGrayColor]
+                    forKeyPath:@"_placeholderLabel.textColor"];
+    
     [self getUserInfo];
+}
+
+
+#pragma mark - table view 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 0.f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 0.f;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.leftArray count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *cellId = @"homePageCell";
+    HomePageCell *cell = (HomePageCell *)[tableView dequeueReusableCellWithIdentifier:cellId];
+    if (!cell) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"HomePageCell" owner:self options:nil] lastObject];
+    }
+    
+    
+    
+    switch (indexPath.row) {
+        case 0:{
+            int inva = self.contact.invagency.intValue;
+            NSString *strInva = nil;
+            switch (inva) {
+                case 1:
+                    strInva = @"招商";
+                    break;
+                case 2:
+                    strInva = @"代理";
+                    break;
+                case 3:
+                    strInva = @"招商、代理";
+                    break;
+                default:
+                    break;
+            }
+            cell.detailLabel.text = strInva;
+        }
+            
+            break;
+        case 1:
+            cell.detailLabel.text = self.residentArea;
+            break;
+            
+        case 2:
+            cell.detailLabel.text = self.pharmacologyCategory;
+            cell.separatorImage.hidden = YES;
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+    
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    cell.nameLabel.text = [self.leftArray objectAtIndex:indexPath.row];
+    cell.nameLabel.textColor = kContentBlueColor;
+    
+    if (indexPath.row == self.leftArray.count-1) {
+        cell.separatorImage.image = nil;
+    }
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 50.f;
 }
 
 - (void)getUserInfo
 {
-    ///getUserpageDetail.json, peoperid, userid, provinceid, cityid
-    
-//    NSString *peoperid = nil;
-//    switch (self.contactyType) {
-//        case eAllContact:
-//            peoperid = self.allContact.userid;
-//            break;
-//        case eFriendContatType:
-//            peoperid = self.friendContact.userid;
-//            break;
-//        case eCommendContact:
-//            peoperid = self.commendContact.userid;
-//            break;
-//        default:
-//            break;
-//    }
-    
-//    switch (self.contactyType) {
-//        case eAllContact:
-//            self.contact = self.allContact;
-//            break;
-//        case eFriendContatType:
-//            self.contact = self.friendContact;
-//            break;
-//        case eCommendContact:
-//            self.contact = self.commendContact;
-//            break;
-//        default:
-//            break;
-//    }
-    
     NSString *peoperid = self.contact.userid;   //好友id
     NSString *userid = [kAppDelegate userId];
     NSString *cityid = [PersistenceHelper dataForKey:kCityId];
@@ -123,11 +184,12 @@
                                                                         provinceid, @"provinceid",
                                                                         @"getUserpageDetail.json", @"path", nil];
     
-    NSLog(@"para Dict: %@", paraDict);
+//    NSLog(@"para Dict: %@", paraDict);
     
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
     hud.labelText = @"获取用户信息";
     [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         if ([[[json objectForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             NSLog(@"friend json data: %@", json);
             
@@ -144,7 +206,7 @@
             if ([areaString isValid]) {
                 areaString = (NSMutableString *)[areaString substringToIndex:[areaString length]-1];
                 self.residentArea = areaString;
-                self.residentAreaLabel.text = self.residentArea;
+//                self.residentAreaLabel.text = self.residentArea;
             }
 
             
@@ -159,11 +221,10 @@
             if ([preferString isValid]) {
                 preferString = (NSMutableString *)[preferString substringToIndex:[preferString length]-1];
                 self.pharmacologyCategory = preferString;
-                self.cateLabel.text = self.pharmacologyCategory;
+//                self.cateLabel.text = self.pharmacologyCategory;
             }
             
             NSDictionary *userDetail = [json objectForKey:@"UserDetail"];
-//            self.contact = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
             self.contact.autograph = [userDetail objForKey:@"autograph"];
             self.contact.col1 = [userDetail objForKey:@"col1"];
             self.contact.col2 = [userDetail objForKey:@"col2"];
@@ -176,6 +237,8 @@
             self.contact.tel = [userDetail objForKey:@"tel"];
             self.contact.type = [[userDetail objForKey:@"type"] stringValue];
             self.contact.username = [userDetail objForKey:@"username"];
+            self.contact.userid = [[userDetail objForKey:@"id"] stringValue];
+            self.contact.isreal = [[userDetail objForKey:@"isreal"] stringValue];
             
             if (self.contact.type.intValue == 0) {
                 self.isFriend = NO;
@@ -186,11 +249,30 @@
                 self.addFriendbtnTitleLabel.text = @"删除好友";
             }
             
-            //获得好友备注
+            self.useridLabel.text = self.contact.userid;
+            
+            if ([self.contact.col2 isEqualToString:@"1"]) {
+                self.xun_VImage.hidden = NO;
+            }
+            else{
+                self.xun_VImage.hidden = YES;
+            }
+            
             self.commentTextField.text = self.contact.remark;
+            
+//            //获得好友备注
+//            if ([self.contact.remark isValid])
+//            {
+//                self.commentTextField.text = self.contact.remark;
+//                NSString *remark = [NSString stringWithFormat:@"%@(%@)", self.contact.username, self.contact.remark];
+//                self.nameLabel.text = remark;
+//            }
+            
+            [self.tableView reloadData];
         }
-     
-        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        else{
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
     } failure:^(NSError *error) {
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
@@ -219,7 +301,7 @@
                                   provinceid, @"provinceid",
                                   @"addZsAttentionUser.json", @"path", nil];
         
-        NSLog(@"para Dict: %@", paraDict);
+//        NSLog(@"para Dict: %@", paraDict);
         
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
         hud.labelText = @"添加好友";
@@ -256,7 +338,7 @@
                                   provinceid, @"provinceid",
                                   @"delZsAttentionUser.json", @"path", nil];
         
-        NSLog(@"para Dict: %@", paraDict);
+//        NSLog(@"para Dict: %@", paraDict);
         
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
         hud.labelText = @"删除好友";
@@ -279,128 +361,9 @@
 
 - (void)updateIsFriend:(BOOL)isFriend
 {
-//    switch (self.contactyType) {
-//        case eAllContact:
-//        {
-////            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
-////            NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
-////            fetch.predicate = pred;
-////            NSError *error = nil;
-////            FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
-////            NSLog(@"friend %@", friend);
-////            NSLog(@"friend name %@", friend.username);
-////            if (error) {
-////                NSLog(@"error %@", error);
-////            }
-//            
-//            
-//            
-//            FriendContact *newFriend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
-//            
-//            newFriend.loginid = [kAppDelegate userId];
-//            newFriend.userid = self.allContact.userid;
-//            newFriend.username = self.allContact.username;
-//            newFriend.cityid = [PersistenceHelper dataForKey:kCityId];
-//            newFriend.sectionkey = self.allContact.sectionkey;
-//            if (isFriend) {
-//                
-//                newFriend.type = @"1";
-//                
-//                
-//                NSError *error = nil;
-//                if (![kAppDelegate.managedObjectContext save:&error]) {
-//                    NSLog(@"error %@", error);
-//                }
-//            }
-//            else{
-//                
-//                NSError *error = nil;
-//                NSLog(@"current = %@, main = %@", [NSThread currentThread], [NSThread mainThread]);
-//                newFriend.type = @"0";
-//                
-//                if ([kAppDelegate.managedObjectContext hasChanges]) {
-//                    if (![kAppDelegate.managedObjectContext save:&error]) {
-//                        NSLog(@"error %@", error);
-//                    }
-//                }
-//            }
-//        }
-//            break;
-//        case eCommendContact:
-//        {
-//            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
-//            NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
-//            fetch.predicate = pred;
-//            NSError *error = nil;
-//            FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
-//            NSLog(@"friend %@", friend);
-//            NSLog(@"friend name %@", friend.username);
-//            if (error) {
-//                NSLog(@"error %@", error);
-//            }
-//            
-//            if (isFriend) {
-//                FriendContact *newFriend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
-//                
-//                newFriend.userid = friend.userid;
-//                newFriend.username = friend.username;
-//                
-//                
-//                NSError *error = nil;
-//                if (![kAppDelegate.managedObjectContext save:&error]) {
-//                    NSLog(@"error %@", error);
-//                }
-//            }
-//            else{
-//                
-//                NSError *error = nil;
-//                NSLog(@"current = %@, main = %@", [NSThread currentThread], [NSThread mainThread]);
-//                [kAppDelegate.managedObjectContext deleteObject:friend];
-//                
-//                if ([kAppDelegate.managedObjectContext hasChanges]) {
-//                    if (![kAppDelegate.managedObjectContext save:&error]) {
-//                        NSLog(@"error %@", error);
-//                    }
-//                }
-//            }
-//        }
-//            break;
-//            
-//        case eFriendContatType:
-//        {
-//            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
-//            NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.friendContact.userid];
-//            fetch.predicate = pred;
-//            NSError *error = nil;
-//            FriendContact *friend = [[kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error] lastObject];
-//            
-//            if (self.isFriend) {                
-//                friend.type = @"1";
-//            }
-//            else{
-//                friend.type = @"0";
-//            }
-//            error = nil;
-//            if (![kAppDelegate.managedObjectContext save:&error]) {
-//                NSLog(@"error %@", error);
-//            }
-//
-//        }
-//            break;
-//        default:
-//            break;
-//    }
-    
-//    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:@"FriendContact"];
-//    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", [kAppDelegate userId], self.contact.userid];
-//    fetch.predicate = pred;
-//    NSError *error = nil;
-//
-//    NSArray *friendArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
-    
-    FriendContact *friendContact = [FriendContact MR_findFirstByAttribute:@"userid" withValue:self.contact.userid];
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"userid == %@ AND loginid == %@ AND cityid == %@", self.contact.userid, [kAppDelegate userId], [PersistenceHelper dataForKey:kCityId]];
+    FriendContact *friendContact = [FriendContact findFirstWithPredicate:pred];
     if (friendContact == nil) {
-//        friend = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
         friendContact = [FriendContact createEntity];
         friendContact.autograph = self.contact.autograph;
         friendContact.cityid = [PersistenceHelper dataForKey:kCityId];
@@ -411,23 +374,24 @@
         friendContact.loginid = self.contact.loginid;
         friendContact.mailbox = self.contact.mailbox;
         friendContact.picturelinkurl = self.contact.picturelinkurl;
-        friendContact.remark = self.contact.sectionkey;
+        friendContact.remark = self.commentTextField.text;
         friendContact.sectionkey = self.contact.sectionkey;
         friendContact.tel = self.contact.tel;
         friendContact.userid = self.contact.userid;
         friendContact.username = self.contact.username;
         friendContact.username_p = self.contact.username_p;
-
     }
 
     if (self.isFriend) {
         friendContact.type = @"1";
     }
-    else{
+    else
+    {
         friendContact.type = @"0";
     }
-    [[NSManagedObjectContext MR_defaultContext] saveToPersistentStoreAndWait];
-   
+
+    DB_SAVE();
+
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -439,47 +403,60 @@
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
-    CGRect frame = self.view.frame;
-    [UIView animateWithDuration:0.2f animations:^{
-        self.view.frame = CGRectMake(frame.origin.x, frame.origin.y-160.f, frame.size.width, frame.size.height);
-    }];
-    
+//    CGRect frame = self.view.frame;
+//    [UIView animateWithDuration:0.2f animations:^{
+//        self.view.frame = CGRectMake(frame.origin.x, frame.origin.y-160.f, frame.size.width, frame.size.height);
+//    }];
+    textField.returnKeyType = UIReturnKeyDone;
+    self.commentBg.hidden = NO;
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
-    [UIView animateWithDuration:0.2f animations:^{
-        self.view.frame = CGRectMake(0, 0, 320, [kAppDelegate window].frame.size.height-64);
-    }];
+//    [UIView animateWithDuration:0.2f animations:^{
+//        self.view.frame = CGRectMake(0, 0, 320, [kAppDelegate window].frame.size.height-64);
+//    }];
     
     NSLog(@"text field edit end");
-    //comment friend
-    //para dict; changeuserremark.json userid destid remark
-    NSString *destid = self.contact.userid;
-    NSString *userid = kAppDelegate.userId;
     
-    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid",
-                                                                        destid, @"destid",
-                                                                        textField.text, @"remark",
-                                                                        @"changeuserremark.json", @"path", nil];
-    
-    NSLog(@"comment para dict: %@", paraDict);
-    
-    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
-        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
-            hud.labelText = @"修改成功";
+    if ([textField.text isValid] && ![textField.text isEqualToString:@"添加备注"]) {
+        NSString *destid = self.contact.userid;
+        NSString *userid = kAppDelegate.userId;
+        
+        NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid",
+                                  destid, @"destid",
+                                  textField.text, @"remark",
+                                  @"changeuserremark.json", @"path", nil];
+        
+//        NSLog(@"comment para dict: %@", paraDict);
+        
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+        [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+            if ([[json objectForKey:@"returnCode"] longValue] == 0) {
+                hud.labelText = @"修改成功";
+                [hud hide:YES afterDelay:.3];
+//                [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+                //            self.comment = textField.text;
+                self.contact.remark = textField.text;
+//                self.nameLabel.text = [NSString stringWithFormat:@"%@(%@)", self.contact.username, self.contact.remark];
+                DB_SAVE();
+            }
+            else{
+                [MBProgressHUD hideHUDForView:kAppDelegate.window animated:YES];
+                [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+            }
+        } failure:^(NSError *error) {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-//            self.comment = textField.text;
-        }
-    } failure:^(NSError *error) {
-        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-    }];
+            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+        }];
+    }
+    
+    self.commentBg.hidden = YES;
+    
 }
 
-- (BOOL)textFieldShouldReturn:(UITextField *)textField{
-    
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
     [textField resignFirstResponder];
     return YES;
 }
@@ -489,7 +466,7 @@
     [self.view endEditing:YES];
 }
 
-#pragma mark - contactHimView delegate
+#pragma mark - contact method
 
 - (void)message:(UIButton *)sender
 {
@@ -497,11 +474,10 @@
 
     if ([self showLoginAlert]) {
         return;
-    } 
+    }
     
     SendMessageViewController *smVC = [[SendMessageViewController alloc] init];
     smVC.currentContact = self.contact;
-//    smVC.contactDict = self.contactDict;
     [self.navigationController pushViewController:smVC animated:YES];
     [smVC release];
 }
@@ -512,8 +488,52 @@
     if ([self showLoginAlert]) {
         return;
     }
+    
+//    @dynamic userid;
+//    @dynamic username;
+//    @dynamic loginid;
+//    @dynamic thirdaddress;
+//    @dynamic address;
+//    @dynamic foldername;
+//    @dynamic subject;
+//    @dynamic content;
+//    @dynamic date;
+//    @dynamic flags;         //0 未读 1 已读
+//    @dynamic messageid;
+//    @dynamic state;         //0 发送失败 1 发送成功
+//    @dynamic picturelinkurl;
+    
+    
+    
+    
+
+    
+    
+    if ([self.contact.isreal isEqualToString:@"0"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"该用户只接受短信" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        return;
+    }
+    
+    MailInfo *mail = [MailInfo createEntity];
+    mail.userid = self.contact.userid;
+    mail.username = self.contact.username;
+    mail.loginid = kAppDelegate.userId;
+    mail.thirdaddress = self.contact.mailbox;
+    mail.address = self.contact.col1;
+    mail.foldername = @"OUTBOX";
+    mail.subject = @"";
+    mail.content = @"";
+    mail.date = @"";
+    mail.flags = @"";
+    mail.messageid = @"";
+    mail.state = @"";
+    mail.picturelinkurl = self.contact.picturelinkurl;
+    
     SendEmailViewController *seVC = [[SendEmailViewController alloc] init];
-    seVC.currentContact = self.contact;
+    seVC.mail = mail;
+//    seVC.currentContact = self.contact;
     [self.navigationController pushViewController:seVC animated:YES];
     [seVC release];
 }
@@ -525,9 +545,18 @@
         return;
     }
     
+    if ([self.contact.isreal isEqualToString:@"0"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"该用户只接受短信" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        return;
+    }
+    
     
     TalkViewController *talk = [[[TalkViewController alloc] initWithNibName:@"TalkViewController" bundle:nil] autorelease];
+    talk.username = self.contact.username;
     talk.fid = self.contact.userid;
+    talk.fAvatarUrl = self.contact.picturelinkurl;
     NSLog(@"talk.fid %@", talk.fid);
     [self.navigationController pushViewController:talk animated:YES];
     
@@ -569,6 +598,21 @@
     [_commentBg release];
     [_addFriendButton release];
     [_headIcon release];
+    [_tableView release];
+    [_commentTextField release];
+    [_xunImage release];
+    [_xun_VImage release];
+    [_xun_BImage release];
+    [_useridLabel release];
     [super dealloc];
+}
+- (void)viewDidUnload {
+    [self setTableView:nil];
+    [self setCommentTextField:nil];
+    [self setXunImage:nil];
+    [self setXun_VImage:nil];
+    [self setXun_BImage:nil];
+    [self setUseridLabel:nil];
+    [super viewDidUnload];
 }
 @end

@@ -16,8 +16,8 @@
 @property (nonatomic, retain) NSString * centerlon;
 @property (nonatomic, retain) NSString * cityid;
 @property (nonatomic, retain) NSString * cityname;
-@property (nonatomic, retain) NSString * countylist;
 @property (nonatomic, retain) NSString * provinceid;
 @property (nonatomic, retain) NSString * radius;
+@property (nonatomic, retain) NSString * countylist;
 
 @end

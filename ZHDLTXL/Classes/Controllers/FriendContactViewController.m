@@ -10,12 +10,17 @@
 #import "ContactCell.h"
 #import "FriendContact.h"
 #import "OtherHomepageViewController.h"
+#import "ProvinceViewController.h"
+#import "MyHomePageViewController.h"
+#import "LoginViewController.h"
 
 @interface FriendContactViewController ()
 
 @end
 
 @implementation FriendContactViewController
+
+@synthesize fetchedResultsController = _fetchedResultsController;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -31,71 +36,217 @@
     return nil;
 }
 
-// Setting the title of the tab.
 - (NSString *)tabTitle
 {
     return @"好友";
 }
 
-- (void)viewDidDisappear:(BOOL)animated
-{
-    self.alertShow = NO;
-}
-
 - (void)viewWillAppear:(BOOL)animated
 {
-    if ([kAppDelegate.userId isEqualToString:@"0"]) {
-        if (!self.alertShow) {
+    if (self.isFetchingData == NO) {
+        self.isFetchingData = YES;
+        if ([kAppDelegate.userId isEqualToString:@"0"]) {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请先登录" message:nil delegate:self cancelButtonTitle:@"知道了" otherButtonTitles:nil];
             [alert show];
             [alert release];
-            self.alertShow = YES;
         }
-        return;
+        
+        
+        if (self.isLogined) {
+            [self initContactDict];
+            [self.sectionArray removeAllObjects];
+            [self getFriendData];
+            self.loginLabel.text = @"主页";
+        }
+        else{
+            self.loginLabel.text = @"登录";
+            [self.sectionArray removeAllObjects];
+            [self.contactDict removeAllObjects];
+            [self.mTableView reloadData];
+        }
     }
-    
-//    NSError *error = nil;
-    
-//    _fetchedResultsController = nil;
-//    if (![self.fetchedResultsController performFetch:&error]) {
-//        NSLog(@"error %@", error);
-//    }
-    
-    if (self.fetchedResultsController.fetchedObjects.count == 0) {
-        [self getInvestmentUserListFromServer];
+
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.isFetchingData = NO;
+}
+
+- (void)selectArea:(UIButton *)sender
+{
+    NSLog(@"select area");
+    ProvinceViewController *areaVC = [[ProvinceViewController alloc] init];
+    areaVC.isAddResident = NO;
+    self.page = 1;
+    [self.navigationController pushViewController:areaVC animated:YES];
+    [areaVC release];
+}
+
+- (void)getFriendData
+{
+    if (![kAppDelegate.userId isEqualToString:@"0"]) {
+        NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@ AND loginid == %@ AND type == %@", [PersistenceHelper dataForKey:kCityId], [kAppDelegate userId], @"1"];
+        NSArray *array = [FriendContact findAllSortedBy:@"sectionkey,username_p" ascending:YES withPredicate:pred];
+        if (array.count != 0) {
+            [array enumerateObjectsUsingBlock:^(AllContact *contact, NSUInteger idx, BOOL *stop) {
+                NSString *contactIndex = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
+                [[self.contactDict objForKey:contactIndex] addObject:contact];
+            }];
+            
+            NSMutableSet *sectionSet = [[[NSMutableSet alloc] init] autorelease];
+            [self.contactDict enumerateKeysAndObjectsUsingBlock:^(NSString * key, NSMutableArray *contactArray, BOOL *stop) {
+                if (contactArray.count != 0) {
+                    [sectionSet addObject:key];
+                }
+            }];
+            
+            [sectionSet enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+                [self.sectionArray addObject:obj];
+            }];
+            
+            [self.sectionArray sortUsingComparator:^NSComparisonResult(NSString * obj1, NSString * obj2) {
+                return [obj1 compare:obj2];
+            }];
+            
+            NSLog(@"section array %@", self.sectionArray);
+            [self.mTableView reloadData];
+        }
+        else{
+            [self getInvestmentUserListFromServer];
+        }
     }
-    else{
-        NSLog(@"count %d", self.fetchedResultsController.fetchedObjects.count);
-        [self.mTableView reloadData];
-    }
+
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.title = @"好友";
+    self.title = [PersistenceHelper dataForKey:kCityName];
     self.entityName = @"FriendContact";
-    self.contactType = eFriendContatType;
+//    self.contactType = eFriendContatType;
+    self.firstLoadView = YES;
+    self.isFetchingData = NO;
     
-    self.page = 1;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
     
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSave:) name:NSManagedObjectContextDidSaveNotification object:nil];
+    //login button
+    UIButton *loginButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [loginButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+    [loginButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     
-//    if ([self showLoginAlert]) {
-//        return;
-//    }
+    loginButton.frame = CGRectMake(5, 5, 75, 34);
+    [loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    self.loginLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 75.f, 34.f)] autorelease];
+    
+    [loginButton addTarget:self action:@selector(login:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    [self.loginLabel setFont:[UIFont systemFontOfSize:16]];
+    self.loginLabel.backgroundColor = [UIColor clearColor];
+    self.loginLabel.textColor = [UIColor whiteColor];
+    self.loginLabel.textAlignment = NSTextAlignmentCenter;
+    [loginButton addSubview:self.loginLabel];
+    
+    UIBarButtonItem *rBarButton = [[[UIBarButtonItem alloc] initWithCustomView:loginButton] autorelease];
+    self.navigationItem.rightBarButtonItem = rBarButton;
+    
+    //left area barbutton
+    UIButton * areaButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [areaButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+    [areaButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
+    [areaButton addTarget:self action:@selector(selectArea:) forControlEvents:UIControlEventTouchUpInside];
+    areaButton.frame = CGRectMake(0, 0, 75, 34);
+    self.areaLabel = [[[UILabel alloc] initWithFrame:CGRectMake(20, 0, 55.f, 34)] autorelease];
+    self.areaLabel.text = @"地区";
+    [self.areaLabel setFont:[UIFont systemFontOfSize:16]];
+    self.areaLabel.backgroundColor = [UIColor clearColor];
+    self.areaLabel.textColor = [UIColor whiteColor];
+    self.areaLabel.textAlignment = NSTextAlignmentCenter;
+    [areaButton addSubview:self.areaLabel];
+    
+    UIImageView *areaIcon = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"location_icon.png"]] autorelease];
+    areaIcon.frame = CGRectMake(5, 3, 28, 28);
+    areaIcon.userInteractionEnabled = YES;
+    UITapGestureRecognizer *tapOnIcon = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnLocationIcon)];
+    [areaIcon addGestureRecognizer:tapOnIcon];
+    [areaButton addSubview:areaIcon];
+    
+    UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:areaButton] autorelease];
+    [self.navigationItem setLeftBarButtonItem:lBarButton];
+    
+    if ([self isLogined]) {
+        self.loginLabel.text = @"主页";
+    }
+    else{
+        self.loginLabel.text = @"登录";
+    }
+    
+    NSLog(@"friend frame %@", NSStringFromCGRect(self.view.frame));
+    CGFloat viewHeight;
+    if (IS_IPHONE_5) {
+        viewHeight = 548;
+    }
+    else{
+        viewHeight = 460;
+    }
+    
+    
+    
+    self.mTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, viewHeight-44-45)] autorelease];
+    [self.mTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    self.mTableView.delegate = self;
+    self.mTableView.dataSource = self;
+    
+    NSLog(@"friend frame %@", NSStringFromCGRect(self.mTableView.frame));
+    
+    [self.view addSubview:self.mTableView];
+    
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveLoginNoti:) name:kLoginNotification object:nil];
+    
+    [[NSUserDefaults standardUserDefaults] addObserver:self
+                                            forKeyPath:kCityName
+                                               options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld
+                                               context:nil];
+    
+    [[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:kUserId options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew context:nil];
+    
+
 }
 
-//- (void)contextDidSave:(NSNotification*)notification{
-//    NSLog(@"contextDidSave Notification fired.");
-//    SEL selector = @selector(mergeChangesFromContextDidSaveNotification:);
-//    [kAppDelegate.managedObjectContext performSelectorOnMainThread:selector withObject:notification waitUntilDone:NO];
-//}
+- (void)initContactDict
+{
+    self.contactDict = [[[NSMutableDictionary alloc] init] autorelease];
+    NSArray *indexTitleArray = [[UILocalizedIndexedCollation currentCollation] sectionTitles];
+    [indexTitleArray enumerateObjectsUsingBlock:^(NSString *indexTitle, NSUInteger idx, BOOL *stop) {
+        [self.contactDict setObject:[NSMutableArray array] forKey:indexTitle];
+    }];
+    
+    self.sectionArray = [NSMutableArray array];
+}
+
+- (void)receiveLoginNoti:(NSNotification *)noti
+{
+    self.loginLabel.text = @"主页";
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ([keyPath isEqualToString:kCityName]) {
+        NSString *newCity = [change objForKey:@"new"];
+        NSString *oldCity = [change objForKey:@"old"];
+        if (![newCity isEqualToString:oldCity]) {
+            
+            self.title = newCity;
+        }
+    }
+}
 
 - (void)getInvestmentUserListFromServer
 {
-    [self setProvinceIdAndCityIdOfCity:[PersistenceHelper dataForKey:kCityName]];
     NSLog(@"current city; %@", self.currentCity);
+    [self setProvinceIdAndCityIdOfCity:[PersistenceHelper dataForKey:kCityName]];
     //parameter: provinceid, cityid, userid(用来取备注),
     NSString *userid = kAppDelegate.userId;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:self.curProvinceId, @"provinceid",
@@ -104,24 +255,25 @@
                           @"getZsAttentionUserByArea.json", @"path", nil];
     
     
-    NSLog(@"all contact dict %@", dict);
+//    NSLog(@"all contact dict %@", dict);
     
     
-    MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-    hub.labelText = @"获取好友列表";
+    [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+
     
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             
-            NSLog(@"friend json %@", json);
+            [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
+//            NSLog(@"friend json %@", json);
+//            NSLog(@"pred %@", self.fetchedResultsController.fetchRequest.predicate);
+            NSArray *friendArray = [Utility deCryptJsonDict:json OfJsonKey:@"DataList"];
+//            NSLog(@"friend arrat %@", friendArray);
             
-            
-            [[json objectForKey:@"DataList"] enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                NSLog(@"contact Dict: %@", contactDict);
+            [friendArray enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
+//                NSLog(@"contact Dict: %@", contactDict);
                 
-//                FriendContact *contact = [NSEntityDescription insertNewObjectForEntityForName:@"FriendContact" inManagedObjectContext:kAppDelegate.managedObjectContext];
-                
-                FriendContact *contact = [FriendContact createEntity];
+                FriendContact *contact = [FriendContact MR_createEntity];
                 contact.userid = [[contactDict objForKey:@"id"] stringValue];
                 contact.username = [contactDict objForKey:@"username"];
                 contact.tel = [contactDict objForKey:@"tel"];
@@ -133,70 +285,136 @@
                 contact.cityid = [PersistenceHelper dataForKey:kCityId];
                 contact.loginid = [kAppDelegate userId];
                 contact.type = @"1";
+                contact.username_p = makePinYinOfName(contact.username);
                 
-                NSLog(@"pinyin %@", makePinYin([contact.username characterAtIndex:0]));
                 
-//                contact.username_p =
+//                NSLog(@"pinyin %@", makePinYinOfName(contact.username));
                 
-                //                contact.city = gpsCity;
                 contact.sectionkey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
+                [[self.contactDict objForKey:contact.sectionkey] addObject:contact];
+                
+                
+                DB_SAVE();
+
             }];
             
-//            NSError *error;
-////            if (![kAppDelegate.managedObjectContext save:&error]) {
-////                NSLog(@"save error %@", error);
-////            }
+            [self.sectionArray removeAllObjects];
             
-            [hub hide:YES];
+            [self.contactDict enumerateKeysAndObjectsUsingBlock:^(NSString * key, NSArray * obj, BOOL *stop) {
+                if (obj.count != 0) {
+                    [self.sectionArray addObject:key];
+                }
+            }];
+            
+            
+            [self.sectionArray sortUsingComparator:^NSComparisonResult(NSString * obj1, NSString * obj2) {
+                return [obj1 compare:obj2];
+            }];
+            
+            [self.mTableView reloadData];
+            
+            
         } else {
-            [hub hide:YES];
+            [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
         }
     } failure:^(NSError *error) {
-        [hub hide:YES];
+        [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
     }];
 }
 
-#pragma mark - table view
-
-//- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-//{
-//    NSLog(@"self.entity %@", self.entityName);
-//    return [[self.fetchedResultsController sections] count];
-//}
-//
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+- (void)configureCell:(ContactCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
-//    id  sectionInfo =
-//    [[self.fetchedResultsController sections] objectAtIndex:section];
-//    return [sectionInfo numberOfObjects];
+    cell.selectionStyle = UITableViewCellEditingStyleNone;
     
-    NSArray *sections = [self.fetchedResultsController sections];
-    int count = [[sections objectAtIndex:section] numberOfObjects];
-    if (section == [sections count]) {
-        return count+1;
+    
+//    FriendContact *userDetail = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    FriendContact *userDetail = [[self.contactDict objForKey:[self.sectionArray objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
+    
+    cell.headIcon.layer.cornerRadius = 4;
+    cell.headIcon.layer.masksToBounds = YES;
+    [cell.headIcon setImageWithURL:[NSURL URLWithString:userDetail.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
+    
+    if ([userDetail.remark isValid]) {
+        NSMutableString *userName = [NSMutableString stringWithFormat:@"%@(%@)", userDetail.username, userDetail.remark];
+        cell.nameLabel.text = userName;
     }
     else{
-        return count;
+        cell.nameLabel.text = userDetail.username;
+    }
+    
+    cell.unSelectedImage.hidden = YES;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    OtherHomepageViewController *otherProfileVC = [[OtherHomepageViewController alloc] init];
+    
+    otherProfileVC.contact = [[self.contactDict objForKey:[self.sectionArray objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
+    [self.navigationController pushViewController:otherProfileVC animated:YES];
+    [otherProfileVC release];
+}
+
+#pragma mark - help method
+
+- (BOOL)isLogined
+{
+    NSString *userid = [PersistenceHelper dataForKey:kUserId];
+    return [userid isValid];
+}
+
+- (void)login:(UIButton *)sender
+{
+    NSLog(@"login");
+    if ([self isLogined]) {
+        //已经登录，进入我的主页
+        MyHomePageViewController *myHomeVC = [[MyHomePageViewController alloc] init];
+        [self.navigationController pushViewController:myHomeVC animated:YES];
+        [myHomeVC release];
+    }
+    else{
+        LoginViewController *loginVC = [[LoginViewController alloc] init];
+        [self.navigationController pushViewController:loginVC animated:YES];
+        [loginVC release];
     }
 }
-//
-//- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    return 51.f;
-//}
-//
-//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-//{
-//    return  [[self.fetchedResultsController sectionIndexTitles] objectAtIndex:section];
-//}
-//
-//- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
-//{
-//    return [self.fetchedResultsController sectionIndexTitles];
-//}
-//
+
+
+
+- (void)tapOnLocationIcon
+{
+    [self selectArea:nil];
+}
+
+#pragma mark - table view
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return [self.sectionArray count];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [[self.contactDict objForKey:[self.sectionArray objectAtIndex:section]] count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 51.f;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    return [self.sectionArray objectAtIndex:section];
+}
+
+- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
+{
+    return self.sectionArray;
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *cellID = @"contactCell";
@@ -209,166 +427,28 @@
     return cell;
 }
 
-//- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    OtherHomepageViewController *otherProfileVC = nil;
-//    if (IS_IPHONE_5) {
-//        otherProfileVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController_ip5" bundle:nil];
-//    }
-//    else{
-//        otherProfileVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController" bundle:nil];
-//    }
-//    
-//    //    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-//    //    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-//    
-//    otherProfileVC.contactId = [[self.fetchedResultsController objectAtIndexPath:indexPath] userId];
-//    [self.navigationController pushViewController:otherProfileVC animated:YES];
-//    [otherProfileVC release];
-//}
-
-- (void)configureCell:(ContactCell *)cell atIndexPath:(NSIndexPath *)indexPath
+- (void)setProvinceIdAndCityIdOfCity:(NSString *)city
 {
-    cell.selectionStyle = UITableViewCellEditingStyleNone;
+    NSString *areaJsonPath = [[NSBundle mainBundle] pathForResource:@"getProAndCityData" ofType:@"json"];
+    NSData *areaJsonData = [[NSData alloc] initWithContentsOfFile:areaJsonPath];
+    NSMutableDictionary *areaDictTmp = [NSJSONSerialization JSONObjectWithData:areaJsonData options:NSJSONReadingAllowFragments error:nil];
+    [areaJsonData release];
     
-    
-    FriendContact *userDetail = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    
-    cell.headIcon.layer.cornerRadius = 4;
-    cell.headIcon.layer.masksToBounds = YES;
-    [cell.headIcon setImageWithURL:[NSURL URLWithString:userDetail.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
-    
-    
-    cell.nameLabel.text = userDetail.username;
-    
-    cell.unSelectedImage.hidden = YES;
-}
-
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    OtherHomepageViewController *otherProfileVC = nil;
-    if (IS_IPHONE_5) {
-        otherProfileVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController_ip5" bundle:nil];
-    }
-    else{
-        otherProfileVC = [[OtherHomepageViewController alloc] initWithNibName:@"OtherHomepageViewController" bundle:nil];
-    }
-    
-    //    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    //    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
-    
-//    otherProfileVC.delegate = self;
-    otherProfileVC.contact = [self.fetchedResultsController objectAtIndexPath:indexPath];
-//    otherProfileVC.contactyType = eFriendContatType;
-    [self.navigationController pushViewController:otherProfileVC animated:YES];
-    [otherProfileVC release];
-}
-//
-//#pragma mark - fetch controller
-//
-//- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-//    // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
-//    [self.mTableView beginUpdates];
-//}
-//
-//
-//- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
-//    
-//    UITableView *tableView = self.mTableView;
-//    
-//    switch(type) {
-//            
-//        case NSFetchedResultsChangeInsert:
-//            [tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-//            break;
-//            
-//        case NSFetchedResultsChangeDelete:
-//            [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-//            break;
-//            
-//        case NSFetchedResultsChangeUpdate:
-//            [self configureCell:(ContactCell *)[tableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
-//            break;
-//            
-//        case NSFetchedResultsChangeMove:
-//            [tableView deleteRowsAtIndexPaths:[NSArray
-//                                               arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-//            [tableView insertRowsAtIndexPaths:[NSArray
-//                                               arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-//            break;
-//    }
-//}
-//
-//
-//- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id )sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
-//    
-//    switch(type) {
-//            
-//        case NSFetchedResultsChangeInsert:
-//            [self.mTableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-//            break;
-//            
-//        case NSFetchedResultsChangeDelete:
-//            [self.mTableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-//            break;
-//    }
-//}
-//
-//
-//- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-//    // The fetch controller has sent all current change notifications, so tell the table view to process all updates.
-//    [self.mTableView endUpdates];
-//}
-//
-//#pragma mark - notification
-//
-//- (void)addObserver
-//{
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(investmentUserListRefreshed:)
-//                                                 name:kInvestmentUserListRefreshed
-//                                               object:nil];
-//}
-
-- (NSFetchedResultsController *)fetchedResultsController
-{
-    if (_fetchedResultsController != nil) {
-        return _fetchedResultsController;
-    }
-    
-//    NSLog(@"self.entityname %@", self.entityName);
-//    
-//    NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName
-//                                              inManagedObjectContext:kAppDelegate.managedObjectContext];
-//    
-//    NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
-//    [fetchRequest setEntity:entity];
-//    
-//    NSSortDescriptor *sort1 = [NSSortDescriptor sortDescriptorWithKey:@"sectionkey" ascending:YES];
-//    
-//    NSSortDescriptor *sort2 = [NSSortDescriptor sortDescriptorWithKey:@"username"
-//                                                            ascending:YES
-//                                                             selector:@selector(localizedCaseInsensitiveCompare:)];
-//    
-//    [fetchRequest setSortDescriptors:@[sort1, sort2]];
-//    
-//    NSLog(@"city id %@", [PersistenceHelper dataForKey:kCityId]);
-//    NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@ AND type == %@", [PersistenceHelper dataForKey:kCityId], @"1"];
-//    [fetchRequest setPredicate:pred];
-//    [fetchRequest setFetchBatchSize:50];
-//    
-//    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
-//                                                                    managedObjectContext:kAppDelegate.managedObjectContext
-//                                                                      sectionNameKeyPath:@"sectionkey"
-//                                                                               cacheName:nil];
-//    
-//    _fetchedResultsController.delegate = self;
-    
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@ AND loginid == %@ AND type == %@", [PersistenceHelper dataForKey:kCityId], [kAppDelegate userId], @"1"];
-    _fetchedResultsController = [FriendContact MR_fetchAllGroupedBy:@"sectionkey" withPredicate:pred sortedBy:@"sectionkey,username_p" ascending:YES delegate:self];
-    
-    return _fetchedResultsController;
+    NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
+    [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
+        
+        NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
+        [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
+            if ([[cityDict objectForKey:@"cityname"] isEqualToString:city]) {
+                self.curProvinceId = [cityDict objectForKey:@"provinceid"];
+                self.curCityId = [cityDict objectForKey:@"cityid"];
+                
+                //                [PersistenceHelper setData:self.curCityId forKey:kCityId];
+                [PersistenceHelper setData:self.curProvinceId forKey:kProvinceId];
+                *stop = YES;
+            }
+        }];
+    }];
 }
 
 #pragma mark - other controller delegate

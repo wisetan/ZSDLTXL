@@ -43,8 +43,6 @@
 {
     [super viewDidLoad];
 	self.title = @"地区选择";
-    self.selIndexRow = -1;
-    self.selIndexSection = -1;
     
     [self setHidesBottomBarWhenPushed:YES];
     
@@ -72,17 +70,18 @@
     self.areaInfoDict = [[[NSMutableDictionary alloc] init] autorelease];
     
     [self getAreaInfo];
+    [self getUserinfoFromDB];
     
-    
-    
-    
+}
+
+- (void)getUserinfoFromDB
+{
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
+    self.myInfo = [MyInfo findFirstWithPredicate:pred];
 }
 
 - (void)getSelectProvinceId
 {
-    NSLog(@"self.provinceArray: %@", self.provinceArray);
-    NSLog(@"self.selectCityArray: %@", self.selectCityArray);
-    
     [self.selectCityArray enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger cityIdx, BOOL *stop) {
         [self.provinceArray enumerateObjectsUsingBlock:^(ProvinceInfo *province, NSUInteger provinceIdx, BOOL *stop) {
             if ([city.provinceid isEqualToString:province.provinceid]) {
@@ -90,8 +89,6 @@
             }
         }];
     }];
-    
-    NSLog(@"select province: %@", self.addResidentProvinceIdDict);
 }
 
 - (void)getAreaInfo
@@ -102,20 +99,17 @@
     
     NSArray *provinceArrayTmp = [areaDictTmp objectForKey:@"AreaList"];
     [provinceArrayTmp enumerateObjectsUsingBlock:^(NSDictionary *proDict, NSUInteger idx, BOOL *stop) {
-//        NSLog(@"%@", proDict); 
         ProvinceInfo *province = [[[ProvinceInfo alloc] init] autorelease];
         province.centerlon = [proDict objectForKey:@"centerlon"];
         province.centerlat = [proDict objectForKey:@"centerlat"];
         province.provinceid = [proDict objectForKey:@"provinceid"];
         province.provincename = [proDict objectForKey:@"provincename"];
         province.radius = [proDict objectForKey:@"radius"];
-//        [province setValuesForKeysWithDictionary:proDict];
         [self.provinceArray addObject:province];
         
         NSArray *cityArrayJsonTmp = [proDict objectForKey:@"citylist"];
         NSMutableArray *cityArrayTmp = [[NSMutableArray alloc] init];
         [cityArrayJsonTmp enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-//            NSLog(@"city: %@", cityDict);
             CityInfo *city = [CityInfo createEntity];
             [city setValuesForKeysWithDictionary:cityDict];
             [cityArrayTmp addObject:city];
@@ -131,7 +125,6 @@
         return [pro1.provinceid compare:pro2.provinceid options:NSNumericSearch];
     }];
     
-//    NSLog(@"Area Info :%@", areaDictTmp);
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -168,21 +161,23 @@
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.areaNameLabel.text = [[self.provinceArray objectAtIndex:indexPath.row] provincename];
     [cell.areaNameLabel setFont:[UIFont systemFontOfSize:14]];
+    ProvinceInfo *province = [self.provinceArray objectAtIndex:indexPath.row];
+    
     
     if (self.isAddResident) {
-        if ([[self.addResidentProvinceIdDict objectForKey:[NSNumber numberWithInt:indexPath.row]] isEqualToString:@"YES"]) {
-            cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
-        }
-        else{
+        
+        __block BOOL haveFound = NO;
+        [self.myInfo.areaList enumerateObjectsUsingBlock:^(CityInfo *city, BOOL *stop) {
+            if ([city.provinceid isEqualToString:province.provinceid]) {
+                cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
+                haveFound = YES;
+                *stop = YES;
+            }
+        }];
+        if (haveFound == NO) {
             cell.selectImage.image = [UIImage imageNamed:@"unselected.png"];
         }
-    }else{
-        if (indexPath.section == self.selIndexSection && indexPath.row == self.selIndexRow) {
-            cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
-        }
-        else{
-            cell.selectImage.image = [UIImage imageNamed:@"unselected.png"];
-        }
+        
     }
 
     return cell;    
@@ -190,8 +185,6 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    AreaCell *cell = (AreaCell *)[tableView cellForRowAtIndexPath:indexPath];
-    cell.selectImage.image = [UIImage imageNamed:@"selected.png"];
     
     CityViewController *cityVC = [[[CityViewController alloc] init] autorelease];
     NSMutableArray *cityArr = [[[NSMutableArray alloc] init] autorelease];
@@ -199,17 +192,16 @@
     [[self.areaInfoDict objectForKey:provinceId] enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
         [cityArr addObject:city];
     }];
-    cityVC.selectCityArray = self.selectCityArray;
     cityVC.cityArray = cityArr;
     cityVC.isAddResident = self.isAddResident;
+    if (self.isAddResident) {
+        cityVC.delegate = self.delegate;
+    }
     cityVC.homePageVC = self.homePageVC;
     cityVC.provinceid = provinceId;
-    self.selIndexRow = indexPath.row;
-    self.selIndexSection = indexPath.section;
     
     [self.navigationController pushViewController:cityVC animated:YES];
-    self.selIndexSection = -1;
-    self.selIndexRow = -1;
+
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath

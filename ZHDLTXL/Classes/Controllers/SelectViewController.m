@@ -10,7 +10,8 @@
 #import "PharCell.h"
 #import "Pharmacology.h"
 #import "SelectedUserViewController.h"
-#import "Contact.h"
+//#import "Contact.h"
+#import "AllContact.h"
 
 
 @interface SelectViewController ()
@@ -22,7 +23,6 @@
 @end
 
 @implementation SelectViewController
-@synthesize fetchedResultsController = _fetchedResultsController;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -37,7 +37,7 @@
 {
     [super viewDidLoad];
     self.title = @"筛选";
-    self.fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Pharmacology"];
+    self.hidesBottomBarWhenPushed = YES;
     
     self.cateArray = [[[NSMutableArray alloc] init] autorelease];
     self.selectArray = [[[NSMutableArray alloc] init] autorelease];
@@ -56,7 +56,7 @@
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
     //right bar button
-    UILabel *selectAllLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 55, 30)] autorelease];
+    UILabel *selectAllLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 34)] autorelease];
     selectAllLabel.text = @"全选";
     selectAllLabel.textAlignment = NSTextAlignmentCenter;
     selectAllLabel.textColor = [UIColor whiteColor];
@@ -67,7 +67,7 @@
     [self.rightBarButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
     [self.rightBarButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [self.rightBarButton addTarget:self action:@selector(selectAllCate:) forControlEvents:UIControlEventTouchUpInside];
-    self.rightBarButton.frame = CGRectMake(0, 0, 55, 30);
+    self.rightBarButton.frame = CGRectMake(0, 0, 75, 34);
     [self.rightBarButton addSubview:selectAllLabel];
     
     UIBarButtonItem *rBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.rightBarButton] autorelease];
@@ -86,34 +86,34 @@
     [self.view addSubview:bottomImage];
     
     self.confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.confirmButton.frame = CGRectMake(110, 5, 100, 35);
+    self.confirmButton.frame = CGRectMake(124, 5, 75, 34);
     [self.confirmButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+    [self.confirmButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
     [bottomImage addSubview:self.confirmButton];
     [self.confirmButton addTarget:self action:@selector(confirmSelect:) forControlEvents:UIControlEventTouchUpInside];
     
-    UILabel *confirmLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 35)];
+    UILabel *confirmLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 34)];
     confirmLabel.backgroundColor = [UIColor clearColor];
-    confirmLabel.text = @"确认选择";
+    confirmLabel.text = @"确认";
     confirmLabel.textAlignment = NSTextAlignmentCenter;
     confirmLabel.textColor = [UIColor whiteColor];
     [self.confirmButton addSubview:confirmLabel];
     
-    [self getPharFromDB];
+//    [self getPharFromDB];
+    [self getPreferJsonData];
 }
 
-- (void)getPharFromDB
-{
-    NSError *error;
-    self.cateArray = [NSMutableArray arrayWithArray:[self.managedObjectContext executeFetchRequest:self.fetchRequest error:&error]];
-    if (self.cateArray.count == 0) {
-        [self getPreferJsonData];
-    }
-}
+//- (void)getPharFromDB
+//{
+//    if (self.cateArray.count == 0) {
+//        [self getPreferJsonData];
+//    }
+//}
 
 - (void)confirmSelect:(UIButton *)sender
 {
     if (self.selectArray.count == 0) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请选择类型" message:nil delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请选择类型" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
         
         [alert show];
         [alert release];
@@ -149,11 +149,11 @@
                 NSLog(@"json data: %@", json);
                 
                 [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
-                NSArray *friendArrayJson = [json objectForKey:@"DataList"];
-                NSMutableArray *friendArray = [[NSMutableArray alloc] init];
-                [friendArrayJson enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                    Contact *contact = [Contact new];
-                    contact.userid = [contactDict objectForKey:@"id"];
+                NSArray *userArray = [Utility deCryptJsonDict:json OfJsonKey:@"DataList"];
+                NSMutableArray *tmpArray = [[[NSMutableArray alloc] init] autorelease];
+                [userArray enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
+                    AllContact *contact = [AllContact createEntity];
+                    contact.userid = [[contactDict objForKey:@"id"] stringValue];
                     contact.username = [contactDict objForKey:@"username"];
                     contact.tel = [contactDict objForKey:@"tel"];
                     contact.mailbox = [contactDict objForKey:@"mailbox"];
@@ -161,14 +161,14 @@
                     contact.col1 = [contactDict objForKey:@"col1"];
                     contact.col2 = [contactDict objForKey:@"col2"];
                     contact.col2 = [contactDict objForKey:@"col2"];
-                    [friendArray addObject:contact];
-                    [contact release];
+                    contact.invagency = [[contactDict objForKey:@"invagency"] stringValue];
+                    [tmpArray addObject:contact];
                 }];
-                [self friendListRefreshed:friendArray];
-                [friendArray release];
+//                [self friendListRefreshed:tmpArray];
                 
                 SelectedUserViewController *selectedVC = [[SelectedUserViewController alloc] init];
-                selectedVC.contactDictSortByAlpha = self.contactDictSortByAlpha;
+//                selectedVC.contactDictSortByAlpha = self.contactDictSortByAlpha;
+                selectedVC.selectedArray = tmpArray;
                 [self.navigationController pushViewController:selectedVC animated:YES];
                 [selectedVC release];
             }
@@ -187,27 +187,27 @@
     }
 }
 
-- (void)friendListRefreshed:(NSArray *)friendArray
-{
-    NSLog(@"friend array: %@", friendArray);
-    NSLog(@"self.contactArray: %@", self.contactArray);
-    [self.contactArray removeAllObjects];
-    [self.contactArray addObjectsFromArray:friendArray];
-    [self.contactDictSortByAlpha removeAllObjects];
-    //按字母分组
-    UILocalizedIndexedCollation *theCollation = [UILocalizedIndexedCollation currentCollation];
-    for (NSString *indexKey in [theCollation sectionTitles]) {
-        NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] init];
-        [self.contactDictSortByAlpha setObject:contactArrayTmp forKey:indexKey];
-        [contactArrayTmp release];
-    }
-    
-    [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
-        NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
-        [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact];
-    }];
-    NSLog(@"reach here");
-}
+//- (void)friendListRefreshed:(NSArray *)friendArray
+//{
+//    NSLog(@"friend array: %@", friendArray);
+//    NSLog(@"self.contactArray: %@", self.contactArray);
+//    [self.contactArray removeAllObjects];
+//    [self.contactArray addObjectsFromArray:friendArray];
+//    [self.contactDictSortByAlpha removeAllObjects];
+//    //按字母分组
+//    UILocalizedIndexedCollation *theCollation = [UILocalizedIndexedCollation currentCollation];
+//    for (NSString *indexKey in [theCollation sectionTitles]) {
+//        NSMutableArray *contactArrayTmp = [[NSMutableArray alloc] init];
+//        [self.contactDictSortByAlpha setObject:contactArrayTmp forKey:indexKey];
+//        [contactArrayTmp release];
+//    }
+//    
+//    [self.contactArray enumerateObjectsUsingBlock:^(Contact *contact, NSUInteger idx, BOOL *stop) {
+//        NSString *indexKey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
+//        [[self.contactDictSortByAlpha objectForKey:indexKey] addObject:contact];
+//    }];
+//    NSLog(@"reach here");
+//}
 
 
 - (void)backToRootVC:(UIButton *)sender
@@ -243,16 +243,13 @@
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         NSArray *pharArray = [json objectForKey:@"PharmacologyList"];
         [pharArray enumerateObjectsUsingBlock:^(NSDictionary *pharDict, NSUInteger idx, BOOL *stop) {
-            Pharmacology *phar = [NSEntityDescription insertNewObjectForEntityForName:@"Pharmacology" inManagedObjectContext:self.managedObjectContext];
+            Pharmacology *phar = [Pharmacology createEntity];
             phar.content = [pharDict objForKey:@"content"];
             phar.pharid = [[pharDict objForKey:@"id"] stringValue];
             phar.picturelinkurl = [pharDict objForKey:@"picturelinkurl"];
             phar.col4 = [[pharDict objForKey:@"col4"] stringValue];
             [self.cateArray addObject:phar];
-            NSError *error;
-            if (![self.managedObjectContext save:&error]) {
-                NSLog(@"error %@", [error localizedDescription]);
-            }
+
         }];
         [self.selectTableView reloadData];
         
@@ -317,42 +314,7 @@
 }
 
 
-- (NSFetchedResultsController *)fetchedResultsController
-{
-    if (_fetchedResultsController != nil) {
-        return _fetchedResultsController;
-    }
-    
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Event" inManagedObjectContext:self.managedObjectContext];
-    [fetchRequest setEntity:entity];
-    
-    // Set the batch size to a suitable number.
-    [fetchRequest setFetchBatchSize:20];
-    
-    // Edit the sort key as appropriate.
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timeStamp" ascending:NO];
-    NSArray *sortDescriptors = @[sortDescriptor];
-    
-    [fetchRequest setSortDescriptors:sortDescriptors];
-    
-    // Edit the section name key path and cache name if appropriate.
-    // nil for section name key path means "no sections".
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:@"Master"];
-    aFetchedResultsController.delegate = self;
-    self.fetchedResultsController = aFetchedResultsController;
-    
-	NSError *error = nil;
-	if (![self.fetchedResultsController performFetch:&error]) {
-        // Replace this implementation with code to handle the error appropriately.
-        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-	    NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-	    abort();
-	}
-    
-    return _fetchedResultsController;
-}
+
 
 - (void)didReceiveMemoryWarning
 {

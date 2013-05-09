@@ -27,5 +27,6 @@
 @dynamic userid;
 @dynamic username;
 @dynamic username_p;
+@dynamic isreal;
 
 @end

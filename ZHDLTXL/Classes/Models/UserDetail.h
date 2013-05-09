@@ -25,5 +25,7 @@
 @property (nonatomic, retain) NSString * type;
 @property (nonatomic, retain) NSString * userid;
 @property (nonatomic, retain) NSString * username;
+@property (nonatomic, retain) NSString * headiconlocalurl;
+@property (nonatomic, retain) NSString * isreal;
 
 @end

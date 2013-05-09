@@ -38,7 +38,7 @@
         if ([view isKindOfClass:[UIImageView class]]) {
             
         }
-       else if ([view isKindOfClass:[UILabel class]]) {
+        else if ([view isKindOfClass:[UILabel class]]) {
            
             rect = view.frame;
             maxLabelY = rect.origin.y + rect.size.height;
@@ -67,7 +67,10 @@
     if (aTextField != nil) {
         textFieldCount++;
         aTextField.frame = CGRectZero;
-        aTextField.borderStyle = UITextBorderStyleRoundedRect;
+//        aTextField.borderStyle = UITextBorderStyleRoundedRect;
+//        aTextField.borderStyle = UITextBorderStyleLine;
+        aTextField.borderStyle = UITextBorderStyleBezel;
+        aTextField.backgroundColor = [UIColor whiteColor];
         aTextField.placeholder = placeHolder;
         [self addSubview:aTextField];
 //        [self setNeedsLayout];

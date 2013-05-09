@@ -9,6 +9,10 @@
 #import "SettingViewController.h"
 #import "MenuCell.h"
 #import "LoginViewController.h"
+#import "MAlertView.h"
+#import "FeedbackViewController.h"
+#import "AboutViewController.h"
+#import "MyInfo.h"
 
 @interface SettingViewController ()
 
@@ -30,6 +34,7 @@
     [super viewDidLoad];
     
     self.title = @"设置";
+    self.hidesBottomBarWhenPushed = YES;
     
     //back button
     self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -40,34 +45,31 @@
     UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
-    UIImageView *bgImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"debut_light.png"]];
-    bgImageView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-    [self.view addSubview:bgImageView];
-    [bgImageView release];
     
-    UIImage *tableBgImage = [[UIImage imageNamed:@"table_underframe.png"] stretchableImageWithLeftCapWidth:290 topCapHeight:56];
+    UIImage *tableBgImage = [UIImage imageByName:@"setting_bg.png"];
     UIImageView *tableBgImageView = [[[UIImageView alloc] initWithImage:tableBgImage] autorelease];
     tableBgImageView.userInteractionEnabled = YES;
-    tableBgImageView.frame = CGRectMake(20, 20, 280, 306);
+    tableBgImageView.frame = CGRectMake(18, 20, 283, 253);
     [self.view addSubview:tableBgImageView];
     
     
-    self.menuTableView = [[[UITableView alloc] initWithFrame:CGRectMake(20, 20, 280, 306) style:UITableViewStylePlain] autorelease];
+    self.menuTableView = [[[UITableView alloc] initWithFrame:CGRectMake(20, 21, 280, 250) style:UITableViewStylePlain] autorelease];
     self.menuTableView.delegate = self;
     self.menuTableView.dataSource = self;
     self.menuTableView.scrollEnabled = NO;
     self.menuTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.menuTableView setBackgroundView:tableBgImageView];
     self.menuTableView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:self.menuTableView];
     
-    self.menuNameArray = [[[NSMutableArray alloc] initWithObjects:@"注销登录", @"修改密码", @"意见反馈", @"新手引导", @"应用推荐", @"关于", nil] autorelease];
-    self.selectorNameArray = [[[NSMutableArray alloc] initWithObjects:@"logoff", @"modifyPassword", @"feedback", @"newcomer", @"appCommand", @"about", nil] autorelease];
+    self.menuNameArray = [[[NSMutableArray alloc] initWithObjects:@"注销登录", @"修改密码", @"意见反馈", @"新手引导", @"关于", nil] autorelease];
+    self.selectorNameArray = [[[NSMutableArray alloc] initWithObjects:@"logoff", @"modifyPassword", @"feedback", @"newcomer", @"about", nil] autorelease];
     
     self.selectorArray = [[[NSMutableArray alloc] init] autorelease];
     [self.selectorNameArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [self.selectorArray addObject:[NSValue valueWithPointer:NSSelectorFromString([self.selectorNameArray objectAtIndex:idx])]];
     }];
+    
+    
     
 }
 
@@ -106,7 +108,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return 51.f;
+    return 50.f;
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -117,66 +119,103 @@
 - (void)logoff
 {
     NSLog(@"registAndLogin");
+    
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
+    MyInfo *myInfo = [MyInfo findFirstWithPredicate:pred];
+    [myInfo deleteEntity];
+    DB_SAVE();
+    
+    
     [PersistenceHelper setData:@"" forKey:KUserName];
     [PersistenceHelper setData:@"" forKey:kUserId];
     [PersistenceHelper setData:@"" forKey:KPassWord];
-    NSString *userDataFile = [PersistenceHelper dataForKey:kUserDataFile];
-    NSFileManager *fileManger = [NSFileManager defaultManager];
-    if ([fileManger fileExistsAtPath:userDataFile]) {
-        NSError *error;
-        if (![fileManger removeItemAtPath:userDataFile error:&error]) {
-            NSLog(@"log off, remove userdata %@", error);
-        }
-    }
     
-//    [self clearData];
+    
+
+    
     
     LoginViewController *loginVC = [[LoginViewController alloc] init];
-//    [self.navigationController popToRootViewControllerAnimated:NO];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.MyHomeVC name:kAddResidentNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.MyHomeVC name:kSelectPharFinished object:nil];
     [self.navigationController pushViewController:loginVC animated:YES];
     [loginVC release];
 }
 
-//- (void)clearData
-//{
-//    //clear all user info
-//    NSFetchRequest * allUsers = [[NSFetchRequest alloc] init];
-//    [allUsers setEntity:[NSEntityDescription entityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext]];
-//    [allUsers setIncludesPropertyValues:NO]; //only fetch the managedObjectID
-//    
-//    NSError * error = nil;
-//    NSArray * cars = [kAppDelegate.managedObjectContext executeFetchRequest:allUsers error:&error];
-//    [allUsers release];
-//    for (NSManagedObject * user in cars) {
-//        [kAppDelegate.managedObjectContext deleteObject:user];
-//    }
-//    error = nil;
-//    
-//    NSFetchRequest *myInfoRequest = [[NSFetchRequest alloc] init];
-//    NSEntityDescription *myInfo = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-//    [myInfoRequest setEntity:myInfo];
-//    NSArray *myInfos = [kAppDelegate.managedObjectContext executeFetchRequest:myInfoRequest error:&error];
-//    [myInfo release];
-//    
-//    for (NSManagedObject *myinfo in myInfos) {
-//        [kAppDelegate.managedObjectContext deleteObject:myinfo];
-//    }
-//    
-//    
-//    NSError *saveError = nil;
-//    [kAppDelegate.managedObjectContext save:&saveError];
-//}
-
 - (void)modifyPassword
 {
     NSLog(@"modifyPassword");
+    self.oldPwdField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 0, 200, 45)] autorelease];
+    self.oldPwdField.secureTextEntry = YES;
+    self.theNewPwdField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 45, 200, 45)] autorelease];
+    self.theNewPwdField.secureTextEntry = YES;
+    self.reNewPwdField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 90, 200, 45)] autorelease];
+    self.reNewPwdField.secureTextEntry = YES;
+    
+    MAlertView *alert = [[MAlertView alloc] initWithTitle:@"修改密码" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认",nil];
+    alert.tag = 1001;
+    [alert addTextField:self.oldPwdField placeHolder:@"旧密码"];
+    [alert addTextField:self.theNewPwdField placeHolder:@"新密码"];
+    [alert addTextField:self.reNewPwdField placeHolder:@"重复新密码"];
+    [alert show];
+    [alert release];
+    
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (alertView.tag == 1001) {
+        if (buttonIndex == 1) {
+            NSString *oldPwd = self.oldPwdField.text;
+            NSString *newPwd = self.theNewPwdField.text;
+            NSString *reNewPwd = self.reNewPwdField.text;
+            
+            if (![oldPwd isValid] || ![newPwd isValid] || ![reNewPwd isValid]) {
+                [kAppDelegate showWithCustomAlertViewWithText:@"密码无效" andImageName:nil];
+                return;
+            }
+            
+            if (newPwd.length < 6) {
+                [kAppDelegate showWithCustomAlertViewWithText:@"密码长度必须大于6位" andImageName:nil];
+                return;
+            }
+            
+            if (![newPwd isEqualToString:reNewPwd]) {
+                [kAppDelegate showWithCustomAlertViewWithText:@"两次输入的密码不同" andImageName:nil];
+                return;
+            }
+            
+            //userid mail tel name path
+            NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:kAppDelegate.userId, @"userid", newPwd, @"newpasswd", oldPwd, @"oldpasswd", @"changeZsUserPassword.json", @"path", nil];
+            [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+            [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+                if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+                    [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+                    
+                    [PersistenceHelper setData:newPwd forKey:KPassWord];
+                    [kAppDelegate showWithCustomAlertViewWithText:@"修改成功" andImageName:nil];
+                    
+                }
+                else{
+                    [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+                    [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+                }
+                
+            } failure:^(NSError *error) {
+                [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+                [kAppDelegate showWithCustomAlertViewWithText:@"更新失败" andImageName:nil];
+            }];
+        }
+        else{
+            return;
+        }
+    }
+    
 }
 
 - (void)feedback
 {
     NSLog(@"feedback");
+    FeedbackViewController *feedbackVC = [[FeedbackViewController alloc] init];
+    [self.navigationController pushViewController:feedbackVC animated:YES];
+    [feedbackVC release];
 }
 
 - (void)newcomer
@@ -184,17 +223,13 @@
     NSLog(@"newcomer");
 }
 
-- (void)appCommand
-{
-    NSLog(@"appCommand");
-}
-
 - (void)about
 {
     NSLog(@"about");
+    AboutViewController *aboutVC = [[AboutViewController alloc] init];
+    [self.navigationController pushViewController:aboutVC animated:YES];
+    [aboutVC release];
 }
-
-
 
 - (void)didReceiveMemoryWarning
 {

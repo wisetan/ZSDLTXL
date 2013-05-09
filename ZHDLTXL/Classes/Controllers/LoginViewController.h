@@ -22,5 +22,7 @@
 @property (nonatomic, retain) UIButton *backBarButton;
 @property (nonatomic, copy) NSString *userid;
 @property (nonatomic, retain) MBProgressHUD *hud;
+@property (retain, nonatomic) IBOutlet UIButton *loginButton;
+@property (retain, nonatomic) IBOutlet UIButton *registButton;
 
 @end

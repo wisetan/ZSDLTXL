@@ -9,9 +9,27 @@
 #import <UIKit/UIKit.h>
 #import "ELCTextfieldCell.h"
 #import "SBTableAlert.h"
+#import "MyInfo.h"
+#import "ProvinceViewController.h"
+#import "SelectPharViewController.h"
+
+@protocol AddInfoViewControllerDelegate <NSObject>
+
+- (void)finishAddInfo;
+
+@end
 
 @interface AddInfoViewController : UIViewController
-<ELCTextFieldDelegate, UITableViewDataSource, UITableViewDelegate, SBTableAlertDelegate, SBTableAlertDataSource, UIAlertViewDelegate>
+<
+ELCTextFieldDelegate,
+UITableViewDataSource,
+UITableViewDelegate,
+SBTableAlertDelegate,
+SBTableAlertDataSource,
+UIAlertViewDelegate,
+CityViewControllerDelegate,
+SelectPharViewControllerDelegate
+>
 
 @property (nonatomic, retain) NSMutableArray *leftArray;
 @property (nonatomic, retain) NSMutableArray *rightArray;
@@ -37,5 +55,12 @@
 @property (nonatomic, retain) NSNumber *zdValue;
 @property (nonatomic, retain) MBProgressHUD *hud;
 
+@property (nonatomic, retain) MyInfo *myInfo;
+
+@property (nonatomic, assign) BOOL finishSelectCity;
+@property (nonatomic, assign) BOOL finishSelectPhar;
+@property (nonatomic, assign) BOOL finishSelectZD;
+
+@property (nonatomic, assign) id<AddInfoViewControllerDelegate> delegate;
 
 @end

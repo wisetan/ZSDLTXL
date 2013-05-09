@@ -16,6 +16,7 @@
 @property (nonatomic, retain) NSNumber * account;
 @property (nonatomic, retain) NSNumber * unreadCount;
 @property (nonatomic, retain) NSNumber * unreadSMSCount;
+@property (nonatomic, retain) NSNumber * unreadMailCount;
 @property (nonatomic, retain) NSSet *areaList;
 @property (nonatomic, retain) NSSet *pharList;
 @property (nonatomic, retain) UserDetail *userDetail;

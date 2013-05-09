@@ -24,5 +24,7 @@
 @dynamic type;
 @dynamic userid;
 @dynamic username;
+@dynamic headiconlocalurl;
+@dynamic isreal;
 
 @end

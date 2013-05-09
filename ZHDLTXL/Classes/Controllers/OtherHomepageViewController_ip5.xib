@@ -164,7 +164,7 @@
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIUserInteractionEnabled">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
-						<object class="NSCustomResource" key="IBUIImage" id="209945019">
+						<object class="NSCustomResource" key="IBUIImage">
 							<string key="NSClassName">NSImage</string>
 							<string key="NSResourceName">underframe.png</string>
 						</object>
@@ -315,10 +315,13 @@
 						<string key="NSFrame">{{20, 306}, {280, 56}}</string>
 						<reference key="NSSuperview" ref="503068917"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="656566822"/>
+						<reference key="NSNextKeyView" ref="750963234"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
-						<reference key="IBUIImage" ref="209945019"/>
+						<object class="NSCustomResource" key="IBUIImage">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">remark.png</string>
+						</object>
 					</object>
 					<object class="IBUITextField" id="750963234">
 						<reference key="NSNextResponder" ref="503068917"/>
@@ -326,7 +329,7 @@
 						<string key="NSFrame">{{36, 319}, {250, 30}}</string>
 						<reference key="NSSuperview" ref="503068917"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="274068123"/>
+						<reference key="NSNextKeyView" ref="656566822"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClipsSubviews">YES</bool>
@@ -354,7 +357,7 @@
 						<string key="NSFrame">{{20, 404}, {280, 56}}</string>
 						<reference key="NSSuperview" ref="503068917"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="750963234"/>
+						<reference key="NSNextKeyView" ref="274068123"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -380,6 +383,7 @@
 						<string key="NSFrame">{{98, 421}, {124, 21}}</string>
 						<reference key="NSSuperview" ref="503068917"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClipsSubviews">YES</bool>
@@ -774,10 +778,11 @@
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="AC_L_icon.png">{118, 118}</string>
 			<string key="addfriend_button.png">{578, 95}</string>
-			<string key="button_left_message.png">{199, 112}</string>
-			<string key="button_middle_mail.png">{202, 112}</string>
-			<string key="button_right_chat.png">{199, 112}</string>
+			<string key="button_left_message.png">{204, 113}</string>
+			<string key="button_middle_mail.png">{191, 113}</string>
+			<string key="button_right_chat.png">{191, 113}</string>
 			<string key="debut_light.png">{640, 920}</string>
+			<string key="remark.png">{572, 86}</string>
 			<string key="underframe.png">{584, 113}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">2083</string>

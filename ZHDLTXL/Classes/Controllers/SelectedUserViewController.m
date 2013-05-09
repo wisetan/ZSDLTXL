@@ -49,14 +49,16 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     //    return [self.indexArray count];
-    return [[self.contactDictSortByAlpha allKeys] count];
+//    return [[self.contactDictSortByAlpha allKeys] count];
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
-    NSInteger count = [[self.contactDictSortByAlpha objectForKey:indexKey] count];
-    return count;
+//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+//    NSInteger count = [[self.contactDictSortByAlpha objectForKey:indexKey] count];
+//    return count;
+    return self.selectedArray.count;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -64,15 +66,15 @@
     return 51.f;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
-    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
-}
-
-- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
-{
-    return [[UILocalizedIndexedCollation currentCollation] sectionTitles];
-}
+//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+//{
+//    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+//}
+//
+//- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
+//{
+//    return [[UILocalizedIndexedCollation currentCollation] sectionTitles];
+//}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -84,16 +86,18 @@
     cell.selectionStyle = UITableViewCellEditingStyleNone;
     //    cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
     
-    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    NSString *imageUrl = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] picturelinkurl];
+//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+//    NSString *imageUrl = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] picturelinkurl];
+    NSString *imageUrl = [[self.selectedArray objectAtIndex:indexPath.row] picturelinkurl];
     
     
     [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
     
-    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
-        
-        cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
-    }
+//    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
+//        
+//        cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
+//    }
+    cell.nameLabel.text = [[self.selectedArray objectAtIndex:indexPath.row] username];
     
     cell.unSelectedImage.hidden = YES;
     //    cell.selectButton = nil;
@@ -102,22 +106,26 @@
 }
 
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
-    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] == 0) {
-        return 0.f;
-    }
-    return UITableViewAutomaticDimension;
-}
+//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+//{
+//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+//    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] == 0) {
+//        return 0.f;
+//    }
+//    return UITableViewAutomaticDimension;
+//}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     OtherHomepageViewController *homeVC = [[OtherHomepageViewController alloc] init];
+//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
     
-    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
-//    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
+//    homeVC.contact = [[self.contactDictSortByAlpha objForKey:indexKey] objectAtIndex:indexPath.row];
+    homeVC.contact = [self.selectedArray objectAtIndex:indexPath.row];
+    
+//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
+//    NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
+////    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     [self.navigationController pushViewController:homeVC animated:YES];
     [homeVC release];
 }

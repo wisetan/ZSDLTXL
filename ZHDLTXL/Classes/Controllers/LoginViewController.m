@@ -14,6 +14,7 @@
 #import "CityInfo.h"
 #import "MyInfo.h"
 #import "Pharmacology.h"
+#import "AddInfoViewController.h"
 
 @interface LoginViewController ()
 
@@ -57,9 +58,33 @@
     UIBarButtonItem *lBarButton = [[[UIBarButtonItem alloc] initWithCustomView:self.backBarButton] autorelease];
     [self.navigationItem setLeftBarButtonItem:lBarButton];
     
-    UIBarButtonItem *button2 = [[[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:@"忘记密码"] style:UIBarButtonItemStyleBordered target:self action:@selector(forgotPasswordAction:)] autorelease];
-    self.navigationController.navigationBar.tintColor = RGBCOLOR(98, 148, 193);
-    self.navigationItem.rightBarButtonItem = button2;
+//    UIBarButtonItem *button2 = [[[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:@"忘记密码"] style:UIBarButtonItemStyleBordered target:self action:@selector(forgotPasswordAction:)] autorelease];
+//    self.navigationController.navigationBar.tintColor = RGBCOLOR(98, 148, 193);
+//    self.navigationItem.rightBarButtonItem = button2;
+    
+    
+    
+    [self.loginButton setImage:[UIImage imageNamed:@"login"] forState:UIControlStateNormal];
+    [self.loginButton setImage:[UIImage imageNamed:@"login_p"] forState:UIControlStateHighlighted];
+    [self.loginButton addTarget:self action:@selector(loginAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UILabel *loginLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 132, 46)] autorelease];
+    loginLabel.backgroundColor = [UIColor clearColor];
+    loginLabel.text = @"登 录";
+    loginLabel.textColor = [UIColor whiteColor];
+    loginLabel.textAlignment = NSTextAlignmentCenter;
+    [self.loginButton addSubview:loginLabel];
+    
+    [self.registButton setImage:[UIImage imageNamed:@"l_regist"] forState:UIControlStateNormal];
+    [self.registButton setImage:[UIImage imageNamed:@"l_regsti_p"] forState:UIControlStateHighlighted];
+    [self.registButton addTarget:self action:@selector(registAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UILabel *registLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 132, 46)] autorelease];
+    registLabel.backgroundColor = [UIColor clearColor];
+    registLabel.text = @"注 册";
+    registLabel.textColor = [UIColor whiteColor];
+    registLabel.textAlignment = NSTextAlignmentCenter;
+    [self.registButton addSubview:registLabel];
     
 }
 
@@ -71,12 +96,16 @@
 - (void)viewDidUnload
 {
     [self setMTableView:nil];
+    [self setLoginButton:nil];
+    [self setRegistButton:nil];
     [super viewDidUnload];
 }
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kRegistSucceed object:nil];
     [mTableView release];
+    [_loginButton release];
+    [_registButton release];
     [super dealloc];
 }
 
@@ -123,7 +152,7 @@
     return cell;
 }
 
-- (IBAction)loginAction:(id)sender {
+- (void)loginAction:(UIButton *)sender {
     
     NSString *name = [userName.text removeSpace];
     if (![name isValid]) {
@@ -163,23 +192,49 @@
     
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+            
             self.userid = [[json objForKey:@"Userid"] stringValue];
             NSLog(@"my info %@", json);
-//            MyInfo *myInfo = [NSEntityDescription insertNewObjectForEntityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-            MyInfo *myInfo = [MyInfo createEntity];
+            [PersistenceHelper setData:self.userid forKey:kUserId];
+            
+            
+            NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", self.userid];
+            MyInfo *myInfo = [MyInfo findFirstWithPredicate:pred];
+            if (!myInfo) {
+                myInfo = [MyInfo createEntity];
+            }
+            
+            if ([[[json objForKey:@"Detail"] stringValue] isEqualToString:@"0"]) {
+                //信息未完善 跳到完善信息页面
+                [MBProgressHUD hideHUDForView:kAppDelegate.window animated:YES];
+                [kAppDelegate showWithCustomAlertViewWithText:@"请完善个人信息" andImageName:nil];
+            
+ 
+                UserDetail *userDetail = [UserDetail createEntity];
+                userDetail.userid = self.userid;
+                myInfo.userDetail = userDetail;
+                
+                DB_SAVE();
+                AddInfoViewController *addInfoVC = [[AddInfoViewController alloc] init];
+                UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:addInfoVC];
+                [self presentModalViewController:nav animated:YES];
+                [addInfoVC release];
+                
+                return ;
+            }
+            
             NSDictionary *getMyInfoDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMypageDetail.json", @"path", self.userid, @"userid", nil];
             [DreamFactoryClient getWithURLParameters:getMyInfoDict success:^(NSDictionary *myInfoJson) {
                 NSLog(@"myinfojson %@", myInfoJson);
                 if ([[[myInfoJson objectForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
                     myInfo.account = [myInfoJson objForKey:@"Account"];
-                    myInfo.unreadCount = [myInfoJson objForKey:@"UnreadCount"];
-                    myInfo.unreadSMSCount = [myInfoJson objForKey:@"UnreadSMSCount"];
+//                    myInfo.unreadCount = [myInfoJson objForKey:@"UnreadCount"];
+//                    myInfo.unreadSMSCount = [myInfoJson objForKey:@"UnreadSMSCount"];
                     
                     
                     NSDictionary *userDetailDict = [myInfoJson objForKey:@"UserDetail"];
                     NSLog(@"user detail dict %@", userDetailDict);
-                    NSError *saveError;
-//                    UserDetail *userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
+
                     
                     UserDetail *userDetail = [UserDetail createEntity];
                     userDetail.autograph = [userDetailDict objForKey:@"autograph"];
@@ -200,7 +255,7 @@
                     NSArray *areaList = [myInfoJson objForKey:@"AreaList"];
                     NSMutableSet *areaSet = [[NSMutableSet alloc] init];
                     [areaList enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
-//                        CityInfo *city = [NSEntityDescription insertNewObjectForEntityForName:@"CityInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
+
                         CityInfo *city = [CityInfo createEntity];
                         [city setValuesForKeysWithDictionary:cityDict];
                         [areaSet addObject:city];
@@ -222,20 +277,23 @@
                     }];
                     
                     [myInfo addPharList:preferSet];
+                    [PersistenceHelper setData:userDetail.userid forKey:KUserName];
+                    [PersistenceHelper setData:pwd forKey:KPassWord];
                     
-//                    if (![kAppDelegate.managedObjectContext save:&saveError]) {
-//                        NSLog(@"save error %@", saveError);
-//                    }
-                    
-                    [[NSManagedObjectContext MR_context] save:nil];
+                    DB_SAVE();
                     
                     [self backToRootVC:nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kLoginNotification object:nil];
                 }
+                
+//             [[NSNotificationCenter defaultCenter] postNotificationName:kLoginNotification object:nil];
+             
             } failure:^(NSError *myInfoError) {
                 NSLog(@"error %@", myInfoError);
             }];
             
-            [PersistenceHelper setData:self.userid forKey:kUserId];
+            
+            
             
 
         } else {
@@ -260,45 +318,45 @@
     return op;
 }
 
-- (AFJSONRequestOperation *)getFriendInfoOp
-{
-//    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:self.userid, @"userid",
-//                              self.provinceid, @"provinceid",
-//                              self.cityid, @"cityid",
-//                              @"getZsAttentionUserByArea.json", @"path", nil];
-//    
-//    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-//    hud.labelText = @"获取好友";
-//    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
-//        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
-//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-//            NSArray *friendArrayJson = [json objectForKey:@"DataList"];
-//            NSMutableArray *friendArray = [[NSMutableArray alloc] init];
-//            [friendArrayJson enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-//                Contact *contact = [Contact new];
-//                contact.userid = [contactDict objectForKey:@"id"];
-//                contact.username = [contactDict objForKey:@"username"];
-//                contact.tel = [contactDict objForKey:@"tel"];
-//                contact.mailbox = [contactDict objectForKey:@"mailbox"];
-//                contact.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
-//                contact.col1 = [contactDict objectForKey:@"col1"];
-//                contact.col2 = [contactDict objectForKey:@"col2"];
-//                contact.col2 = [contactDict objectForKey:@"col2"];
-//                [friendArray addObject:contact];
-//                [contact release];
-//            }];
-//            [self friendListRefreshed:friendArray];
-//            [friendArray release];
-//        }
-//        else{
-//            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-//            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-//        }
-//    } failure:^(NSError *error) {
-//        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-//        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-//    }];
-}
+//- (AFJSONRequestOperation *)getFriendInfoOp
+//{
+////    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:self.userid, @"userid",
+////                              self.provinceid, @"provinceid",
+////                              self.cityid, @"cityid",
+////                              @"getZsAttentionUserByArea.json", @"path", nil];
+////    
+////    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+////    hud.labelText = @"获取好友";
+////    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+////        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
+////            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+////            NSArray *friendArrayJson = [json objectForKey:@"DataList"];
+////            NSMutableArray *friendArray = [[NSMutableArray alloc] init];
+////            [friendArrayJson enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
+////                Contact *contact = [Contact new];
+////                contact.userid = [contactDict objectForKey:@"id"];
+////                contact.username = [contactDict objForKey:@"username"];
+////                contact.tel = [contactDict objForKey:@"tel"];
+////                contact.mailbox = [contactDict objectForKey:@"mailbox"];
+////                contact.picturelinkurl = [contactDict objectForKey:@"picturelinkurl"];
+////                contact.col1 = [contactDict objectForKey:@"col1"];
+////                contact.col2 = [contactDict objectForKey:@"col2"];
+////                contact.col2 = [contactDict objectForKey:@"col2"];
+////                [friendArray addObject:contact];
+////                [contact release];
+////            }];
+////            [self friendListRefreshed:friendArray];
+////            [friendArray release];
+////        }
+////        else{
+////            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+////            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+////        }
+////    } failure:^(NSError *error) {
+////        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+////        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+////    }];
+//}
 
 - (NSString *)getUrlWithPara:(NSDictionary *)paraDict
 {
@@ -313,17 +371,17 @@
 
 
 
-- (AFJSONRequestOperation *)getChatRecordOp
-{
-    
-}
+//- (AFJSONRequestOperation *)getChatRecordOp
+//{
+//    
+//}
+//
+//- (AFJSONRequestOperation *)getHeadIconOp
+//{
+//    
+//}
 
-- (AFJSONRequestOperation *)getHeadIconOp
-{
-    
-}
-
-- (IBAction)registAction:(id)sender {
+- (void)registAction:(UIButton *)sender {
     RegistViewController *regist = [[[RegistViewController alloc] initWithNibName:@"RegistViewController" bundle:nil] autorelease];
     [self.navigationController pushViewController:regist animated:YES];
 }

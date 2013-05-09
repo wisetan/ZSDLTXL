@@ -16,15 +16,20 @@
 #import "MAlertView.h"
 #import "SettingViewController.h"
 #import "SendMessageViewController.h"
+#import "MyMailController.h"
+#import "MyMailViewController.h"
+#import "ProfileExtraViewController.h"
 
 #import "HomePageCell.h"
 #import "CityInfo.h"
 #import "MyInfo.h"
+#import "MailInfo.h"
 #import "Pharmacology.h"
-#import "MyInfoController.h"
 #import "MySmsController.h"
+#import "MySMSViewController.h"
 
 #import "UserDetail.h"
+#import "MailInfo.h"
 
 #import "UIImageView+WebCache.h"
 #import "UIImage+Resizing.h"
@@ -33,6 +38,8 @@
 #import "ZDCell.h"
 
 #import "CustomBadge.h"
+
+#import "MyInfoViewController.h"
 
 
 @interface MyHomePageViewController ()
@@ -52,15 +59,25 @@
     return self;
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    if (self.viewWillAppearing == NO) {
+        self.viewWillAppearing = YES;
+        self.checkUnreadMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMail) object:nil] autorelease];
+        [self.checkUnreadMailThread start];
+        [self checkUnreadMessage];
+    }
+    
+    [super viewWillAppear:animated];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self addObserver];
     self.hidesBottomBarWhenPushed = YES;
     
-    self.title = @"个人主页";
+    self.title = @"我的主页";
     
-//    self.userDetail = [[[UserDetail alloc] init] autorelease];
     
     self.nameLabel.text = self.name;
     self.telLabel.text = self.tel;
@@ -80,9 +97,17 @@
     [self.modifyButton addTarget:self action:@selector(modifyInfo:) forControlEvents:UIControlEventTouchUpInside];
     
     
+    UIButton *settingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [settingButton setImage:[UIImage imageNamed:@"setting.png"] forState:UIControlStateNormal];
+    [settingButton addTarget:self action:@selector(setting) forControlEvents:UIControlEventTouchUpInside];
+    settingButton.frame =  CGRectMake(0, 0, 25, 25);
+    UIBarButtonItem *rBarButton = [[UIBarButtonItem alloc] initWithCustomView:settingButton];
+    [self.navigationItem setRightBarButtonItem:rBarButton];
     
-    self.leftArray = [[[NSMutableArray alloc] initWithObjects:@"招商/代理：", @"常驻地区：", @"类别偏好：", @"账户余额：", @"我的设置", nil] autorelease];
-    self.selectorNameArray = [[[NSMutableArray alloc] initWithObjects:@"chooseAngencyOrBusiness", @"addArea:", @"addPhar:", @"showExtra", @"setting", nil] autorelease];
+    
+    
+    self.leftArray = [[[NSMutableArray alloc] initWithObjects:@"招商代理：", @"常驻地区：", @"类别偏好：", @"账户余额：", nil] autorelease];
+    self.selectorNameArray = [[[NSMutableArray alloc] initWithObjects:@"chooseAngencyOrBusiness", @"addArea:", @"addPhar:", @"showExtra", nil] autorelease];
     
     self.selectorArray = [[[NSMutableArray alloc] init] autorelease];
     [self.selectorNameArray enumerateObjectsUsingBlock:^(NSString *selectorName, NSUInteger idx, BOOL *stop) {
@@ -90,9 +115,7 @@
         [self.selectorArray addObject:[NSValue valueWithPointer:sel]];
     }];
     
-    UIImage *tableViewBgImage = [[UIImage imageNamed:@"table_underframe.png"] stretchableImageWithLeftCapWidth:10 topCapHeight:10];
-    UIImageView *tableViewBgImageView = [[[UIImageView alloc] initWithImage:tableViewBgImage] autorelease];
-    [self.infoTableView setBackgroundView:tableViewBgImageView];
+
     [self.infoTableView setBackgroundColor:[UIColor clearColor]];
     
     
@@ -135,22 +158,32 @@
     self.zdValue = [NSNumber numberWithInt:0];
     
     self.unreadMessageDict = [[[NSMutableDictionary alloc] init] autorelease];
-    [self checkUnreadMessage];
+//    [self checkUnreadMessage];
     
-    
-    [self.infoTableView reloadData];
 
     [self getPersonalInfoFromDB];
     if (self.myInfo) {
-        [self showResident];
-        [self showPhar];
         [self showBasicInfo];
         [self showMessageBadge];
-        [self showZD];
+        [self.infoTableView reloadData];
     }
     else{
         [self getPersonalInfoFromNet];
     }
+    
+    //check unread mail
+
+    self.viewWillAppearing = NO;
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [self.mailBadge removeFromSuperview];
+    [self.chatBadge removeFromSuperview];
+    [self.messageBadge removeFromSuperview];
+    
+    self.viewWillAppearing = NO;
+    [self.checkUnreadMailThread cancel];
 }
 
 - (void)checkUnreadMessage
@@ -161,7 +194,7 @@
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             NSLog(@"uncheck json %@", json);
             [self.unreadMessageDict setObject:[json objForKey:@"UnreadCount"] forKey:@"UnReadCount"];
-            [self.unreadMessageDict setObject:[json objForKey:@"UnreadSMSCount"] forKey:@"UnreadSMSCount"];
+            [self.unreadMessageDict setObject:[json objForKey:@"UnreadSMSCount"] forKey:@"UnReadSMSCount"];
             [self showMessageBadge];
         }
         else{
@@ -171,7 +204,71 @@
         NSLog(@"%@", kNetworkError);
     }];
     
+}
+
+- (void)checkUnreadMail
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
+    
+    NSString *username = [PersistenceHelper dataForKey:KUserName];
+    NSString *password = [PersistenceHelper dataForKey:KPassWord];
+    NSLog(@"username %@ password %@",username, password);
+    
+    CTCoreAccount *account = [[[CTCoreAccount alloc] init] autorelease];
+        
+    BOOL success = [account connectToServer:KBoraMailIMAPServer
+                                       port:[kBoraMailIMAPPort intValue]
+                             connectionType:CTConnectionTypePlain
+                                   authType:CTImapAuthTypePlain
+                                      login:[PersistenceHelper dataForKey:KUserName]
+                                   password:[PersistenceHelper dataForKey:KPassWord]];
+    
+    
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND foldername == %@", kAppDelegate.userId, @"INBOX"];
+    NSArray *mailArrayInDB = [MailInfo findAllSortedBy:@"date" ascending:YES withPredicate:pred];
+    MailInfo *lastMailInDB = [mailArrayInDB lastObject];
+    
+    
+    if (!success) {
+        NSLog(@"error %@", account.lastError);
+    }
+    else{
+        
+        __block NSInteger unreadMailCount = 0;
+        NSArray *mailArray = [[account folderWithPath:@"INBOX"] messagesFromSequenceNumber:1 to:0 withFetchAttributes:CTFetchAttrEnvelope];
+        if (!mailArray || mailArray.count == 0) {
+            
+            unreadMailCount = 0;
+        }
+        else{
+            [mailArray enumerateObjectsUsingBlock:^(CTCoreMessage *mail, NSUInteger idx, BOOL *stop) {
+                NSTimeInterval mailDate = [[mail senderDate] timeIntervalSince1970];
+                if (mailDate > lastMailInDB.date.doubleValue) {
+                    unreadMailCount++;
+                }
+            }];
+        }
+        
+        NSNumber *unreadMailNum = [NSNumber numberWithInt:unreadMailCount];
+        self.myInfo.unreadMailCount = unreadMailNum;
+        DB_SAVE();
+        
+        
+        
+        [self performSelectorOnMainThread:@selector(showMailBadge:) withObject:unreadMailNum waitUntilDone:YES];
+    }
+
+    
+    [pool release];
+}
+
+
+
+- (void)getPersonalInfoFromDB
+{
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
+    self.myInfo = [MyInfo findFirstWithPredicate:pred];
 }
 
 - (void)showZD  //显示招商代理
@@ -201,58 +298,58 @@
     cell.detailLabel.text = invAgencyName;
 }
 
-- (void)showResident
-{
-    [self.residentArray removeAllObjects];
-    [self.myInfo.areaList enumerateObjectsUsingBlock:^(CityInfo *city, BOOL *stop) {
-        NSLog(@"city name %@", city.cityname);
-        [self.residentArray addObject:city];
-    }];
-    
-    NSLog(@"resident array %@", self.residentArray);
-    
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
-    
-    HomePageCell *cell = (HomePageCell *)[self.infoTableView cellForRowAtIndexPath:indexPath];
-    if (!cell) {
-        NSLog(@"cell is nil");
-    }
-    
-    [self.residentImageArray enumerateObjectsUsingBlock:^(UIImageView *imageView, NSUInteger idx, BOOL *stop) {
-        [[imageView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        imageView.hidden = YES;
-    }];
-    
-    [self.residentArray enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
-        NSString *cityName = city.cityname;
-        CGSize labelSize = CGRectZero.size;
-        UILabel *residentLabel = [[[UILabel alloc] init] autorelease];
-        labelSize = CGSizeMake(50, 36);
-        residentLabel.frame = CGRectMake(5, 2, labelSize.width, labelSize.height);
-        residentLabel.font = [UIFont systemFontOfSize:12];
-        residentLabel.backgroundColor = [UIColor clearColor];
-        residentLabel.numberOfLines = 2;
-        residentLabel.textAlignment = NSTextAlignmentCenter;
-        residentLabel.textColor = [UIColor whiteColor];
-        residentLabel.text = cityName;
-        NSLog(@"cityname %@", cityName);
-        
-        
-        UIImageView *residentImageView = [self.residentImageArray objectAtIndex:idx];
-        if (idx == 0) {
-            [residentImageView setFrame:CGRectMake(100, 2, 60, 40)];
-            [residentImageView addSubview:residentLabel];
-        }
-        else{
-            UIImageView *lastImage = [self.residentImageArray objectAtIndex:idx-1];
-            [residentImageView setFrame:CGRectMake(lastImage.frame.origin.x+lastImage.frame.size.width+10, 2, 60, 40)];
-            [residentImageView addSubview:residentLabel];
-        }
-        [cell.contentView addSubview:residentImageView];
-        [residentImageView setHidden:NO];
-    }];
-    [self.infoTableView reloadData];
-}
+//- (void)showResident
+//{
+//    [self.residentArray removeAllObjects];
+//    [self.myInfo.areaList enumerateObjectsUsingBlock:^(CityInfo *city, BOOL *stop) {
+//        NSLog(@"city name %@", city.cityname);
+//        [self.residentArray addObject:city];
+//    }];
+//    
+//    NSLog(@"resident array %@", self.residentArray);
+//    
+//    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+//    
+//    HomePageCell *cell = (HomePageCell *)[self.infoTableView cellForRowAtIndexPath:indexPath];
+//    if (!cell) {
+//        NSLog(@"cell is nil");
+//    }
+//    
+//    [self.residentImageArray enumerateObjectsUsingBlock:^(UIImageView *imageView, NSUInteger idx, BOOL *stop) {
+//        [[imageView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+//        imageView.hidden = YES;
+//    }];
+//    
+//    [self.residentArray enumerateObjectsUsingBlock:^(CityInfo *city, NSUInteger idx, BOOL *stop) {
+//        NSString *cityName = city.cityname;
+//        CGSize labelSize = CGRectZero.size;
+//        UILabel *residentLabel = [[[UILabel alloc] init] autorelease];
+//        labelSize = CGSizeMake(50, 36);
+//        residentLabel.frame = CGRectMake(5, 2, labelSize.width, labelSize.height);
+//        residentLabel.font = [UIFont systemFontOfSize:12];
+//        residentLabel.backgroundColor = [UIColor clearColor];
+//        residentLabel.numberOfLines = 2;
+//        residentLabel.textAlignment = NSTextAlignmentCenter;
+//        residentLabel.textColor = [UIColor whiteColor];
+//        residentLabel.text = cityName;
+//        NSLog(@"cityname %@", cityName);
+//        
+//        
+//        UIImageView *residentImageView = [self.residentImageArray objectAtIndex:idx];
+//        if (idx == 0) {
+//            [residentImageView setFrame:CGRectMake(100, 2, 60, 40)];
+//            [residentImageView addSubview:residentLabel];
+//        }
+//        else{
+//            UIImageView *lastImage = [self.residentImageArray objectAtIndex:idx-1];
+//            [residentImageView setFrame:CGRectMake(lastImage.frame.origin.x+lastImage.frame.size.width+10, 2, 60, 40)];
+//            [residentImageView addSubview:residentLabel];
+//        }
+//        [cell.contentView addSubview:residentImageView];
+//        [residentImageView setHidden:NO];
+//    }];
+//    [self.infoTableView reloadData];
+//}
 
 - (void)showPhar
 {
@@ -301,25 +398,7 @@
     [self.infoTableView reloadData];
 }
 
-//- (void)getPersonalInfoFromDB
-//{
-//    NSFetchRequest *fetch = [[NSFetchRequest alloc] init];
-//    NSEntityDescription *myInfoEntity = [NSEntityDescription entityForName:@"MyInfo" inManagedObjectContext:kAppDelegate.managedObjectContext];
-//    [fetch setEntity:myInfoEntity];
-//    [fetch setPredicate:nil];
-//    
-//    NSError *error = nil;
-//    NSArray *myInfoArray = [kAppDelegate.managedObjectContext executeFetchRequest:fetch error:&error];
-//    if (error) {
-//        NSLog(@"fetch error %@", error);
-//    }
-//    else{
-//        NSLog(@"myinfoarrat count %d", myInfoArray.count);
-//        self.myInfo = [myInfoArray lastObject];
-//
-//        NSLog(@"self.myinfo.areaList %@", self.myInfo.areaList);
-//    }
-//}
+
 
 
 - (void)showBasicInfo
@@ -327,6 +406,14 @@
     self.nameLabel.text = self.myInfo.userDetail.username;
     self.telLabel.text = self.myInfo.userDetail.tel;
     self.mailLabel.text = self.myInfo.userDetail.mailbox;
+    
+    UIImage *headIconImage = [UIImage imageWithData:[NSData dataWithContentsOfFile:self.myInfo.userDetail.headiconlocalurl]];
+    if (headIconImage != nil) {
+        self.headIcon.image = headIconImage;
+    }
+    else{
+        [self.headIcon setImageWithURL:[NSURL URLWithString:self.myInfo.userDetail.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
+    }
 }
 
 - (void)showMessageBadge
@@ -334,10 +421,10 @@
     //取得未读消息
 //    int unreadCount = self.myInfo.unreadCount.intValue;
 //    NSLog(@"unreadcount: %d", unreadCount);
-    NSString *unreadCount = [self.unreadMessageDict objForKey:@"UnreadCount"];
+    NSString *unreadCount = [[self.unreadMessageDict objForKey:@"UnReadCount"] stringValue];
     if ([unreadCount intValue] > 0) {
         
-        CustomBadge *badge = [CustomBadge customBadgeWithString:unreadCount
+        self.chatBadge = [CustomBadge customBadgeWithString:unreadCount
                                                 withStringColor:[UIColor whiteColor]
                                                  withInsetColor:[UIColor redColor]
                                                  withBadgeFrame:YES
@@ -345,19 +432,19 @@
                                                       withScale:1.0
                                                     withShining:YES];
         
-        CGRect badgeFrame = badge.frame;
+        CGRect badgeFrame = self.chatBadge.frame;
         badgeFrame.origin.y = -5.f;
-        badgeFrame.origin.x = self.chatButton.frame.size.width - badgeFrame.size.width + 2.f;
-        badge.frame = badgeFrame;
+        badgeFrame.origin.x = self.chatButton.frame.size.width - badgeFrame.size.width;
+        self.chatBadge.frame = badgeFrame;
         
-        [self.chatButton addSubview:badge];
+        [self.chatButton addSubview:self.chatBadge];
         [self.view bringSubviewToFront:self.chatButton];
         
     }
     
-    NSString * UnreadSMSCount = [self.unreadMessageDict objForKey:@"UnreadSMSCount"];
+    NSString * UnreadSMSCount = [[self.unreadMessageDict objForKey:@"UnReadSMSCount"] stringValue];
     if ([UnreadSMSCount intValue] > 0) {
-        CustomBadge *badge = [CustomBadge customBadgeWithString:UnreadSMSCount
+        self.messageBadge = [CustomBadge customBadgeWithString:UnreadSMSCount
                                                 withStringColor:[UIColor whiteColor]
                                                  withInsetColor:[UIColor redColor]
                                                  withBadgeFrame:YES
@@ -365,13 +452,36 @@
                                                       withScale:1.0
                                                     withShining:YES];
         
-        CGRect badgeFrame = badge.frame;
+        CGRect badgeFrame = self.messageBadge.frame;
         badgeFrame.origin.y = -5.f;
-        badgeFrame.origin.x = self.chatButton.frame.size.width - badgeFrame.size.width + 2.f;
-        badge.frame = badgeFrame;
+        badgeFrame.origin.x = self.chatButton.frame.size.width - badgeFrame.size.width;
+        self.messageBadge.frame = badgeFrame;
         
-        [self.messageButton addSubview:badge];
+        [self.messageButton addSubview:self.messageBadge];
         [self.view bringSubviewToFront:self.chatButton];
+    }
+}
+
+- (void)showMailBadge:(NSNumber *)unreadMailCount
+{
+    if (unreadMailCount.intValue > 0) {
+        
+        self.mailBadge = [CustomBadge customBadgeWithString:[NSString stringWithFormat:@"%d", unreadMailCount.intValue]
+                                                withStringColor:[UIColor whiteColor]
+                                                 withInsetColor:[UIColor redColor]
+                                                 withBadgeFrame:YES
+                                            withBadgeFrameColor:[UIColor whiteColor]
+                                                      withScale:1.0
+                                                    withShining:YES];
+        
+        CGRect badgeFrame = self.mailBadge.frame;
+        badgeFrame.origin.y = -5.f;
+        badgeFrame.origin.x = self.chatButton.frame.size.width - badgeFrame.size.width;
+        self.mailBadge.frame = badgeFrame;
+        
+        [self.mailButton addSubview:self.mailBadge];
+        [self.view bringSubviewToFront:self.chatButton];
+        
     }
 }
 
@@ -424,7 +534,7 @@
             self.userDetail.col3 = [userDetailDict objForKey:@"col3"];
             NSLog(@"picturelinkurl: %@", self.userDetail.picturelinkurl);
             
-            [self.headIcon setImageWithURL:[NSURL URLWithString:self.userDetail.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
+//            [self.headIcon setImageWithURL:[NSURL URLWithString:self.userDetail.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
             
             //取得未读消息
             int unreadCount = [[json objForKey:@"UnreadCount"] intValue];
@@ -483,7 +593,6 @@
                 }
             }];
             
-            [self addResidentFinished:nil];
             
             NSArray *preferArray = [json objectForKey:@"PreferList"];
             NSMutableSet *preferSet = [[[NSMutableSet alloc] init] autorelease];
@@ -497,7 +606,7 @@
             }];
             
             
-            [self addPreferFinished:nil];
+
             
             
         } else{
@@ -510,17 +619,17 @@
     }];
 }
 
-- (void)addObserver
-{
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addResidentFinished:) name:kAddResidentNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addPreferFinished:) name:kSelectPharFinished object:nil];
-}
-
-- (void)removeObserver
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:kAddResidentNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSelectPharFinished object:nil];
-}
+//- (void)addObserver
+//{
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addResidentFinished:) name:kAddResidentNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addPreferFinished:) name:kSelectPharFinished object:nil];
+//}
+//
+//- (void)removeObserver
+//{
+//    [[NSNotificationCenter defaultCenter] removeObserver:self name:kAddResidentNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSelectPharFinished object:nil];
+//}
 
 #pragma mark - table view datasouce
 
@@ -551,24 +660,75 @@
     if (!cell) {
         cell = [[[NSBundle mainBundle] loadNibNamed:@"HomePageCell" owner:self options:nil] lastObject];
     }
-    SEL sel = [[self.selectorArray objectAtIndex:indexPath.row] pointerValue];
-    if (indexPath.row == 1 || indexPath.row == 2) {
-        [cell.addButton setImage:[UIImage imageNamed:@"more_select_p.png"] forState:UIControlStateHighlighted];
-        [cell.addButton addTarget:self action:sel forControlEvents:UIControlEventTouchUpInside];
-        cell.detailLabel.hidden = YES;
-    }
-    else{
-        cell.addButton.hidden = YES;
-    }
     
-    if (indexPath.row == 3) {
-        cell.detailLabel.text = [NSString stringWithFormat:@"%d 条", self.myInfo.account.intValue];
+    
+    
+    switch (indexPath.row) {
+        case 0:{
+            int inva = self.myInfo.userDetail.invagency.intValue;
+            NSString *strInva = nil;
+            switch (inva) {
+                case 1:
+                    strInva = @"招商";
+                    break;
+                case 2:
+                    strInva = @"代理";
+                    break;
+                case 3:
+                    strInva = @"招商、代理";
+                    break;
+                default:
+                    break;
+            }
+            cell.detailLabel.text = strInva;
+        }
+            
+            break;
+        case 1:{
+            NSMutableString *area = [NSMutableString string];
+            for (CityInfo *cityInfo in self.myInfo.areaList)
+            {
+                [area appendFormat:@"%@、", cityInfo.cityname];
+            }
+            
+            if ([area isValid])
+            {
+                area = [NSMutableString stringWithString:[area substringToIndex:area.length-1]];
+            }
+            
+            cell.detailLabel.text = area;
+        }
+            break;
+            
+        case 2:{
+            NSMutableString *pharList = [NSMutableString string];
+            for (Pharmacology *phar in self.myInfo.pharList)
+            {
+                [pharList appendFormat:@"%@、", phar.content];
+            }
+            
+            if ([pharList isValid])
+            {
+                pharList = [NSMutableString stringWithString:[pharList substringToIndex:pharList.length-1]];
+            }
+            
+            cell.detailLabel.text = pharList;
+        }
+            break;
+            
+        case 3:
+            cell.detailLabel.text = [NSString stringWithFormat:@"%d 条", self.myInfo.account.intValue];
+            break;
+    
+        default:
+            break;
     }
+
+    
     
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
     cell.nameLabel.text = [self.leftArray objectAtIndex:indexPath.row];
-    cell.nameLabel.font = [UIFont systemFontOfSize:18];
     cell.nameLabel.textColor = kContentBlueColor;
     
     if (indexPath.row == self.leftArray.count-1) {
@@ -580,41 +740,39 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     SEL sel = [[self.selectorArray objectAtIndex:indexPath.row] pointerValue];
-    switch (indexPath.row) {
-        case 0:
-            [self performSelector:sel];
-            break;
-        case 1:
-            
-            break;
-        case 2:
-            
-            break;
-        case 3:
-            [self performSelector:sel];
-            break;
-        case 4:
-            [self performSelector:sel];
-            break;
-        default:
-            break;
-    }
+    [self performSelector:sel];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return 45.f;
+    return 50.f;
 }
 
-- (void)addResidentFinished:(NSNotification *)noti
+//- (void)addResidentFinished:(NSNotification *)noti
+//{
+//    [self getPersonalInfoFromDB];
+//    [self.infoTableView reloadData];
+//}
+//
+//- (void)addPreferFinished:(NSNotification *)noti
+//{
+//    [self getPersonalInfoFromDB];
+//    [self.infoTableView reloadData];
+//}
+
+- (void)finishSelectPhar:(NSSet *)pharSet
 {
-    [self showResident];
+    [self getPersonalInfoFromDB];
+    [self.infoTableView reloadData];
 }
 
-- (void)addPreferFinished:(NSNotification *)noti
+- (void)finishSelectCity:(NSSet *)citySet
 {
-    [self showPhar];
+    [self getPersonalInfoFromDB];
+    NSLog(@"self.myinfo %@", self.myInfo);
+    [self.infoTableView reloadData];
 }
+
 
 - (void)backToRootVC:(UIButton *)sender
 {
@@ -624,13 +782,35 @@
 - (void)modifyInfo:(UIButton *)sender
 {
     self.nameField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 0, 200, 45)] autorelease];
+    self.nameField.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.telField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 45, 200, 45)] autorelease];
+    self.telField.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.mailField = [[[UITextField alloc] initWithFrame:CGRectMake(0, 90, 200, 45)] autorelease];
+    self.mailField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    
+    
+    NSString *namePlaceHolder = self.myInfo.userDetail.username;
+    if (![namePlaceHolder isValid]) {
+        namePlaceHolder = @"姓名";
+    }
+    
+    NSString *telPlaceHolder = self.myInfo.userDetail.tel;
+    if (![telPlaceHolder isValid]) {
+        telPlaceHolder = @"电话";
+    }
+    
+    NSString *mailPlaceHolder = self.myInfo.userDetail.mailbox;
+    if (![mailPlaceHolder isValid]) {
+        mailPlaceHolder = @"邮件";
+    }
+    
+    
     
     MAlertView *alert = [[MAlertView alloc] initWithTitle:@"修改个人信息" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认",nil];
-    [alert addTextField:self.nameField placeHolder:@"姓名"];
-    [alert addTextField:self.telField placeHolder:@"电话"];
-    [alert addTextField:self.mailField placeHolder:@"邮件"];
+    [alert addTextField:self.nameField placeHolder:namePlaceHolder];
+    [alert addTextField:self.telField placeHolder:telPlaceHolder];
+    [alert addTextField:self.mailField placeHolder:mailPlaceHolder];
+    alert.transform = CGAffineTransformMakeTranslation(0, -50.f);
     [alert show];
     [alert release];
     
@@ -644,16 +824,28 @@
         NSString *mail = self.mailField.text;
         
         if (![tel isValid] || ![tel isMobileNumber]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请输入正确的电话号码" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
-            [alert show];
-            [alert release];
+            [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的电话号码" andImageName:nil];
+            
+            double delayInSeconds = 1;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self modifyInfo:nil];
+            });
+            
+            
+
             return;
         }
         
         if (![mail isValid] || ![mail isValidEmail]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请输入正确的邮件" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
-            [alert show];
-            [alert release];
+            [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的电话号码" andImageName:nil];
+            
+            double delayInSeconds = 1;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self modifyInfo:nil];
+            });
+            
             return;
         }
         
@@ -670,13 +862,7 @@
                 self.myInfo.userDetail.mailbox = mail;
                 self.myInfo.userDetail.tel = tel;
                 
-                NSError *error = nil;
-//                if (![kAppDelegate.managedObjectContext save:&error]) {
-//                    NSLog(@"error %@", error);
-//                }
-//                else{
-//                    [self showBasicInfo];
-//                }
+                DB_SAVE();
                 
             }
             else{
@@ -711,8 +897,7 @@
     ProvinceViewController *provinceVC = [[ProvinceViewController alloc] init];
     provinceVC.isAddResident = YES;
     provinceVC.homePageVC = self;
-    NSLog(@"residentarrray: %@", self.residentArray);
-    provinceVC.selectCityArray = self.residentArray;
+    provinceVC.delegate = self;
     [self.navigationController pushViewController:provinceVC animated:YES];
 
     [provinceVC release];
@@ -722,8 +907,7 @@
 - (void)addPhar:(UIButton *)sender
 {
     SelectPharViewController *selectPreferVC = [[SelectPharViewController alloc] init];
-//    selectPreferVC.selectArray = self.pharArray;
-    selectPreferVC.myInfo = self.myInfo;
+    selectPreferVC.delegate = self;
     [self.navigationController pushViewController:selectPreferVC animated:YES];
     [selectPreferVC release];
 }
@@ -731,6 +915,9 @@
 - (void)showExtra
 {
     NSLog(@"showExtra");
+    ProfileExtraViewController *profileExtraVC = [[ProfileExtraViewController alloc] init];
+    [self.navigationController pushViewController:profileExtraVC animated:YES];
+    [profileExtraVC release];
 }
 
 - (void)setting
@@ -746,21 +933,25 @@
 - (void)message:(UIButton *)sender
 {
     NSLog(@"message");
-    MySmsController *mySmsController = [[MySmsController alloc] init];
-    [self.navigationController pushViewController:mySmsController animated:YES];
-    [mySmsController release];
+    MySMSViewController *mySMSVC = [[MySMSViewController alloc] init];
+    [self.navigationController pushViewController:mySMSVC animated:YES];
+    [mySMSVC release];
 }
 
 - (void)email:(UIButton *)sender
 {
     NSLog(@"email");
+    MyMailViewController *myMailController = [[MyMailViewController alloc] init];
+    [self.navigationController pushViewController:myMailController animated:YES];
+    [myMailController release];
 }
 
 - (void)chat:(UIButton *)sender
 {
-    MyinfoController *myInfoController = [[MyinfoController alloc] init];
-    [self.navigationController pushViewController:myInfoController animated:YES];
-    [myInfoController release];
+    MyInfoViewController *myInfoVC = [[MyInfoViewController alloc] init];
+    [self.navigationController pushViewController:myInfoVC animated:YES];
+    [myInfoVC release];
+    
 }
 
 #pragma mark - tap on head icon
@@ -829,6 +1020,16 @@
     [DreamFactoryClient postWithParameters:paraDict image:smallImage success:^(id obj) {
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:@"上传成功" andImageName:nil];
+        
+
+        NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        path = [path stringByAppendingFormat:@"/%@.png", self.myInfo.userDetail.username];
+        
+        self.myInfo.userDetail.headiconlocalurl = path;
+        [Utility saveImage:smallImage toDiskWithName:path];
+
+        DB_SAVE();
+        
     } failure:^{
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:@"上传失败" andImageName:nil];
@@ -836,8 +1037,6 @@
     
     [picker dismissModalViewControllerAnimated:YES];
 }
-
-#pragma mark - table alert
 
 #pragma mark - table alert data source
 - (NSInteger)numberOfSectionsInTableAlert:(SBTableAlert *)tableAlert
@@ -895,7 +1094,7 @@
             self.zdName = @"代理";
             break;
         case 3:
-            self.zdName = @"招商/代理";
+            self.zdName = @"招商、代理";
             break;
         default:
             break;
@@ -912,15 +1111,12 @@
     [DreamFactoryClient getWithURLParameters:invAgencyDict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            NSError *error = nil;
-            self.myInfo.userDetail.invagency = [NSString stringWithFormat:@"%@",self.zdValue];
-//            if (![kAppDelegate.managedObjectContext save:&error])
-//            {
-//                NSLog(@"error %@", error);
-//            }
-//            else{
-//                [self showZD];
-//            }
+
+            [MagicalRecord saveUsingCurrentThreadContextWithBlock:^(NSManagedObjectContext *localContext) {
+                self.myInfo.userDetail.invagency = [NSString stringWithFormat:@"%@",self.zdValue];
+            } completion:^(BOOL success, NSError *error) {
+                [self showZD];
+            }];
         }
         else{
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
@@ -943,7 +1139,6 @@
 }
 
 - (void)dealloc {
-    [self removeObserver];
     [_headIcon release];
     [_nameLabel release];
     [_telLabel release];

@@ -8,18 +8,16 @@
 
 #import <UIKit/UIKit.h>
 #import "Contact.h"
+#import "MailInfo.h"
+#import "MyInfo.h"
 
 @interface SendEmailViewController : UIViewController <UITextViewDelegate, UITextFieldDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, retain) IBOutlet UIButton *sendButton;
-@property (nonatomic, retain) IBOutlet UIButton *cancelButton;
 @property (nonatomic, retain) UIButton *backBarButton;
 
 @property (nonatomic, retain) IBOutlet UILabel *nameLabel;
 @property (nonatomic, retain) IBOutlet UIImageView *textViewBgImage;
 @property (nonatomic, retain) Contact *currentContact;
-@property (nonatomic, retain) NSMutableArray *contactArray; //群发联系人
-@property (nonatomic, retain) IBOutlet UIButton *addButton;
 @property (nonatomic, retain) IBOutlet UITextField *emailTitleTextField;
 @property (retain, nonatomic) IBOutlet UIImageView *textfieldBgImage;
 
@@ -32,5 +30,10 @@
 @property (nonatomic, copy) NSString *mailSendFrom;
 @property (nonatomic, copy) NSString *mailTo;
 
+@property (nonatomic, retain) MailInfo *mail;
+
+@property (nonatomic, retain) MyInfo *myInfo;
+
+@property (nonatomic, assign) BOOL sendFinished;
 
 @end

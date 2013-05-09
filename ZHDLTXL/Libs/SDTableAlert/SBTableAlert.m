@@ -254,7 +254,7 @@
 		_rowHeight = 40.;
 
 		_tableView = [[SBTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-		
+		_tableView.scrollEnabled = NO;
 		[_tableView setDelegate:self];
 		[_tableView setDataSource:self];
 		[_tableView setBackgroundColor:[UIColor whiteColor]];

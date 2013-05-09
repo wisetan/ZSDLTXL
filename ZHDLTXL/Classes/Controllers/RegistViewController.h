@@ -8,10 +8,18 @@
 
 #import <UIKit/UIKit.h>
 #import "ELCTextfieldCell.h"
+#import "AddInfoViewController.h"
 
 #define kRegistSucceed @"RegistSuccess"
 
-@interface RegistViewController : UIViewController<ELCTextFieldDelegate, UITableViewDelegate, UITableViewDataSource> {
+@interface RegistViewController : UIViewController
+<
+ELCTextFieldDelegate,
+UITableViewDelegate,
+UITableViewDataSource,
+AddInfoViewControllerDelegate
+>
+{
     NSArray *leftArray;
     NSArray *rightArray;
     NSMutableArray *registInfo;

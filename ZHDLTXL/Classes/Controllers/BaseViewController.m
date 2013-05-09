@@ -45,19 +45,6 @@
     }
     
     self.areaLabel.text = [PersistenceHelper dataForKey:kCityName];
-    
-//    NSError *error = nil;
-//    
-//    _fetchedResultsController = nil;
-//    if (![self.fetchedResultsController performFetch:&error]) {
-//        NSLog(@"error %@", error);
-//    }
-//    
-//    if (self.fetchedResultsController.fetchedObjects.count == 0) {
-//        [self getInvestmentUserListFromServer];
-//    }
-//    
-//    [self.mTableView reloadData];
 }
 
 - (void)viewDidLoad
@@ -118,16 +105,34 @@
         self.loginLabel.text = @"登录";
     }
     
-    self.mTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, self.view.frame.size.height-44-45)] autorelease];
+    NSLog(@"friend frame %@", NSStringFromCGRect(self.view.frame));
+    CGFloat viewHeight;
+    if (IS_IPHONE_5) {
+        viewHeight = 548;
+    }
+    else{
+        viewHeight = 460;
+    }
+    
+    
+    
+    self.mTableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, viewHeight-44-45)] autorelease];
     [self.mTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     self.mTableView.delegate = self;
     self.mTableView.dataSource = self;
+    
+    NSLog(@"friend frame %@", NSStringFromCGRect(self.mTableView.frame));
 
-    //    [self.mTableView addInfiniteScrollingWithActionHandler:^{
-    //        [self insertDataAtBottom];
-    //    }];
     [self.view addSubview:self.mTableView];
     
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveLoginNoti:) name:kLoginNotification object:nil];
+    
+}
+
+- (void)receiveLoginNoti:(NSNotification *)noti
+{
+    self.loginLabel.text = @"主页";
 }
 
 #pragma mark - help method
@@ -154,24 +159,12 @@
     }
 }
 
-- (void)selectArea:(UIButton *)sender
-{
-    NSLog(@"select area");
-    ProvinceViewController *areaVC = [[ProvinceViewController alloc] init];
-    areaVC.isAddResident = NO;
-    self.fetchedResultsController = nil;
-    [self.navigationController pushViewController:areaVC animated:YES];
-    [areaVC release];
-}
+
 
 - (void)tapOnLocationIcon
 {
     [self selectArea:nil];
 }
-
-#pragma mark - observer method
-
-#pragma mark - table view data source
 
 #pragma mark - table view
 

@@ -7,6 +7,7 @@
         <attribute name="col2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="invagency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isreal" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="loginid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mailbox" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="picturelinkurl" optional="YES" attributeType="String" syncable="YES"/>
@@ -46,10 +47,12 @@
     </entity>
     <entity name="CommendContact" representedClassName="CommendContact" syncable="YES">
         <attribute name="autograph" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="cityid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="invagency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isreal" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="loginid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mailbox" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="picturelinkurl" optional="YES" attributeType="String" syncable="YES"/>
@@ -68,6 +71,7 @@
         <attribute name="col2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="invagency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isreal" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="loginid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mailbox" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="picturelinkurl" optional="YES" attributeType="String" syncable="YES"/>
@@ -86,6 +90,7 @@
         <attribute name="col2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="invagency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isreal" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="loginid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mailbox" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="picturelinkurl" optional="YES" attributeType="String" syncable="YES"/>
@@ -97,9 +102,25 @@
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username_p" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
+    <entity name="MailInfo" representedClassName="MailInfo" syncable="YES">
+        <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="flags" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="foldername" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="loginid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="messageid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="picturelinkurl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="state" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="subject" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thirdaddress" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="userid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="MyInfo" representedClassName="MyInfo" syncable="YES">
         <attribute name="account" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="unreadCount" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="unreadMailCount" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="unreadSMSCount" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <relationship name="areaList" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CityInfo" syncable="YES"/>
         <relationship name="pharList" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Pharmacology" syncable="YES"/>
@@ -133,7 +154,9 @@
         <attribute name="col1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="col3" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="headiconlocalurl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="invagency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isreal" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mailbox" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="picturelinkurl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="remark" optional="YES" attributeType="String" syncable="YES"/>
@@ -144,17 +167,18 @@
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="AllContact" positionX="855" positionY="-342" width="128" height="285"/>
-        <element name="ChatList" positionX="468" positionY="-414" width="128" height="178"/>
-        <element name="ChatRecord" positionX="288" positionY="-441" width="128" height="103"/>
-        <element name="CityInfo" positionX="108" positionY="-279" width="128" height="148"/>
-        <element name="CommendContact" positionX="702" positionY="-342" width="128" height="270"/>
-        <element name="Contact" positionX="880" positionY="9" width="128" height="285"/>
-        <element name="FriendContact" positionX="709" positionY="8" width="128" height="285"/>
-        <element name="MyInfo" positionX="-45" positionY="-151" width="128" height="133"/>
-        <element name="Pharmacology" positionX="279" positionY="-139" width="128" height="103"/>
-        <element name="SMSList" positionX="538" positionY="-99" width="128" height="178"/>
-        <element name="SMSRecord" positionX="306" positionY="-261" width="128" height="103"/>
-        <element name="UserDetail" positionX="189" positionY="54" width="128" height="238"/>
+        <element name="AllContact" positionX="855" positionY="-342" width="128" height="298"/>
+        <element name="ChatList" positionX="529" positionY="-441" width="128" height="178"/>
+        <element name="ChatRecord" positionX="367" positionY="-441" width="128" height="103"/>
+        <element name="CityInfo" positionX="90" positionY="-396" width="128" height="148"/>
+        <element name="CommendContact" positionX="702" positionY="-342" width="128" height="298"/>
+        <element name="Contact" positionX="855" positionY="9" width="128" height="298"/>
+        <element name="FriendContact" positionX="702" positionY="8" width="128" height="298"/>
+        <element name="MailInfo" positionX="351" positionY="101" width="128" height="240"/>
+        <element name="MyInfo" positionX="-45" positionY="-151" width="128" height="150"/>
+        <element name="Pharmacology" positionX="189" positionY="-108" width="128" height="103"/>
+        <element name="SMSList" positionX="531" positionY="-160" width="128" height="178"/>
+        <element name="SMSRecord" positionX="369" positionY="-157" width="128" height="103"/>
+        <element name="UserDetail" positionX="117" positionY="122" width="128" height="268"/>
     </elements>
 </model>

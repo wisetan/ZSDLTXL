@@ -15,8 +15,8 @@
 @dynamic centerlon;
 @dynamic cityid;
 @dynamic cityname;
-@dynamic countylist;
 @dynamic provinceid;
 @dynamic radius;
+@dynamic countylist;
 
 @end

@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <CoreLocation/CoreLocation.h>
 #import "NSString+stringValue.h"
+#import "DES3Util.h"
 
 #define ARC4RANDOM_MAX      0x100000000
 
@@ -899,6 +900,38 @@ char indexTitleOfString(unsigned short string) {
         }];
     }];
     return cityId;
+}
+
++ (NSArray *)deCryptJsonDict:(NSDictionary *)dict OfJsonKey:(NSString *)jsonKey
+{
+    NSString *jsonEncryptStr = [[dict objForKey:jsonKey] removeSpace];
+    NSString *userid = [kAppDelegate userId];
+    NSMutableString *key = [NSMutableString stringWithString:[kBaseKey substringToIndex:24-userid.length]];
+    [key appendFormat:@"%@", userid];
+    NSArray *jsonArray = [[DES3Util decrypt:jsonEncryptStr withKey:key] objectFromJSONString];
+    return jsonArray;
+}
+
++ (void)saveImage:(UIImage *)image toDiskWithName:(NSString *)name
+{
+    if (!image) {
+        NSLog(@"image saved is nil");
+        return;
+    }
+    NSData *imageData = UIImagePNGRepresentation(image);
+
+    [imageData writeToFile:name atomically:YES];
+}
+
++ (UIImage *)readImageFromDisk:(NSString *)path
+{
+    UIImage *image = [UIImage imageWithContentsOfFile:path];
+    return image;
+}
+
++ (NSString *)getHumanDate:(NSDate *)date
+{
+    
 }
 
 @end

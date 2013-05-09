@@ -29,7 +29,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    labContent.frame = CGRectMake(60, 15, 200, 0);
+    labContent.frame = CGRectMake(60, 27, 200, 0);
     [self.labContent sizeToFit];
     CGSize contentSize = [labContent.text sizeWithFont:[UIFont systemFontOfSize:14] constrainedToSize:CGSizeMake(200, CGFLOAT_MAX) lineBreakMode:UILineBreakModeCharacterWrap];
     self.bgImageView.frame = CGRectMake(bgImageView.frame.origin.x, bgImageView.frame.origin.y, contentSize.width+20, contentSize.height + 20);
@@ -38,7 +38,7 @@
 + (CGFloat)heightForCellWithContent:(NSString *)content {
     CGFloat offset = 15.0f;
     CGSize contentSize = [content sizeWithFont:[UIFont systemFontOfSize:14] constrainedToSize:CGSizeMake(200, CGFLOAT_MAX) lineBreakMode:UILineBreakModeCharacterWrap];
-    return contentSize.height + offset + 20;
+    return contentSize.height + offset + 40;
 }
 
 - (void)willMoveToSuperview:(UIView *)newSuperview {

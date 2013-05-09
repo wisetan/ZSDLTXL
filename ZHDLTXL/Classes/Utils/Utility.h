@@ -70,4 +70,13 @@ char indexTitleOfString(unsigned short string);
 + (void)plainTableView:(UITableView *)_tableView changeBgForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 
 + (NSString *)getCityIdByCityName:(NSString *)cityName;
+
++ (NSArray *)deCryptJsonDict:(NSDictionary *)dict OfJsonKey:(NSString *)jsonKey;
+
++ (void)saveImage:(UIImage *)image toDiskWithName:(NSString *)name;
+
++ (UIImage *)readImageFromDisk:(NSString *)path;
+
++ (NSString *)getHumanDate:(NSDate *)date;
+
 @end

@@ -15,6 +15,8 @@
 #import "MyTalkCell.h"
 #import "TimeSplitCell.h"
 #import "UIImage+RoundedCorner.h"
+#import "ChatRecord.h"
+
 @interface TalkViewController ()
 
 @end
@@ -43,24 +45,36 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.hidesBottomBarWhenPushed = YES;
     
     [self initGrowTextView];
     [self initNavigationBar];
     
     self.dataSourceArray = [NSMutableArray array];
-    self.title = @"聊天室";
-    UIView *headerView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 40)] autorelease];
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.frame = CGRectMake(20, 0, 280, 30);
-    [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [button setTitle:@"查看更多…" forState:UIControlStateNormal];
-    [button addTarget:self action:@selector(moreAction) forControlEvents:UIControlEventTouchUpInside];
-    [headerView addSubview:button];
-    self.mTableView.tableHeaderView = headerView;
-    self.mTableView.frame = CGRectMake(0, 0, 320, 460-44-40);
     
-    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"bg_mask"]];
-    self.mTableView.backgroundColor = [UIColor clearColor];
+    NSString *title = nil;
+    
+    if (self.chatList) {
+        title = [NSString stringWithFormat:@"与%@留言", self.chatList.username];
+    }
+    else{
+        title = [NSString stringWithFormat:@"与%@留言", self.username];
+    }
+
+    
+    self.title = title;
+//    UIView *headerView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 40)] autorelease];
+//    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+//    button.frame = CGRectMake(20, 0, 280, 30);
+//    [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+//    [button setTitle:@"查看更多…" forState:UIControlStateNormal];
+//    [button addTarget:self action:@selector(moreAction) forControlEvents:UIControlEventTouchUpInside];
+//    [headerView addSubview:button];
+//    self.mTableView.tableHeaderView = headerView;
+//    self.mTableView.frame = CGRectMake(0, 0, 320, 460-44-40);
+    
+//    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"bg_mask"]];
+//    self.mTableView.backgroundColor = [UIColor clearColor];
     
     [self talkHistory];
     [self initTimer];
@@ -89,7 +103,16 @@
         [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
             NSArray *array = [json objForKey:@"MessageList"];
             if (array && [array count] > 0) {
-                [self.dataSourceArray addObjectsFromArray:array];
+//                [self.dataSourceArray addObjectsFromArray:array];
+                [array enumerateObjectsUsingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL *stop) {
+                    ChatRecord *chatRecord = [ChatRecord createEntity];
+                    chatRecord.content = [dict objForKey:@"content"];
+                    chatRecord.time = [[dict objForKey:@"time"] stringValue];
+                    chatRecord.userid = [[dict objForKey:@"userid"] stringValue];
+                    chatRecord.loginid = kAppDelegate.userId;
+                    [self.dataSourceArray addObject:chatRecord];
+                    DB_SAVE();
+                }];
                 [self.mTableView reloadData];
                 
                 if ([self.dataSourceArray count] > 0) {
@@ -112,38 +135,47 @@
     [super viewDidUnload];
 }
 
-- (void)moreAction {
-    NSString *myUid = [PersistenceHelper dataForKey:kUserId];
-    
-    NSString *pageSize = @"5";
-    currentPage++;
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessage.json", @"path", myUid, @"userid", fid, @"destuserid", [NSString stringWithFormat:@"%d", currentPage], @"page", pageSize, @"maxrow", nil];
-    NSLog(@"dict %@", dict);
-    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
-
-        @try {
-            if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
-                NSArray *array = [json objForKey:@"MessageList"];
-
-                for (NSDictionary *dict in array) {
-                    [self.dataSourceArray insertObject:dict atIndex:0];
-                }
-
-                [self.mTableView reloadData];
-            } else {
-                //将当前页减一
-                if (currentPage > 0) {
-                    currentPage--;
-                }
-            }            
-        }
-        @catch (NSException *exception) {
-            
-        }
-    } failure:^(NSError *error) {
-        NSLog(@"error : %@", error);
-    }];    
-}
+//- (void)moreAction {
+//    NSString *myUid = [PersistenceHelper dataForKey:kUserId];
+//    
+//    NSString *pageSize = @"5";
+//    currentPage++;
+//    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessage.json", @"path", myUid, @"userid", fid, @"destuserid", [NSString stringWithFormat:@"%d", currentPage], @"page", pageSize, @"maxrow", nil];
+//    NSLog(@"dict %@", dict);
+//    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+//
+//        @try {
+//            if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
+//                NSArray *array = [json objForKey:@"MessageList"];
+//
+//                for (NSDictionary *dict in array) {
+//                    ChatRecord *chatRecord = [ChatRecord createEntity];
+//                    chatRecord.content = [dict objForKey:@"content"];
+//                    chatRecord.time = [[dict objForKey:@"time"] stringValue];
+//                    chatRecord.userid = [[dict objForKey:@"userid"] stringValue];
+//                    chatRecord.loginid = kAppDelegate.userId;
+//                    [self.dataSourceArray insertObject:chatRecord atIndex:0];
+//                    DB_SAVE();
+//
+//                    
+////                    [self.dataSourceArray insertObject:dict atIndex:0];
+//                }
+//
+//                [self.mTableView reloadData];
+//            } else {
+//                //将当前页减一
+//                if (currentPage > 0) {
+//                    currentPage--;
+//                }
+//            }            
+//        }
+//        @catch (NSException *exception) {
+//            
+//        }
+//    } failure:^(NSError *error) {
+//        NSLog(@"error : %@", error);
+//    }];    
+//}
 
 - (void)talkHistory {
     [self.dataSourceArray removeAllObjects];
@@ -154,13 +186,23 @@
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:@"getMessage.json", @"path", myUid, @"userid", fid, @"destuserid", [NSString stringWithFormat:@"%d", currentPage], @"page", pageSize, @"maxrow", nil];
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
 
-        NSLog(@"talk history %@", json);
+//        NSLog(@"talk history %@", json);
         @try {
             if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
                 self.lastTime = [[json objForKey:@"LastTime"] stringValue];
                 NSArray *array = [json objForKey:@"MessageList"];
                 for (NSDictionary *dict in array) {
-                    [self.dataSourceArray insertObject:dict atIndex:0];
+//                    [self.dataSourceArray insertObject:dict atIndex:0];
+                    ChatRecord *chatRecord = [ChatRecord createEntity];
+                    chatRecord.content = [dict objForKey:@"content"];
+                    chatRecord.time = [[dict objForKey:@"time"] stringValue];
+                    NSLog(@"server time %@", chatRecord.time);
+                    chatRecord.userid = [[dict objForKey:@"userid"] stringValue];
+                    chatRecord.loginid = kAppDelegate.userId;
+                    [self.dataSourceArray insertObject:chatRecord atIndex:0];
+                    DB_SAVE();
+                    
+                    
                 }
                 [self.mTableView reloadData];
                 if ([self.dataSourceArray count] > 0) {
@@ -195,9 +237,18 @@
         if ([GET_RETURNCODE(json) isEqualToString:@"0"]) {
             self.doneButton.enabled = YES;
             [textView clearText];
-            NSString *myUid = [PersistenceHelper dataForKey:kUserId];
-            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:myUid, kUserId, content, @"content", @"", @"time",nil];
-            [self.dataSourceArray addObject:dict];
+//            NSString *myUid = [PersistenceHelper dataForKey:kUserId];
+//            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:myUid, kUserId, content, @"content", @"", @"time",nil];
+            
+            ChatRecord *chatRecord = [ChatRecord createEntity];
+            chatRecord.content = content;
+            chatRecord.time = [NSString stringWithFormat:@"%.lf", [[NSDate date] timeIntervalSince1970]*1000];
+            chatRecord.userid = kAppDelegate.userId;
+            chatRecord.loginid = kAppDelegate.userId;
+//            [self.dataSourceArray addObject:chatRecord];
+            [self.dataSourceArray insertObject:chatRecord atIndex:0];
+            DB_SAVE();
+
             [self.mTableView reloadData];
             if ([self.dataSourceArray count] > 0) {
                 [self.mTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:([self.dataSourceArray count]-1) inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:NO];
@@ -242,7 +293,7 @@
     button = [UIButton buttonWithType:UIButtonTypeCustom];
     button.frame = CGRectMake(0, 0, 30, 30);
     [button addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
-    button.showsTouchWhenHighlighted = YES;
+//    button.showsTouchWhenHighlighted = YES;
     [button setImage:[UIImage imageByName:@"retreat.png"] forState:UIControlStateNormal];
     button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
     self.navigationItem.leftBarButtonItem = button1;
@@ -313,9 +364,12 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *dict = [self.dataSourceArray objectAtIndex:indexPath.row];
-    NSString *uid = [[dict objForKey:@"userid"] stringValue];
-    NSString *content = [dict objForKey:@"content"];
+//    NSDictionary *dict = [self.dataSourceArray objectAtIndex:indexPath.row];
+    ChatRecord *chatRecord = [self.dataSourceArray objectAtIndex:indexPath.row];
+//    NSString *uid = [[dict objForKey:@"userid"] stringValue];
+//    NSString *content = [dict objForKey:@"content"];
+    NSString *uid = chatRecord.userid;
+    NSString *content = chatRecord.content;
     if ([uid isEqualToString:fid]) {
         return [OtherTalkCell heightForCellWithContent:content];    
     } else if ([uid isEqualToString:TIME_SPLIT_CELL_TAG]) {
@@ -337,19 +391,21 @@
     static NSString *kTimeCell   = @"TimeSplitCell";
     
     UITableViewCell *cell = nil;
-    NSDictionary *dict = nil;
+//    NSDictionary *dict = nil;
+//
+//    dict = [self.dataSourceArray objectAtIndex:indexPath.row];
+    ChatRecord *chatRecord = [self.dataSourceArray objectAtIndex:indexPath.row];
 
-    dict = [self.dataSourceArray objectAtIndex:indexPath.row];
-
-    NSLog(@"message dict %@", dict);
-    NSString *uid = [[dict objForKey:kUserId] stringValue];
+//    NSLog(@"message dict %@", dict);
+//    NSString *uid = [[dict objForKey:kUserId] stringValue];
+    NSString *uid = chatRecord.userid;
     
     if ([uid isEqualToString:fid]) {
         cell = (OtherTalkCell *)[_tableView dequeueReusableCellWithIdentifier:kOtherCell];
         if (cell == nil) {
             NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"OtherTalkCell" owner:self options:nil];
             cell = (OtherTalkCell *)[nib objectAtIndex:0];
-            ((OtherTalkCell *)cell).avatar.placeholderImage = [UIImage imageByName:@"default_avatar"];
+            ((OtherTalkCell *)cell).avatar.placeholderImage = [UIImage imageByName:@"AC_talk_icon.png"];
             ((OtherTalkCell *)cell).avatar.delegate = self;
         }
     } else if ([uid isEqualToString:TIME_SPLIT_CELL_TAG]) {
@@ -373,15 +429,26 @@
 }
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *dict = [self.dataSourceArray objectAtIndex:indexPath.row];
-    NSString *content = [dict objForKey:@"content"];
-    NSString *time    = [dict objForKey:@"time"];
+//    NSDictionary *dict = [self.dataSourceArray objectAtIndex:indexPath.row];
+//    NSString *content = [dict objForKey:@"content"];
+//    NSString *time    = [dict objForKey:@"time"];
+    ChatRecord *chatRecord = [self.dataSourceArray objectAtIndex:indexPath.row];
+    NSString *content = chatRecord.content;
+//    NSString *time    = chatRecord.time;
+    NSLog(@"chatRecord.time %@", chatRecord.time);
+    
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:chatRecord.time.doubleValue/1000];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    
+    [dateFormatter setDateFormat:@"yyyy年M月d日 H:mm"];
+    NSString *time = [dateFormatter stringFromDate:date];
+    
     if ([cell isKindOfClass:[OtherTalkCell class]]) {
         [[(OtherTalkCell *)cell labContent] setText:content];
-        [[(MyTalkCell *)cell labTime] setText:time];
+        [[(OtherTalkCell *)cell labTime] setText:time];
         ((OtherTalkCell *)cell).avatar.imageURL = [fAvatarUrl isValid] ? [NSURL URLWithString:fAvatarUrl] : nil;
     } else if ([cell isKindOfClass:[TimeSplitCell class]]) {
-        [[(TimeSplitCell *)cell labTime] setText:[dict objForKey:@"content"]];
+        [[(TimeSplitCell *)cell labTime] setText:content];
     } else{
         [[(MyTalkCell *)cell labContent] setText:content];
         [[(MyTalkCell *)cell labTime] setText:time];

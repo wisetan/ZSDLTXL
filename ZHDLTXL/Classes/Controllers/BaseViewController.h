@@ -40,5 +40,8 @@
 - (void)configureCell:(ContactCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 - (void)getInvestmentUserListFromServer;
 
+- (void)selectArea:(UIButton *)sender;
+
+
 
 @end

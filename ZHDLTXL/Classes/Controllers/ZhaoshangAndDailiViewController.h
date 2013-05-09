@@ -14,7 +14,6 @@
 @property (retain, nonatomic) NSMutableArray *leftArray;
 @property (retain, nonatomic) NSMutableArray *selectArray;
 
-@property (retain, nonatomic) IBOutlet UIButton *confirmButton;
 @property (retain, nonatomic) IBOutlet UITableView *selectTableView;
 
 @end

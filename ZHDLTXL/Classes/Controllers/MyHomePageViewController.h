@@ -10,9 +10,25 @@
 #import "UserDetail.h"
 #import "MyInfo.h"
 #import "SBTableAlert.h"
+#import "ProvinceViewController.h"
+#import "SelectPharViewController.h"
+#import "CustomBadge.h"
 
 @interface MyHomePageViewController : UIViewController
-<UIAlertViewDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, NSFetchedResultsControllerDelegate, SBTableAlertDelegate, SBTableAlertDataSource>
+<
+UIAlertViewDelegate,
+UITextFieldDelegate,
+UITableViewDelegate,
+UITableViewDataSource,
+UIActionSheetDelegate,
+UIImagePickerControllerDelegate,
+UINavigationControllerDelegate,
+NSFetchedResultsControllerDelegate,
+SBTableAlertDelegate,
+SBTableAlertDataSource,
+CityViewControllerDelegate,
+SelectPharViewControllerDelegate
+>
 
 @property (nonatomic, retain) UIButton *backBarButton;
 
@@ -63,6 +79,13 @@
 @property (nonatomic, retain) NSMutableDictionary *zdDict;
 @property (nonatomic, retain) NSNumber *zdValue;
 @property (nonatomic, copy) NSString *zdName;
+
+@property (nonatomic, retain) NSThread *checkUnreadMailThread;
+@property (nonatomic, assign) BOOL viewWillAppearing;
+
+@property (nonatomic, retain) CustomBadge *messageBadge;
+@property (nonatomic, retain) CustomBadge *mailBadge;
+@property (nonatomic, retain) CustomBadge *chatBadge;
 
 
 @end

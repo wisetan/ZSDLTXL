@@ -14,6 +14,8 @@
 #import "DAReloadActivityButton.h"
 #import "UIImage+stretch.h"
 #import "MyInfo.h"
+#import "ChatRecord.h"
+#import "ChatList.h"
 
 @implementation CustomTableViewBase
 
@@ -53,16 +55,25 @@
     isFirstLoading = YES;
     self.view.userInteractionEnabled = YES;
     
+    
+    
     isReloading    = NO;
     isAppending    = NO;
     isPullRefreshEnable = YES;
     
     self.view.backgroundColor = [UIColor whiteColor];
     
+    CGFloat tableHeight = 0;
+    if (IS_IPHONE_5) {
+        tableHeight = 504;
+    }
+    else{
+        tableHeight = 416;
+    }
     if (!isGroupedStyle) {
-        self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 416-49) style:UITableViewStylePlain] autorelease];
+        self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, tableHeight-44) style:UITableViewStylePlain] autorelease];
     } else {
-        self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 416-49) style:UITableViewStyleGrouped] autorelease];
+        self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, tableHeight-44) style:UITableViewStyleGrouped] autorelease];
     }
     
     [self.view addSubview:self.tableView];
@@ -102,7 +113,22 @@
 
 - (void)initToolBarWithButtons:(NSArray *)buttons {
     
-    self.toolBar = [[[UIView alloc] initWithFrame:CGRectMake(0, 460-44-44, 320, 44)] autorelease];
+    CGFloat viewHeight = 0;
+    if (IS_IPHONE_5) {
+        viewHeight = 548;
+    }
+    else{
+        viewHeight = 460;
+    }
+
+    
+    
+    self.toolBar = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, viewHeight-88)] autorelease];
+    self.toolBar.backgroundColor = [UIColor blackColor];
+    UIImageView *toolBarImage = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"bottom_bg.png"]] autorelease];
+    toolBarImage.frame = CGRectMake(0, 0, 320, 44);
+    toolBarImage.userInteractionEnabled = YES;
+    
     [self.view addSubview:self.toolBar];
     
     for (int i = 0; i < [buttons count]; i++) {
@@ -116,7 +142,7 @@
         
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         [button setImage:image forState:UIControlStateNormal];
-        button.showsTouchWhenHighlighted = YES;
+//        button.showsTouchWhenHighlighted = YES;
         button.frame = CGRectMake(0, 0, 70, 44);
         button.center = CGPointMake(centerX, centerY);
         button.tag = i;
@@ -264,6 +290,27 @@
 #pragma mark -
 #pragma mark Data Source Loading / Reloading Methods
 
+- (BOOL)getChatListFromDB
+{
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@", [kAppDelegate userId]];
+    NSArray *array = [ChatList findAllSortedBy:@"createtime" ascending:YES withPredicate:pred];
+    if (array.count > 0) {
+        [self.dataSourceArray removeAllObjects];
+        [self.dataSourceArray addObjectsFromArray:array];
+        [self.tableView reloadData];
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [UIView animateWithDuration:0.3 animations:^{
+            self.tableView.alpha = 1;
+        }];
+        hasOnlyReloading = YES;
+        [self restoreTableView];
+        return YES;
+    }
+    else{
+        return NO;
+    }
+}
+
 - (void)sendUpdateRequestForce:(BOOL)type {
     
     //检查定位功能是否打开
@@ -290,7 +337,10 @@
     }
     [reloadButton startAnimating];
     
-    [self sendUpdateRequestForRefreshing:type];
+    
+    if (![self getChatListFromDB]) {
+        [self sendUpdateRequestForRefreshing:type];
+    }
 }
 
 - (NSDictionary *)urlDictForRefresh {
@@ -363,7 +413,7 @@
 }
 
 - (void)doneLoadingTableViewData {	
-	isReloading = NO;    
+	isReloading = NO;
     [reloadButton stopAnimating];
 	[self.refreshHeaderView lhRefreshScrollViewDataSourceDidFinishedLoading:self.tableView];
     self.navigationItem.leftBarButtonItem.enabled = YES;
@@ -487,11 +537,25 @@
 		
         for (int i = 0; i < [jsonBlocks count]; i++) {
             NSDictionary *oneBlock = [jsonBlocks objectAtIndex:i];
+            ChatList *chatList = [ChatList createEntity];
+            chatList.content = [oneBlock objForKey:@"content"];
+            chatList.count = [oneBlock objForKey:@"count"];
+            chatList.createtime = [oneBlock objForKey:@"createtime"];
+            chatList.picturelinkurl = [oneBlock objForKey:@"picturelinkurl"];
+            chatList.tel = [oneBlock objForKey:@"tel"];
+            chatList.type = [[oneBlock objForKey:@"type"] stringValue];
+            chatList.userid = [[oneBlock objForKey:@"userid"] stringValue];
+            chatList.username = [oneBlock objForKey:@"username"];
+            chatList.loginid = kAppDelegate.userId;
+            
+            
             if (!hasOnlyReloading) {
-                [dataSourceArray insertObject:oneBlock atIndex:[dataSourceArray count] - 1];
+                [dataSourceArray insertObject:chatList atIndex:[dataSourceArray count] - 1];
             } else {
-                [dataSourceArray addObject:oneBlock];
+                [dataSourceArray addObject:chatList];
             }
+            
+            DB_SAVE();
         }
     } else {
         if (type) {

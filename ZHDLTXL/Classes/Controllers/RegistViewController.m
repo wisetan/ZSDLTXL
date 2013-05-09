@@ -9,6 +9,8 @@
 #import "RegistViewController.h"
 #import "DreamFactoryClient.h"
 #import "AddInfoViewController.h"
+#import "MyInfo.h"
+#import "UserDetail.h"
 
 #define CELL_COLUM  2
 #define CELL_ROW    5
@@ -54,19 +56,7 @@
     
     ////////////////////init registinfo
     
-    self.registInfo = [NSMutableArray arrayWithCapacity:2];
-    NSMutableArray *array0 = [NSMutableArray arrayWithCapacity:4];
-    for (int j = 0; j < CELL_ROW; j++) {
-        [array0 addObject:@""];
-    }
-    [self.registInfo addObject:array0];
-    NSMutableArray *array1 = [NSMutableArray arrayWithCapacity:2];
-    for (int j = 0; j < CELL_COLUM; j++) {
-        [array1 addObject:@""];
-    }
-    [self.registInfo addObject:array1];
-    
-    ////////////////////init end
+    self.registInfo = [NSMutableArray arrayWithArray:@[@"",@"",@"",@"",@""]];
     
     
     self.view.backgroundColor = bgGreyColor;
@@ -75,19 +65,17 @@
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
     button.frame = CGRectMake(0, 0, 30, 30);
     [button addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
-    button.showsTouchWhenHighlighted = YES;
     [button setImage:[UIImage imageByName:@"retreat.png"] forState:UIControlStateNormal];
     UIBarButtonItem *button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
     self.navigationItem.leftBarButtonItem = button1;
 
-    self.leftArray = [NSArray arrayWithObjects:[NSArray arrayWithObjects:@"手机号", @"密码", @"确认密码",@"真实姓名", @"邮箱", nil], nil];
-    self.rightArray = [NSArray arrayWithObjects:[NSArray arrayWithObjects:@"必填", @"密码不得少于6个字符", @"请再次输入密码", @"可选", @"必填", nil], nil];
+    self.leftArray = [NSArray arrayWithObjects:@"手机号", @"密码", @"确认密码",@"真实姓名", @"邮箱", nil];
+    self.rightArray = [NSArray arrayWithObjects:@"必填", @"密码不得少于6个字符", @"请再次输入密码", @"必填", @"可选", nil];
 
     //right item
     button = [UIButton buttonWithType:UIButtonTypeCustom];
     button.frame = CGRectMake(0, 0, 30, 30);
     [button addTarget:self action:@selector(submitAction) forControlEvents:UIControlEventTouchUpInside];
-    button.showsTouchWhenHighlighted = YES;
     [button setImage:[UIImage imageByName:@"icon_confirm"] forState:UIControlStateNormal];
     button1 = [[[UIBarButtonItem alloc] initWithCustomView:button] autorelease];
     self.navigationItem.rightBarButtonItem = button1;
@@ -96,8 +84,9 @@
     UIButton *submitButton = [UIButton buttonWithType:UIButtonTypeCustom];
     submitButton.frame = CGRectMake((320-300)/2.0, 5, 300, 44);
     [submitButton addTarget:self action:@selector(submitAction) forControlEvents:UIControlEventTouchUpInside];
-    [submitButton setBackgroundImage:[UIImage imageByName:@"submit"] forState:UIControlStateNormal];
-    [submitButton setTitle:@"注册提交" forState:UIControlStateNormal];
+    [submitButton setBackgroundImage:[UIImage imageByName:@"regist"] forState:UIControlStateNormal];
+    [submitButton setBackgroundImage:[UIImage imageByName:@"regist_p"] forState:UIControlStateDisabled];
+    [submitButton setTitle:@"注 册" forState:UIControlStateNormal];
     [footView addSubview:submitButton];
     self.mTableView.tableFooterView = footView;
 }
@@ -108,14 +97,15 @@
 
 - (void)submitAction {
 
+    [self.view endEditing:YES];
     
-    NSString *telNum = [[self.registInfo objectAtIndex:0] objectAtIndex:0];
+    NSString *telNum = [self.registInfo objectAtIndex:0];
     if (![telNum isValid] || ![telNum isMobileNumber]) {
         [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的手机号" andImageName:kErrorIcon];
         return;
     }
     
-    NSString *password = [[self.registInfo objectAtIndex:0] objectAtIndex:1];
+    NSString *password = [self.registInfo objectAtIndex:1];
     if (![password isValid]) {
         [kAppDelegate showWithCustomAlertViewWithText:@"请输入密码" andImageName:kErrorIcon];
         return;
@@ -126,7 +116,7 @@
         }
     }
 
-    NSString *rePassword = [[self.registInfo objectAtIndex:0] objectAtIndex:2];
+    NSString *rePassword = [self.registInfo objectAtIndex:2];
     if (![rePassword isValid]) {
         [kAppDelegate showWithCustomAlertViewWithText:@"请再次输入密码" andImageName:kErrorIcon];
         return;
@@ -136,25 +126,29 @@
         }
     }
     
-    NSString *realName = [[self.registInfo objectAtIndex:0] objectAtIndex:3];
+    NSString *realName = [self.registInfo objectAtIndex:3];
     if (![realName isValid]) {
         [kAppDelegate showWithCustomAlertViewWithText:@"请输入用户名" andImageName:kErrorIcon];
         return;
     } else {
-        if ([realName length] < 2) {
+        if ([realName length] < 2)
+        {
             [kAppDelegate showWithCustomAlertViewWithText:@"用户名不得少于2个字符" andImageName:kErrorIcon];
             return;
         }
-        if ([Utility isNumberString:realName]) {
-            [kAppDelegate showWithCustomAlertViewWithText:@"用户名不能全为数字" andImageName:kErrorIcon];
+        if (![realName isMatchedByRegex:@"\\[u4e00-u9fa5\\]"]) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"用户民必须全为汉字" andImageName:kErrorIcon];
             return;
         }
     }
     
-    NSString *email = [[self.registInfo objectAtIndex:0] objectAtIndex:4];
-    if (![email isValid] || ![email isValidEmail]) {
-        [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的邮件格式" andImageName:kErrorIcon];
-        return;
+    NSString *email = [self.registInfo objectAtIndex:4];
+//    if (![email isValid] || ![email isValidEmail]) {
+//        [kAppDelegate showWithCustomAlertViewWithText:@"请输入正确的邮件格式" andImageName:kErrorIcon];
+//        return;
+//    }
+    if (![email isValid]) {
+        email = @"";
     }
     
     
@@ -165,14 +159,47 @@
     NSLog(@"regist dict %@", dict);
     
     
-    
-    AddInfoViewController *addInfoVC = [[AddInfoViewController alloc] init];
-    addInfoVC.registDict = dict;
-    [self.navigationController pushViewController:addInfoVC animated:YES];
-    [addInfoVC release];
-    [hud hide:YES afterDelay:.5];
+    [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
+        
+        NSLog(@"regist json: %@", json);
+        if ([GET_RETURNCODE(json) isEqualToString:@"0"]) {
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            
+            MyInfo *myInfo = [MyInfo createEntity];
+            myInfo.account = [NSNumber numberWithInt:10];
+            UserDetail *userDetail = [UserDetail createEntity];
+            userDetail.userid = [json objForKey:@"Userid"];
+            userDetail.username = [self.registInfo objectAtIndex:3];
+            userDetail.tel = [self.registInfo objectAtIndex:0];
+            userDetail.mailbox = [self.registInfo objectAtIndex:4];
+            userDetail.col1 = [NSString stringWithFormat:@"%@@boramail.com", [json objForKey:@"Userid"]];
+            myInfo.userDetail = userDetail;
+            [PersistenceHelper setData:[json objForKey:@"Userid"] forKey:kUserId];
+            [PersistenceHelper setData:[self.registInfo objectAtIndex:2] forKey:KPassWord];
+            DB_SAVE();
+            
+            AddInfoViewController *addInfoVC = [[AddInfoViewController alloc] init];
+            addInfoVC.delegate = self;
+            UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:addInfoVC];
+            [self presentModalViewController:nav animated:YES];
+            [addInfoVC release];
+            [nav release];
+            
+        } else {
+            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
     
 
+}
+
+- (void)finishAddInfo
+{
+    [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (void)viewDidUnload
@@ -182,44 +209,41 @@
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return [self.leftArray count];
+    return 1;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    if (section == 0) {
-        return @"基本信息";
-    } else if (section == 1) {
-        return @"验证方式";
-    }
-    return nil;
+
+    return @"基本信息";
+
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [[self.leftArray objectAtIndex:section] count];
+    return [self.leftArray count];
 }
 
 - (void)configureCell:(ELCTextfieldCell *)cell atIndexPath:(NSIndexPath *)indexPath {
 
-    cell.leftLabel.text = [[self.leftArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
-    if (indexPath.section == 0 && (indexPath.row == 1 || indexPath.row == 2)) {
+    cell.leftLabel.text = [self.leftArray objectAtIndex:indexPath.row];
+    if ((indexPath.row == 1 || indexPath.row == 2)) {
         cell.rightTextField.secureTextEntry = YES;
     } else {
         cell.rightTextField.secureTextEntry = NO;
     }
     
-    if (indexPath.section == 0 && indexPath.row == 0) {
+    if (indexPath.row == 0) {
         cell.rightTextField.keyboardType = UIKeyboardTypeNumberPad;
     }
-    if (indexPath.section == 0 && indexPath.row == 4) {
+    if (indexPath.row == 4) {
         cell.rightTextField.keyboardType = UIKeyboardTypeEmailAddress;
     }
-    cell.rightTextField.placeholder = [[self.rightArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    cell.rightTextField.placeholder = [self.rightArray objectAtIndex:indexPath.row];
     cell.isEditable = YES;
     cell.indexPath = indexPath;
     cell.ELCDelegate = self;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
-    NSString *text = [[registInfo objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    NSString *text = [registInfo objectAtIndex:indexPath.row];
     cell.rightTextField.text = text;
 }
 
@@ -283,8 +307,8 @@
 }
 
 - (void)updateText:(NSString *)text atIndexPath:(NSIndexPath *)indexPath {
-    NSMutableArray *array = [self.registInfo objectAtIndex:indexPath.section];
-    [array replaceObjectAtIndex:indexPath.row withObject:text];
+//    NSMutableArray *array = [self.registInfo objectAtIndex:indexPath.section];
+    [self.registInfo replaceObjectAtIndex:indexPath.row withObject:text];
 }
 
 - (void)dealloc {

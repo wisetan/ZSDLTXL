@@ -18,5 +18,7 @@
 #import "UIDevice+IdentifierAddition.h"
 #import "NSNotificationCenter+MainThread.h"
 #import "NSString+Size.h"
+#import "UIImage+RoundedCorner.h"
+#import "UIImage+Alpha.h"
 
 #endif

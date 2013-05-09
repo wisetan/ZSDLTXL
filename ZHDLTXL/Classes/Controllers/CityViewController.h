@@ -9,6 +9,13 @@
 #import <UIKit/UIKit.h>
 #import "CellButton.h"
 #import "AreaCell.h"
+#import "MyInfo.h"
+
+@protocol CityViewControllerDelegate <NSObject>
+
+- (void)finishSelectCity:(NSSet *)citySet;
+
+@end
 
 @interface CityViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
@@ -19,7 +26,10 @@
 @property (nonatomic, retain) UIButton *backBarButton;
 
 @property (nonatomic, assign) BOOL isAddResident;
+@property (nonatomic, assign) BOOL isAddInfo;
 @property (nonatomic, retain) UIViewController *homePageVC;
 @property (nonatomic, retain) NSString *provinceid;
+@property (nonatomic, retain) MyInfo *myInfo;
+@property (nonatomic, assign) id<CityViewControllerDelegate> delegate;
 
 @end

@@ -45,19 +45,37 @@
     
     //back button
     self.title = @"招商代理";
-    self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.backBarButton setImage:[UIImage imageNamed:@"retreat.png"] forState:UIControlStateNormal];
-    [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
-    self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
+//    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
     
-    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
-    [self.navigationItem setLeftBarButtonItem:lBarButton];
-    [lBarButton release];
+//    self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    [self.backBarButton setImage:[UIImage imageNamed:@"retreat.png"] forState:UIControlStateNormal];
+//    [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
+//    self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
+//    
+//    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
+//    [self.navigationItem setLeftBarButtonItem:lBarButton];
+//    [lBarButton release];
     
     self.leftArray = [NSArray arrayWithObjects:@"招商", @"代理", nil];
     self.selectArray = [[[NSMutableArray alloc] init] autorelease];
     
-    [self.confirmButton addTarget:self action:@selector(confirmSelect:) forControlEvents:UIControlEventTouchUpInside];
+    UIButton *confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [confirmButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
+    [confirmButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
+    confirmButton.frame = CGRectMake(0, 0, 75, 34);
+    [confirmButton addTarget:self action:@selector(confirmSelect:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UILabel *label = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 34)] autorelease];
+    label.backgroundColor = [UIColor clearColor];
+    label.text = @"确认";
+    label.textColor = [UIColor whiteColor];
+    label.textAlignment = NSTextAlignmentCenter;
+    [confirmButton addSubview:label];
+    
+    UIBarButtonItem *rBarButton = [[[UIBarButtonItem alloc] initWithCustomView:confirmButton] autorelease];
+    self.navigationItem.rightBarButtonItem = rBarButton;
+    
     
 }
 
@@ -89,7 +107,7 @@
 
 - (void)backToRootVC:(UIButton *)sender
 {
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 #pragma mark - table view data source
@@ -155,7 +173,6 @@
 
 - (void)dealloc {
     [_selectTableView release];
-    [_confirmButton release];
     [super dealloc];
 }
 @end

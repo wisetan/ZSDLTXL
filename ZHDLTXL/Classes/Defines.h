@@ -58,6 +58,8 @@ typedef struct
 #define kSelectPharFinished @"kSelectPharFinished"
 #define kDeleteFriend @"kDeleteFriend"
 
+#define kLoginNotification @"kLoginNotification"
+
 
 //about persist
 #define kUserDataFile @"kUserDataFile" //联系人列表文件名
@@ -73,31 +75,17 @@ typedef struct
 
 #define kCity @"kCity"
 
-#define KGpsCityName @"KGpsCityName"
-#define kGpsCityId @"kGpsCityId"
-
-
 #define kBoraMailIMAPPort @"143"
 #define KBoraMailSmtpPort @"25"
 #define KBoraMailSmtpServer @"smtp.boramail.com"
 #define KBoraMailIMAPServer @"imap.boramail.com"
 
-#define kCoreDataKey @"71cb1fe2f2faba8748e41a9d4485ac1a196797b9C9GJPL7XDTWD"
-
-
+#define kBaseKey @"A66C3EDD0A4A48EE85D389C316D18A60"
 
 #define kDocumentory ([NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0])
+#define DB_SAVE() ([[NSManagedObjectContext MR_contextForCurrentThread] MR_saveToPersistentStoreAndWait])
 
+#define APP_DEBUG 0
 
-//Persist Data, password userid
-
-enum eContactType {
-    
-    eUnknownContactType = -1,
-    eFriendContatType = 0,
-    eCommendContact = 1,
-    eAllContact = 2,
-    
-};
 
 #endif

@@ -25,9 +25,11 @@
 #import "JSONKit.h"
 #import "RegexKitLite.h"
 #import "EGOImageView.h"
+#import "NSDate-Utilities.h"
 
 
 #define MR_SHORTHAND
+#define MR_ENABLE_ACTIVE_RECORD_LOGGING 0
 #import "CoreData+MagicalRecord.h"
 #import "JPinYinUtil.h"
 

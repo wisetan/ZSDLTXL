@@ -21,34 +21,26 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 {
     MBProgressHUD *HUD;
-    CLLocationManager *locationManager;
-    BOOL isGpsError;
 }
 
 @property (strong, nonatomic) UIWindow *window;
 
 @property (nonatomic, copy)   NSString *hotspotContent;
-
-
 @property (nonatomic, assign) BOOL isGpsError;
-
 @property (nonatomic, retain) CLLocationManager *locationManager;
 @property (nonatomic, copy)   NSString *uuid;
 @property (nonatomic, copy)   NSString *userId;
 @property (nonatomic, copy)   NSString *cityId;
 @property (nonatomic, copy)   NSString *provinceId;
-@property (nonatomic, copy)   NSString *newCity;
+@property (nonatomic, copy)   NSString *theNewCity;
 
 
 @property (nonatomic, retain) CLGeocoder *geocoder;
-
 @property (nonatomic, retain) AKTabBarController *tabController;
 
 
 - (void)showWithCustomAlertViewWithText:(NSString *)text andImageName:(NSString *)image;
 - (void)initGPS;
-- (void)saveContext;
 - (BOOL)isLogined;
-- (NSURL *)applicationDocumentsDirectory;
 
 @end

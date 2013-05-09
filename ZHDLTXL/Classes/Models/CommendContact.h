@@ -2,7 +2,7 @@
 //  CommendContact.h
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-28.
+//  Created by LiuYue on 13-4-30.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
@@ -28,5 +28,7 @@
 @property (nonatomic, retain) NSString * userid;
 @property (nonatomic, retain) NSString * username;
 @property (nonatomic, retain) NSString * username_p;
+@property (nonatomic, retain) NSString * cityid;
+@property (nonatomic, retain) NSString * isreal;
 
 @end

@@ -19,8 +19,5 @@
 @property (retain, nonatomic) UIButton *rightBarButton;
 @property (assign, nonatomic) NSInteger zdKind;
 
-@property (strong, nonatomic) NSFetchedResultsController *fetchedResultsController;
-@property (strong, nonatomic) NSManagedObjectContext *managedObjectContext;
-@property (strong, nonatomic) NSFetchRequest *fetchRequest;
 
 @end

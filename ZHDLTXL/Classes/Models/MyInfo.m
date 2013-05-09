@@ -17,6 +17,7 @@
 @dynamic account;
 @dynamic unreadCount;
 @dynamic unreadSMSCount;
+@dynamic unreadMailCount;
 @dynamic areaList;
 @dynamic pharList;
 @dynamic userDetail;

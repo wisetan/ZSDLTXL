@@ -28,5 +28,6 @@
 @property (nonatomic, retain) NSString * userid;
 @property (nonatomic, retain) NSString * username;
 @property (nonatomic, retain) NSString * username_p;
+@property (nonatomic, retain) NSString * isreal;
 
 @end

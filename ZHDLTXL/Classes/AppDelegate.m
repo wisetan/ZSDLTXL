@@ -31,7 +31,7 @@
     //判断网络
     Reachability* reach = [Reachability reachabilityWithHostname:@"www.boracloud.com"];
     if (self.isGpsError) {
-        self.newCity = @"北京";
+        self.theNewCity = @"北京";
     }
     else{
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -48,11 +48,11 @@
     self.tabController = [[AKTabBarController alloc] initWithTabBarHeight:45];
     NSArray *controllerNameArray = @[@"FriendContactViewController", @"CommendContactViewController", @"AllContactViewController", @"ZhaoshangAndDailiViewController"];
     
-    NSMutableArray *controllerArray = [[NSMutableArray alloc] init];
+    NSMutableArray *controllerArray = [[[NSMutableArray alloc] init] autorelease];
     for (NSString *controllerName in controllerNameArray) {
         Class controllerClass = NSClassFromString(controllerName);
-        id controller = [[controllerClass alloc] init];
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:controller];
+        id controller = [[[controllerClass alloc] init] autorelease];
+        UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:controller] autorelease];
         [controllerArray addObject:nav];
     }
     
@@ -171,7 +171,7 @@
 
 //about GPS
 - (void)initGPS {
-    if(locationManager == nil) {
+    if(self.locationManager == nil) {
         self.locationManager = [[[CLLocationManager alloc] init] autorelease];
         self.locationManager.delegate = self;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
@@ -194,29 +194,35 @@
 - (void)getCurrentCity  //有网的时候
 {
     __block NSString *city = nil;
-    [self.geocoder reverseGeocodeLocation:locationManager.location completionHandler:^(NSArray *placemarks, NSError *error) {
+    [self.geocoder reverseGeocodeLocation:self.locationManager.location completionHandler:^(NSArray *placemarks, NSError *error) {
         CLPlacemark *placemark = [placemarks objectAtIndex:0];
         city = [placemark performSelector:NSSelectorFromString(@"administrativeArea")];
         city = [city substringToIndex:[city length] -1];
         if ([city isValid]) {
-            self.newCity = city;
+            self.theNewCity = city;
         }
         else{
-            self.newCity = @"北京";
+            self.theNewCity = @"北京";
         }
         
-        NSLog(@" app newcity %@", self.newCity);
+        NSLog(@" app theNewCity %@", self.theNewCity);
 
-        NSString *cityId = [Utility getCityIdByCityName:self.newCity];
-        [PersistenceHelper setData:self.newCity forKey:kCityName];
+        NSString *cityId = [Utility getCityIdByCityName:self.theNewCity];
+        [PersistenceHelper setData:self.theNewCity forKey:kCityName];
         [PersistenceHelper setData:cityId forKey:kCityId];
     }];
-    
-
 }
+
+#pragma mark - location delegate
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
     [manager stopUpdatingLocation];
 }
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    NSLog(@"location manager AuthorizationStatus: %d", status);
+}
+
 @end

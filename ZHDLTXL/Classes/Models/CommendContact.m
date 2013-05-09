@@ -2,7 +2,7 @@
 //  CommendContact.m
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-28.
+//  Created by LiuYue on 13-4-30.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
@@ -26,5 +26,7 @@
 @dynamic userid;
 @dynamic username;
 @dynamic username_p;
+@dynamic cityid;
+@dynamic isreal;
 
 @end

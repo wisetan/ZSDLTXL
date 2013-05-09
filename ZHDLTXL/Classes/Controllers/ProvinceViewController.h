@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MyInfo.h"
+#import "CityViewController.h"
 
 @interface ProvinceViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
@@ -24,6 +26,10 @@
 @property (nonatomic, retain) UIViewController *homePageVC;
 
 @property (nonatomic, retain) NSMutableDictionary *addResidentProvinceIdDict;
+@property (nonatomic, retain) MyInfo *myInfo;
+//@property (nonatomic, assign) NSInteger selectIndex;
+
+@property (nonatomic, assign) id<CityViewControllerDelegate> delegate;
 
 
 @end

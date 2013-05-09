@@ -19,28 +19,38 @@
 
 @end
 
-@interface OtherHomepageViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
+@interface OtherHomepageViewController : UIViewController
+<
+UITextFieldDelegate,
+UIAlertViewDelegate,
+UITableViewDelegate,
+UITableViewDataSource
+>
 
 @property (nonatomic, retain) Contact *contact;
 
-@property (nonatomic, retain) FriendContact *friendContact;
-@property (nonatomic, retain) CommendContact *commendContact;
-@property (nonatomic, retain) AllContact *allContact;
+@property (retain, nonatomic) IBOutlet UIImageView *xunImage;
+@property (retain, nonatomic) IBOutlet UIImageView *xun_VImage; //实名认证 col1
+@property (retain, nonatomic) IBOutlet UIImageView *xun_BImage;
+
+
+
+
 
 @property (nonatomic, copy) NSString *residentArea;
 @property (nonatomic, copy) NSString *pharmacologyCategory;
 
-@property (nonatomic, retain) IBOutlet UILabel *residentAreaLabel;
 @property (retain, nonatomic) IBOutlet UILabel *nameLabel;
-@property (nonatomic, retain) IBOutlet UILabel *cateLabel;
-
+@property (retain, nonatomic) IBOutlet UILabel *useridLabel;
 
 @property (retain, nonatomic) IBOutlet UIButton *messageButton;
 @property (retain, nonatomic) IBOutlet UIButton *mailButton;
 @property (retain, nonatomic) IBOutlet UIButton *chatButton;
 
 @property (retain, nonatomic) IBOutlet UIImageView *commentBg;
-@property (nonatomic, retain) IBOutlet UITextField *commentTextField;
+@property (retain, nonatomic) IBOutlet UITextField *commentTextField;
+
+
 
 @property (nonatomic, retain) IBOutlet UILabel *addFriendbtnTitleLabel;
 @property (retain, nonatomic) IBOutlet UIButton *addFriendButton;
@@ -51,12 +61,14 @@
 @property (nonatomic, retain) NSMutableArray *areaArray;
 @property (nonatomic, retain) NSMutableArray *preferArray;
 
-@property (nonatomic, assign) enum eContactType contactyType;
-
+@property (retain, nonatomic) IBOutlet UITableView *tableView;
 
 @property (nonatomic, assign) BOOL isFriend;
 
 @property (nonatomic, copy) NSString *contactId;
+
+@property (nonatomic, retain) NSMutableArray *leftArray;
+@property (nonatomic, retain) NSMutableArray *rightArray;
 
 @property (nonatomic, assign) id<FriendDidChangeDelegate> delegate;
 
