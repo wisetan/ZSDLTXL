@@ -11,6 +11,7 @@
 #import <MailCore/MailCore.h>
 #import "MyInfo.h"
 #import "UserDetail.h"
+#import "NSString+Base64.h"
 
 
 @interface SendEmailViewController ()
@@ -49,7 +50,7 @@
 
     
     //nav bar image
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
+//    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
     
     //back bar button
     self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -87,9 +88,6 @@
     self.mailTextView.text = @"编辑邮件";
     self.mailTextView.textColor = [UIColor lightGrayColor];
     
-    self.emailTitleTextField.text = @"";
-    
-    
 }
 
 - (void)backToRootVC:(UIButton *)sender
@@ -110,15 +108,16 @@
     
     [self.view endEditing:YES];
     
-    NSString *mailTile = self.emailTitleTextField.text;
-    if (![mailTile isValid]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请填写邮件主题" message:nil delegate:self cancelButtonTitle:@"知道了" otherButtonTitles:nil];
-        [alert show];
-        [alert release];
-    }
-    else{
-        [self didSendMail];
-    }
+//    NSString *mailTile = self.emailTitleTextField.text;
+//    if (![mailTile isValid]) {
+//        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请填写邮件主题" message:nil delegate:self cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+//        [alert show];
+//        [alert release];
+//    }
+//    else{
+//        [self didSendMail];
+//    }
+    [self didSendMail];
 }
 
 - (NSString *)makeMailContent
@@ -147,20 +146,54 @@
     NSString *mailSendFromName = [PersistenceHelper dataForKey:KUserName];
     NSString *senderPassword = [PersistenceHelper dataForKey:KPassWord];
     
-    NSString *mailTitle = self.emailTitleTextField.text;
+//    NSString *mailTitle = self.emailTitleTextField.text;
     NSString *mailBody = [self makeMailContent];
+    
+    
+    
+//    NSString *mailBody = (self.mailTextView.text == nil ? @"" : self.mailTextView.text);
+    
+//    NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+//    NSString *mailTitle = [[NSString alloc] initWithCString:[self.emailTitleTextField.text cStringUsingEncoding:NSUTF8StringEncoding] encoding:enc];
+    
+//    NSString *mailTitle = [[NSString alloc] initWithString:self.emailTitleTextField.text];
+//    NSLog(@"title asc %x", [mailTitle characterAtIndex:0]);
 
-    CTCoreMessage *mail = [[[CTCoreMessage alloc] init] autorelease];
+//    NSString *md5_title = [mailTitle md5];
+//    
+//    NSString *md5_dec_title = [md5_title stringFromMD5];
+//    
+//    NSLog(@"md5_title %@ md5_dec_title %@", md5_title, md5_dec_title);
+    
+    NSString *base64_title = [NSString encodeBase64String:self.emailTitleTextField.text];
+    
+//    NSString *dec_base64_title = [NSString decodeBase64String:base64_title];
+    
+//    NSLog(@"base64_title %@ dec_base64_title %@",base64_title, dec_base64_title);
+    
+    
+//    NSInteger title_length = self.emailTitleTextField.text.length;
+//    
+//    char *c_title = (char *)malloc(sizeof(char)*title_length);
+//    
+//    sprintf(c_title,"%s",[self.emailTitleTextField.text cStringUsingEncoding:NSUTF8StringEncoding]);
+//    NSString *mailTitle = [NSString stringWithCString:c_title encoding:NSUTF8StringEncoding];
+    
+    
+    
+    CTCoreMessage *mail = [[CTCoreMessage alloc] init];
     [mail setTo:[NSSet setWithObject:[CTCoreAddress addressWithName:mailToName email:self.mail.address]]];
     [mail setFrom:[NSSet setWithObject:[CTCoreAddress addressWithName:mailSendFromName email:self.mailSendFrom]]];
     [mail setBody:mailBody];
-    [mail setSubject:mailTitle];
-    NSLog(@"mailtitle %@", mailTitle);
+    [mail setSubject:@""];
     
-    NSString *title = [mail subject];
-    NSLog(@"title %@", title);
+//    NSLog(@"mail %@", mailTitle);
+    
+//    NSString *title = [mail subject];
+//    NSLog(@"title %@", title);
     
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+//    hud.color = [UIColor darkGrayColor];
     hud.labelText = @"正在发送";
     
     NSLog(@"userid %@", kAppDelegate.userId);
@@ -188,9 +221,10 @@
                 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
                 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
                     // code to be executed on main thread.If you want to run in another thread, create other queue
+                    self.sendFinished = NO;
                     [self backToRootVC:nil];
                 });
-                self.sendFinished = NO;
+                
             }
             else{
                 self.sendFinished = YES;
@@ -230,6 +264,7 @@
     self.mail.flags = @"1";
     self.mail.loginid = kAppDelegate.userId;
     self.mail.subject = self.emailTitleTextField.text;
+    self.mail.loginid = kAppDelegate.userId;
     NSString *content = self.mailTextView.text;
     if ([content isEqualToString:@"编辑邮件"]) {
         content = @"";
@@ -254,20 +289,20 @@
 
 #pragma mark - textview delegate
 
-- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+- (void)textViewDidBeginEditing:(UITextView *)textView
 {
+    NSLog(@"self.view frame %@", NSStringFromCGRect(self.view.frame));
+    
     textView.text = @"";
     textView.textColor = [UIColor blackColor];
     if (!IS_IPHONE_5) {
-
+        
         CGRect frame = self.view.frame;
         frame.origin.y -= 100;
         [UIView animateWithDuration:.3f animations:^{
             self.view.frame = frame;
         }];
     }
-    
-    return YES;
 }
 
 - (void)textViewDidChange:(UITextView *)textView

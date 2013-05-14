@@ -14,7 +14,8 @@
 @property (retain, nonatomic) IBOutlet UIImageView *headIcon;
 @property (retain, nonatomic) IBOutlet UILabel *nameLabel;
 //@property (retain, nonatomic) IBOutlet CellButton *contactButton;
-
+@property (retain, nonatomic) IBOutlet UIImageView *xun_VImage;
+@property (retain, nonatomic) IBOutlet UILabel *ZDLabel;
 @property (retain, nonatomic) IBOutlet  SelectImageView *unSelectedImage;
 //@property (retain, nonatomic) IBOutlet CellButton *selectButton;
 @end

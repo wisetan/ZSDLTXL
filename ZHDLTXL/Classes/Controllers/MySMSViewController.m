@@ -184,7 +184,7 @@
 
 - (void)configureCell:(MyMessageListCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
-    SMSList *SMSChatList = [self.SMSChatListArray objectAtIndex:self.SMSChatListArray.count - indexPath.row - 1];
+    SMSList *SMSChatList = [self.SMSChatListArray objectAtIndex:indexPath.row];
     
     cell.headIcon.layer.cornerRadius = 4;
     cell.headIcon.layer.masksToBounds = YES;

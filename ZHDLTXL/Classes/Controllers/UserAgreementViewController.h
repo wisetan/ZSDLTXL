@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UserAgreementViewController : UIViewController
+@interface UserAgreementViewController : UIViewController <UIWebViewDelegate>
 @property (retain, nonatomic) IBOutlet UIWebView *webView;
 
 @end

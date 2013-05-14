@@ -29,5 +29,8 @@
 @property (nonatomic, retain) NSString * username;
 @property (nonatomic, retain) NSString * username_p;
 @property (nonatomic, retain) NSString * isreal;
+@property (nonatomic, retain) NSString * areaname;
+@property (nonatomic, retain) NSString * prefercontent;
+@property (nonatomic, retain) NSString * sortid;
 
 @end

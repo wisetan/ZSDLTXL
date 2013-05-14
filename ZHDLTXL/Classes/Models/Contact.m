@@ -28,5 +28,6 @@
 @dynamic username;
 @dynamic username_p;
 @dynamic isreal;
+@dynamic areaname;
 
 @end

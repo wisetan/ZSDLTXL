@@ -42,7 +42,7 @@
         [reach startNotifier];
     }
     
-    [MagicalRecord setupAutoMigratingCoreDataStack];
+    [MagicalRecord setupCoreDataStack];
     
     
     self.tabController = [[AKTabBarController alloc] initWithTabBarHeight:45];
@@ -64,7 +64,8 @@
     [self.tabController setTopEdgeColor:[UIColor clearColor]];
     [self.tabController setTabColors:@[[UIColor clearColor], [UIColor clearColor]]];
     
-
+    
+    
     self.window.rootViewController = self.tabController;
 
     self.window.backgroundColor = [UIColor whiteColor];

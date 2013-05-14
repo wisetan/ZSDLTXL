@@ -13,6 +13,7 @@
 @interface ZhaoshangAndDailiViewController ()
 
 @property (nonatomic, assign) NSInteger zdKind;
+@property (nonatomic, assign) BOOL viewWillAppearing;
 
 @end
 
@@ -41,24 +42,16 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
-    
-    //back button
+
     self.title = @"招商代理";
-//    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
+    self.zdKind = 0;
     
-//    self.backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
-//    [self.backBarButton setImage:[UIImage imageNamed:@"retreat.png"] forState:UIControlStateNormal];
-//    [self.backBarButton addTarget:self action:@selector(backToRootVC:) forControlEvents:UIControlEventTouchUpInside];
-//    self.backBarButton.frame = CGRectMake(0, 0, 30, 30);
-//    
-//    UIBarButtonItem *lBarButton = [[UIBarButtonItem alloc] initWithCustomView:self.backBarButton];
-//    [self.navigationItem setLeftBarButtonItem:lBarButton];
-//    [lBarButton release];
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
+
     
     self.leftArray = [NSArray arrayWithObjects:@"招商", @"代理", nil];
     self.selectArray = [[[NSMutableArray alloc] init] autorelease];
+    self.viewWillAppearing = NO;
     
     UIButton *confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [confirmButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
@@ -76,11 +69,41 @@
     UIBarButtonItem *rBarButton = [[[UIBarButtonItem alloc] initWithCustomView:confirmButton] autorelease];
     self.navigationItem.rightBarButtonItem = rBarButton;
     
+    [self showNeedLogin];
     
+}
+
+- (BOOL)showNeedLogin
+{
+    if ([kAppDelegate.userId isEqualToString:@"0"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请先登录" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        return YES;
+    }
+    return NO;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    if (!self.viewWillAppearing) {
+        self.viewWillAppearing = YES;
+        [self.selectArray removeAllObjects];
+        [self.selectTableView reloadData];
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.zdKind = 0;
+    self.viewWillAppearing = NO;
 }
 
 - (void)confirmSelect:(UIButton *)sender
 {
+    if ([self showNeedLogin]) {
+        return;
+    }
 
     if (self.selectArray.count == 2) {
         self.zdKind = 3;
@@ -153,6 +176,10 @@
 {
     NSLog(@"select array: %@", self.selectArray);
     
+    if ([self showNeedLogin]) {
+        return;
+    }
+    
     NSString *zdStr = [self.leftArray objectAtIndex:indexPath.row];
     if (![self.selectArray containsObject:zdStr]) {
         [self.selectArray addObject:zdStr];
@@ -162,8 +189,6 @@
     }
     [self.selectTableView reloadData];
 }
-
-
 
 - (void)didReceiveMemoryWarning
 {

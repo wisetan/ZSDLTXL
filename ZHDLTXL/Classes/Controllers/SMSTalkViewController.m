@@ -53,7 +53,7 @@
     
     self.dataSourceArray = [NSMutableArray array];
 
-    NSString *title = [NSString stringWithFormat:@"与%@短息", self.smsList.username];
+    NSString *title = [NSString stringWithFormat:@"与%@短信", self.smsList.username];
     self.title = title;
     
 //    UIView *headerView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 40)] autorelease];
@@ -68,15 +68,15 @@
     
 //    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageByName:@"bg_mask"]];
     
-    if (self.hasNewSmsRecord) {
-        NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@", kAppDelegate.userId];
-        [SMSRecord deleteAllMatchingPredicate:pred];
-        DB_SAVE();
+//    if (self.hasNewSmsRecord) {
+//        NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@", kAppDelegate.userId];
+//        [SMSRecord deleteAllMatchingPredicate:pred];
+//        DB_SAVE();
         [self talkHistory]; //从服务器取最近的50条
-    }
-    else{
-        [self getTalkHistoryFromDB];
-    }
+//    }
+//    else{
+//        [self getTalkHistoryFromDB];
+//    }
     
     
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
@@ -184,7 +184,7 @@
 
 - (void)getTalkHistoryFromDB
 {
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@", kAppDelegate.userId];
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND userid == %@", kAppDelegate.userId, self.smsList.userid];
     NSArray *allSms = [SMSRecord findAllWithPredicate:pred];
     if (allSms.count > 0) {
         if (allSms.count >= 50) {

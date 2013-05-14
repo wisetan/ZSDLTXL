@@ -131,11 +131,11 @@
     [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            NSInteger sendPeopleNum = self.contactArray.count;
-            NSInteger count = self.myInfo.account.integerValue;
-            count-=sendPeopleNum;
-            self.myInfo.account = [NSNumber numberWithInt:count];
-            DB_SAVE();
+//            NSInteger sendPeopleNum = self.contactArray.count;
+//            NSInteger count = self.myInfo.account.integerValue;
+//            count-=sendPeopleNum;
+//            self.myInfo.account = [NSNumber numberWithInt:count];
+//            DB_SAVE();
             [kAppDelegate showWithCustomAlertViewWithText:@"发送成功" andImageName:nil];
             
             double delayInSeconds = .3;

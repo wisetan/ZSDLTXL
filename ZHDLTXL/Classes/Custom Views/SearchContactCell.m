@@ -1,14 +1,14 @@
 //
-//  ContactCell.m
+//  SearchContactCell.m
 //  ZHDLTXL
 //
-//  Created by LiuYue on 13-4-9.
+//  Created by LiuYue on 13-5-10.
 //  Copyright (c) 2013年 zxcx. All rights reserved.
 //
 
-#import "ContactCell.h"
+#import "SearchContactCell.h"
 
-@implementation ContactCell
+@implementation SearchContactCell
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -27,13 +27,7 @@
 }
 
 - (void)dealloc {
-    [_headIcon release];
-    [_nameLabel release];
-//    [_contactButton release];
-//    [_selectButton release];
-    [_unSelectedImage release];
     [_xun_VImage release];
-    [_ZDLabel release];
     [super dealloc];
 }
 @end

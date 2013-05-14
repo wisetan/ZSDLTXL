@@ -43,6 +43,9 @@ SelectPharViewControllerDelegate
 @property (retain, nonatomic) IBOutlet UILabel *mailLabel;
 @property (retain, nonatomic) IBOutlet UIButton *modifyButton;
 @property (retain, nonatomic) IBOutlet UITableView *infoTableView;
+@property (retain, nonatomic) IBOutlet UILabel *userIdLabel;
+@property (retain, nonatomic) IBOutlet UILabel *mailNameLabel;
+@property (retain, nonatomic) IBOutlet UIImageView *xun_VImage;
 
 @property (retain, nonatomic) NSMutableArray *leftArray;
 @property (retain, nonatomic) NSMutableArray *rightArray;

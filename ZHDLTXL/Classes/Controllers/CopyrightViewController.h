@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface CopyrightViewController : UIViewController
+@interface CopyrightViewController : UIViewController <UIWebViewDelegate>
 
 @property (retain, nonatomic) IBOutlet UIWebView *webView;
 @end

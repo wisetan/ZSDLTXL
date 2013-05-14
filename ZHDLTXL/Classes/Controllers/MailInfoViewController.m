@@ -60,25 +60,69 @@
     [self.headIcon setImageWithURL:[NSURL URLWithString:self.mailInfo.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
     self.headIcon.layer.cornerRadius = 4;
     self.headIcon.layer.masksToBounds = YES;
+    self.deleteMail = YES;
+    
+    
+    [self.preMail addTarget:self action:@selector(preMail:) forControlEvents:UIControlEventTouchUpInside];
+    [self.preMail setImage:[UIImage imageByName:@"button_p.png"] forState:UIControlStateHighlighted];
+    
+    [self.nextMail addTarget:self action:@selector(nextMail:) forControlEvents:UIControlEventTouchUpInside];
+    [self.nextMail setImage:[UIImage imageByName:@"button_p.png"] forState:UIControlStateHighlighted];
+    
+    [self.deleteMailBtn addTarget:self action:@selector(deleteMail:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+#pragma mark - pre mail, next mail, delete mail
+
+- (void)preMail:(UIButton *)sender
+{
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"date < %@ AND loginid = %@ AND foldername = %@", self.mailInfo.date, kAppDelegate.userId, @"INBOX"];
+    NSArray *mailArray = [MailInfo findAllSortedBy:@"date" ascending:YES withPredicate:pred];
+    if (mailArray.count != 0) {
+        MailInfo *preMail = [mailArray lastObject];
+        self.mailInfo = preMail;
+        [self showMail:self.mailInfo];
+    }
+}
+
+- (void)nextMail:(UIButton *)sender
+{
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"date > %@ AND loginid = %@ AND foldername = %@", self.mailInfo.date, kAppDelegate.userId, @"INBOX"];
+    NSArray *mailArray = [MailInfo findAllSortedBy:@"date" ascending:YES withPredicate:pred];
+    if (mailArray.count != 0) {
+        MailInfo *nextMail = [mailArray objectAtIndex:0];
+        self.mailInfo = nextMail;
+        [self showMail:self.mailInfo];
+    }
+}
+
+- (void)showMail:(MailInfo *)mail
+{
+    self.nameLabel.text = mail.username;
+    self.addressLabel.text = mail.address;
+    
+    self.subjectLabel.text = mail.subject;
+    self.contentTextView.text = mail.content;
+    
+    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    [dateFormatter setDateFormat:@"yyyy年M月d日 H:mm"];
+    NSDate *mailDate = [NSDate dateWithTimeIntervalSince1970:[self.mailInfo.date doubleValue]];
+    NSString *dateStr = [dateFormatter stringFromDate:mailDate];
+    self.dateLabel.text = dateStr;
+    
+    [self.headIcon setImageWithURL:[NSURL URLWithString:self.mailInfo.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_L_icon.png"]];
+}
+
+- (void)deleteMail:(UIButton *)sender
+{
+    self.mailInfo.flags = @"2";
+    [self backAction:nil];
 }
 
 - (void)reply:(UIButton *)sender
 {
     SendEmailViewController *sendEmailVC = [[SendEmailViewController alloc] init];
-//    MailInfo *mail = [MailInfo createEntity];
-//    mail.userid = self.mailInfo.userid;
-//    mail.username = self.mailInfo.username;
-//    mail.loginid = kAppDelegate.userId;
-//    mail.thirdaddress = self.mailInfo.thirdaddress;
-//    mail.address = self.mailInfo.address;
-//    mail.foldername = @"OUTBOX";
-//    mail.subject = @"";
-//    mail.content = @"";
-//    mail.date = @"";
-//    mail.flags = @"";
-//    mail.messageid = @"";
-//    mail.state = @"";
-//    mail.picturelinkurl = self.mailInfo.picturelinkurl;
+    self.deleteMail = NO;
     
     sendEmailVC.mail = self.mailInfo;
     [self.navigationController pushViewController:sendEmailVC animated:YES];
@@ -87,6 +131,10 @@
 
 - (void)backAction:(UIButton *)sender
 {
+//    [self.mailInfo deleteEntity];
+//    if (self.deleteMail) {
+//        [self.mailInfo deleteEntity];
+//    }
     [self.navigationController popViewControllerAnimated:YES];
 }
 
@@ -103,6 +151,9 @@
     [_dateLabel release];
     [_subjectLabel release];
     [_contentTextView release];
+    [_preMail release];
+    [_nextMail release];
+    [_deleteMailBtn release];
     [super dealloc];
 }
 - (void)viewDidUnload {
@@ -112,6 +163,9 @@
     [self setDateLabel:nil];
     [self setSubjectLabel:nil];
     [self setContentTextView:nil];
+    [self setPreMail:nil];
+    [self setNextMail:nil];
+    [self setDeleteMailBtn:nil];
     [super viewDidUnload];
 }
 @end

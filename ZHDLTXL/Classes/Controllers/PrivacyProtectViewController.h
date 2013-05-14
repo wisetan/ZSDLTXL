@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PrivacyProtectViewController : UIViewController
+@interface PrivacyProtectViewController : UIViewController <UIWebViewDelegate>
 
 @property (retain, nonatomic) IBOutlet UIWebView *webView;
 @end

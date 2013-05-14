@@ -119,24 +119,10 @@
 - (void)logoff
 {
     NSLog(@"registAndLogin");
-    
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
-    MyInfo *myInfo = [MyInfo findFirstWithPredicate:pred];
-    [myInfo deleteEntity];
-    DB_SAVE();
-    
-    
-    [PersistenceHelper setData:@"" forKey:KUserName];
-    [PersistenceHelper setData:@"" forKey:kUserId];
-    [PersistenceHelper setData:@"" forKey:KPassWord];
-    
-    
-
-    
-    
-    LoginViewController *loginVC = [[LoginViewController alloc] init];
-    [self.navigationController pushViewController:loginVC animated:YES];
-    [loginVC release];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"是否确认退出" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
+    alert.tag = 2001;
+    [alert show];
+    [alert release];
 }
 
 - (void)modifyPassword
@@ -205,6 +191,23 @@
         }
         else{
             return;
+        }
+    }
+    else if (alertView.tag == 2001){
+        if (buttonIndex == 1) {
+            NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
+            MyInfo *myInfo = [MyInfo findFirstWithPredicate:pred];
+            [myInfo deleteEntity];
+            //    DB_SAVE();
+            
+            
+            [PersistenceHelper setData:@"" forKey:KUserName];
+            [PersistenceHelper setData:@"" forKey:kUserId];
+            [PersistenceHelper setData:@"" forKey:KPassWord];
+            
+            LoginViewController *loginVC = [[LoginViewController alloc] init];
+            [self.navigationController pushViewController:loginVC animated:YES];
+            [loginVC release];
         }
     }
     

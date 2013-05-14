@@ -33,7 +33,7 @@
     [super viewDidLoad];
     self.title = @"关 于";
     self.hidesBottomBarWhenPushed = YES;
-    self.nameArray = @[@"用户协议",@"隐私保护",@"版本声明",@"免责声明"];
+    self.nameArray = @[@"用户协议",@"隐私保护",@"版权声明",@"免责声明"];
     self.selArray = @[@"userAgreement", @"privacyProtect",@"copyrightDeclare",@"reliefDeclare"];
     
     UIButton *backBarButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -51,8 +51,6 @@
 {
     [self.navigationController popViewControllerAnimated:YES];
 }
-
-
 
 - (void)didReceiveMemoryWarning
 {

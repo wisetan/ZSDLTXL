@@ -121,9 +121,9 @@
         
     }];
     
-    [self.provinceArray sortUsingComparator:^NSComparisonResult(ProvinceInfo *pro1, ProvinceInfo *pro2) {
-        return [pro1.provinceid compare:pro2.provinceid options:NSNumericSearch];
-    }];
+//    [self.provinceArray sortUsingComparator:^NSComparisonResult(ProvinceInfo *pro1, ProvinceInfo *pro2) {
+//        return [pro1.provinceid compare:pro2.provinceid options:NSNumericSearch];
+//    }];
     
 }
 

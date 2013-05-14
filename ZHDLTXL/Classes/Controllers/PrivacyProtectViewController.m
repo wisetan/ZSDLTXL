@@ -39,12 +39,32 @@
     
     
     NSURL *url = [NSURL URLWithString:[@"http://www.boracloud.com:9101/BLZTCloud/wap/privacyprotection.jsp" stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-    [self.webView loadRequest:[NSURLRequest requestWithURL:url]];
+    NSMutableURLRequest *request = [NSURLRequest requestWithURL:url];
+    request.timeoutInterval = 15.f;
+    [self.webView loadRequest:request];
+    self.webView.delegate = self;
 }
 
 - (void)backAction
 {
+    [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)webViewDidStartLoad:(UIWebView *)webView
+{
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+}
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView
+{
+    [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+}
+
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+{
+    [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+    [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
 }
 
 - (void)didReceiveMemoryWarning

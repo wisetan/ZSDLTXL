@@ -70,7 +70,7 @@
     self.navigationItem.leftBarButtonItem = button1;
 
     self.leftArray = [NSArray arrayWithObjects:@"手机号", @"密码", @"确认密码",@"真实姓名", @"邮箱", nil];
-    self.rightArray = [NSArray arrayWithObjects:@"必填", @"密码不得少于6个字符", @"请再次输入密码", @"必填", @"可选", nil];
+    self.rightArray = [NSArray arrayWithObjects:@"必填（登录使用）", @"密码不得少于6个字符", @"请再次输入密码", @"必填（全为汉字）", @"可选", nil];
 
     //right item
     button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -136,8 +136,8 @@
             [kAppDelegate showWithCustomAlertViewWithText:@"用户名不得少于2个字符" andImageName:kErrorIcon];
             return;
         }
-        if (![realName isMatchedByRegex:@"\\[u4e00-u9fa5\\]"]) {
-            [kAppDelegate showWithCustomAlertViewWithText:@"用户民必须全为汉字" andImageName:kErrorIcon];
+        if (![realName isMatchedByRegex:@"[\u4e00-\u9fa5]"]) {
+            [kAppDelegate showWithCustomAlertViewWithText:@"用户名必须全为汉字" andImageName:kErrorIcon];
             return;
         }
     }

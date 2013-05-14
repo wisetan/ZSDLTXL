@@ -28,5 +28,6 @@
 @dynamic username_p;
 @dynamic cityid;
 @dynamic isreal;
+@dynamic sortid;
 
 @end

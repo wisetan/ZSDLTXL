@@ -443,6 +443,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
 	NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     [request setHTTPMethod:method];
     [request setAllHTTPHeaderFields:self.defaultHeaders];
+    [request setTimeoutInterval:15.f];  // set the timeout
 
     if (parameters) {
         if ([method isEqualToString:@"GET"] || [method isEqualToString:@"HEAD"] || [method isEqualToString:@"DELETE"]) {

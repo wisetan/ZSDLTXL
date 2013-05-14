@@ -57,7 +57,7 @@
     
 //    //head icon
 
-    self.nameLabel.text = self.contact.username;
+//    self.nameLabel.text = self.contact.username;
     [self.addFriendButton addTarget:self action:@selector(addFriend:) forControlEvents:UIControlEventTouchUpInside];
     
     self.commentBg.hidden = YES;
@@ -258,7 +258,22 @@
                 self.xun_VImage.hidden = YES;
             }
             
-            self.commentTextField.text = self.contact.remark;
+            self.nameLabel.text = self.contact.username;
+            CGSize nameLabelSize = [self.contact.username sizeWithFont:[UIFont systemFontOfSize:16]];
+            CGRect frame = self.nameLabel.frame;
+            self.nameLabel.frame = CGRectMake(frame.origin.x, frame.origin.y, nameLabelSize.width, nameLabelSize.height);
+            
+            CGRect xun_VImageFrame = self.xun_VImage.frame;
+            xun_VImageFrame.origin.x = self.nameLabel.frame.origin.x + self.nameLabel.frame.size.width + 3;
+            self.xun_VImage.frame = xun_VImageFrame;
+            
+            
+            
+            if ([self.contact.remark isValid]) {
+                self.commentTextField.text = [NSString stringWithFormat:@"(%@)", self.contact.remark];
+            }
+            
+//            self.commentTextField.text = self.contact.remark;
             
 //            //获得好友备注
 //            if ([self.contact.remark isValid])
@@ -371,7 +386,7 @@
         friendContact.col2 = self.contact.col2;
         friendContact.col3 = self.contact.col3;
         friendContact.invagency = self.contact.invagency;
-        friendContact.loginid = self.contact.loginid;
+        friendContact.loginid = kAppDelegate.userId;
         friendContact.mailbox = self.contact.mailbox;
         friendContact.picturelinkurl = self.contact.picturelinkurl;
         friendContact.remark = self.commentTextField.text;
@@ -401,55 +416,73 @@
 
 #pragma mark - textfield delegate
 
+
+
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
 //    CGRect frame = self.view.frame;
 //    [UIView animateWithDuration:0.2f animations:^{
 //        self.view.frame = CGRectMake(frame.origin.x, frame.origin.y-160.f, frame.size.width, frame.size.height);
 //    }];
+    if ([kAppDelegate.userId isEqualToString:@"0"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"请登录修改备注" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        [self.view endEditing:YES];
+        return;
+    }
+    
+    
+    if ([self.contact.remark isValid]) {
+        textField.text = self.contact.remark;
+    }
+    
+    
     textField.returnKeyType = UIReturnKeyDone;
     self.commentBg.hidden = NO;
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
-//    [UIView animateWithDuration:0.2f animations:^{
-//        self.view.frame = CGRectMake(0, 0, 320, [kAppDelegate window].frame.size.height-64);
-//    }];
-    
     NSLog(@"text field edit end");
     
-    if ([textField.text isValid] && ![textField.text isEqualToString:@"添加备注"]) {
-        NSString *destid = self.contact.userid;
-        NSString *userid = kAppDelegate.userId;
-        
-        NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid",
-                                  destid, @"destid",
-                                  textField.text, @"remark",
-                                  @"changeuserremark.json", @"path", nil];
-        
+
+    NSString *destid = self.contact.userid;
+    NSString *userid = kAppDelegate.userId;
+    
+    NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:userid, @"userid",
+                              destid, @"destid",
+                              textField.text, @"remark",
+                              @"changeuserremark.json", @"path", nil];
+    
 //        NSLog(@"comment para dict: %@", paraDict);
-        
-        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-        [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
-            if ([[json objectForKey:@"returnCode"] longValue] == 0) {
-                hud.labelText = @"修改成功";
-                [hud hide:YES afterDelay:.3];
-//                [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-                //            self.comment = textField.text;
-                self.contact.remark = textField.text;
-//                self.nameLabel.text = [NSString stringWithFormat:@"%@(%@)", self.contact.username, self.contact.remark];
-                DB_SAVE();
+    
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
+    [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
+        if ([[json objectForKey:@"returnCode"] longValue] == 0) {
+            hud.labelText = @"修改成功";
+            [hud hide:YES afterDelay:.3];
+            
+            if (![textField.text isValid]) {
+                self.contact.remark = @"";
             }
             else{
-                [MBProgressHUD hideHUDForView:kAppDelegate.window animated:YES];
-                [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+                self.contact.remark = textField.text;
+                NSString *remark = [NSString stringWithFormat:@"(%@)", self.contact.remark];
+                textField.text = remark;
             }
-        } failure:^(NSError *error) {
-            [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-        }];
-    }
+            self.contact.loginid = [kAppDelegate userId];
+            
+            DB_SAVE();
+        }
+        else{
+            [MBProgressHUD hideHUDForView:kAppDelegate.window animated:YES];
+            [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
+        }
+    } failure:^(NSError *error) {
+        [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
+        [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+    }];
     
     self.commentBg.hidden = YES;
     

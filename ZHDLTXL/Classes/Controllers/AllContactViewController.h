@@ -22,6 +22,10 @@ UISearchBarDelegate
 
 @property (nonatomic, assign) NSInteger page;
 @property (nonatomic, assign) NSInteger count;
+
+@property (nonatomic, assign) NSInteger searchPage;
+@property (nonatomic, assign) NSInteger searchCount;
+
 @property (nonatomic, assign) BOOL isFetchingData;
 @property (nonatomic, assign) BOOL shouldFetchData; //当城市改变的时候应该从新取数据
 @property (nonatomic, assign) BOOL canPullRefresh;  //
@@ -48,26 +52,27 @@ UISearchBarDelegate
 @property (nonatomic, retain) UITableView *searchTableView;
 @property (nonatomic, retain) UIView *searchTableOverlayView;
 @property (nonatomic, assign) BOOL isSearching;
+@property (nonatomic, assign) BOOL addOverLayer;
+
+@property (nonatomic, assign) NSInteger sortid;
+
+
 
 - (void)setProvinceIdAndCityIdOfCity:(NSString *)city;
-
 - (BOOL)isLogined;
-//- (void)configureCell:(ContactCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 - (void)getInvestmentUserListFromServer;
-
 - (void)selectArea:(UIButton *)sender;
 
-//- (void)reloadTableViewDataSource;
-//- (void)doneLoadingTableViewData;
 
 
 // 创建表格底部
-- (void) createTableFooter;
+- (void) createTableFooter:(UITableView *)tableView;
+- (void) createFinishTableFooter:(UITableView *)tableView;
 // 开始加载数据
-- (void) loadDataBegin;
+- (void) loadDataBegin:(UITableView *)tableView;
 // 加载数据中
 //- (void) loadDataing;
 // 加载数据完毕
-- (void) loadDataEnd;
+- (void) loadDataEnd:(UITableView *)tableView;
 
 @end

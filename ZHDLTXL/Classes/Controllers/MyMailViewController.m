@@ -78,8 +78,8 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     if (self.viewWillAppearing == NO) {
-        self.checkMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMailInBackground) object:nil] autorelease];
         self.viewWillAppearing = YES;
+        self.checkMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMailInBackground) object:nil] autorelease];
         [self getInboxMailFromDB];
     }
     
@@ -87,7 +87,7 @@
     
 }
 
-- (void)viewWillDisappear:(BOOL)animated
+- (void)viewDidDisappear:(BOOL)animated
 {
     if (self.checkMailThread.isCancelled == NO) {
         [self.checkMailThread cancel];
@@ -138,7 +138,7 @@
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         [button setImage:image forState:UIControlStateNormal];
         //        button.showsTouchWhenHighlighted = YES;
-        button.frame = CGRectMake(10+220*i, 5, 75, 34);
+        button.frame = CGRectMake(10+225*i, 5, 75, 34);
         button.tag = i;
         UILabel *label = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 34)] autorelease];
         label.text = title;
@@ -173,26 +173,47 @@
 {
     self.title = @"收件箱";
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND foldername == %@", kAppDelegate.userId, @"INBOX"];
-    [self.inboxMails removeAllObjects];
-    [self.inboxMails addObjectsFromArray:[MailInfo findAllSortedBy:@"date" ascending:NO withPredicate:pred]];
-    
-    if(self.inboxMails.count == 0){
+    NSArray *mailArray = [MailInfo findAllSortedBy:@"date" ascending:NO withPredicate:pred];
+    if (mailArray.count == 0) {
         [self getMailFromServer];
     }
     else{
+        [self.inboxMails removeAllObjects];
+        [mailArray enumerateObjectsUsingBlock:^(MailInfo *mail, NSUInteger idx, BOOL *stop) {
+            if (![mail.flags isEqualToString:@"2"]) {
+                [self.inboxMails addObject:mail];
+            }
+        }];
         [self.tableView reloadData];
-        if (self.checkFinished == NO) {
-            [self.checkMailThread cancel];
-            self.checkMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMailInBackground) object:nil] autorelease];
-            [self.checkMailThread start];
+
+        if (self.inboxMails.count > 0) {
+            if (self.checkFinished == NO) {
+                self.checkMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMailInBackground) object:nil] autorelease];
+                [self.checkMailThread start];
+            }
         }
     }
+    
+    
+//    [self.inboxMails removeAllObjects];
+//    [self.inboxMails addObjectsFromArray:[MailInfo findAllSortedBy:@"date" ascending:NO withPredicate:pred]];
+//    
+//    if(self.inboxMails.count == 0){
+//        [self getMailFromServer];
+//    }
+//    else{
+//        [self.tableView reloadData];
+//        if (self.checkFinished == NO) {
+//            self.checkMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMailInBackground) object:nil] autorelease];
+//            [self.checkMailThread start];
+//        }
+//    }
 }
 
 - (void)getOutboxMailFromDB
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND foldername == %@", kAppDelegate.userId, @"OUTBOX"];
-    self.outboxMails = [NSMutableArray arrayWithArray:[MailInfo findAllWithPredicate:pred]];
+    self.outboxMails = [NSMutableArray arrayWithArray:[MailInfo findAllSortedBy:@"date" ascending:NO withPredicate:pred]];
 //    NSLog(@"self.outboxMails %@", self.outboxMails);
     for (MailInfo *mail in self.outboxMails) {
         NSLog(@"mail %@", mail);
@@ -224,7 +245,9 @@
         NSLog(@"error %@", account.lastError);
     }
     else{
-        MailInfo *lastMail = [self.inboxMails objectAtIndex:0];
+        NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND foldername == %@", kAppDelegate.userId, @"INBOX"];
+        NSArray *mailArrayInDB = [MailInfo findAllSortedBy:@"date" ascending:NO withPredicate:pred];
+        MailInfo *lastMail = [mailArrayInDB objectAtIndex:0];
         
         __block BOOL hasNewMail = NO;
         NSArray *mailArray = [[account folderWithPath:@"INBOX"] messagesFromSequenceNumber:1 to:0 withFetchAttributes:CTFetchAttrEnvelope];
@@ -232,12 +255,13 @@
             
             NSTimeInterval mailDate = [[msg senderDate] timeIntervalSince1970];
             NSLog(@"maildate %lf, lastmail date %f", mailDate, lastMail.date.doubleValue);
+            NSLog(@"msg body %@", [msg body]);
             if (mailDate > lastMail.date.doubleValue) {
                 hasNewMail = YES;
                 
                 NSString *regex = REGEX_PATTERN;
                 NSArray *array = [[[msg body] arrayOfCaptureComponentsMatchedByRegex:regex] objectAtIndex:0];
-                //                    NSLog(@"array %@", array);
+                NSLog(@"array %@", array);
                 
                 NSString *content = [array objectAtIndex:2];
                 NSString *username = [array objectAtIndex:4];
@@ -257,7 +281,16 @@
                 mail.date = [NSString stringWithFormat:@"%lf", [[msg senderDate] timeIntervalSince1970]];
                 mail.loginid = kAppDelegate.userId;
                 mail.messageid = [msg messageId];
-                mail.subject = [msg subject];
+                mail.subject = [NSString decodeBase64String:[msg subject]];
+                
+//                NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGBK_95);
+//                
+//                NSString *subject = [[NSString alloc] initWithData:[[msg subject] dataUsingEncoding:enc] encoding:NSUTF8StringEncoding];
+//                NSLog(@"encg subject %@", subject);
+                
+                NSLog(@"rec ascii %x", [[msg subject] characterAtIndex:0]);
+                
+                
                 mail.foldername = @"INBOX";
                 mail.flags = @"0";
                 mail.picturelinkurl = picturelinkurl;
@@ -265,60 +298,16 @@
                 DB_SAVE();
             }
             
-            if (hasNewMail)
-            {
-                [self performSelectorOnMainThread:@selector(checkMailFinished) withObject:nil waitUntilDone:YES];
-            }
-            self.checkFinished = YES;
+            
         }];
         
+        if (hasNewMail)
+        {
+            [self performSelectorOnMainThread:@selector(checkMailFinished) withObject:nil waitUntilDone:YES];
+        }
+        self.checkFinished = YES;
     }
     
-                
-                
-//                NSString *msgFrom = [[[[msg from] allObjects] lastObject] email];
-//                NSString *userId = [[msgFrom componentsSeparatedByString:@"@"] objectAtIndex:0];
-//                NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getUserDetailById.json", @"path", userId, @"peoperid",  nil];
-//                [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
-//                    if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
-//                        [MBProgressHUD hideAllHUDsForView:kAppDelegate.window animated:YES];
-//                        NSString *username = [[json objForKey:@"UserDetail"] objForKey:@"username"];
-////                        NSLog(@"his json info %@", json);
-//                        [mailArray enumerateObjectsUsingBlock:^(CTCoreMessage *msg, NSUInteger idx, BOOL *stop) {
-//                            MailInfo *mail = [MailInfo createEntity];
-//                            mail.userid = userId;
-//                            mail.content = [msg body];
-//                            mail.username = username;
-////                            NSLog(@"msg from %@", [[[[msg from] allObjects] lastObject] email]);
-//                            mail.address = [[json objForKey:@"UserDetail"] objForKey:@"mailbox"];;
-//                            //                    mail.date = [msg senderDate];
-//                            mail.date = [NSString stringWithFormat:@"%lf", [[msg senderDate] timeIntervalSince1970]];
-//                            mail.loginid = kAppDelegate.userId;
-//                            mail.messageid = [msg messageId];
-//                            mail.subject = [msg subject];
-//                            mail.foldername = @"INBOX";
-//                            mail.flags = @"0";
-//                            mail.picturelinkurl = [[json objForKey:@"UserDetail"] objForKey:@"picturelinkurl"];
-//                            [self.inboxMails insertObject:mail atIndex:0];
-//                            DB_SAVE();
-//                            
-//                        }];
-//                        
-//                        
-//                        if (hasNewMail) {
-//                            [self performSelectorOnMainThread:@selector(checkMailFinished) withObject:nil waitUntilDone:YES];
-//                        }
-//                        self.checkFinished = YES;
-//                    }
-//                    
-//                } failure:^(NSError *error) {
-//
-//                }];
-//            }
-//        }];
-//    }
-    
-
     [pool drain];
 }
 
@@ -362,7 +351,9 @@
                 NSString *foldername = @"INBOX";
                 
                 
-                NSArray *mailArray = [[[[account folderWithPath:foldername] messagesFromSequenceNumber:1 to:0 withFetchAttributes:CTFetchAttrEnvelope] reverseObjectEnumerator] allObjects];
+                NSArray *mailArray = [[[[account folderWithPath:foldername] messagesFromSequenceNumber:1
+                                                                                                    to:0
+                                                                                   withFetchAttributes:CTFetchAttrEnvelope] reverseObjectEnumerator] allObjects];
 //                CTCoreMessage *msg = [mailArray objectAtIndex:0];
 //
 //                NSString *address = [[[[msg from] allObjects] lastObject] email];
@@ -407,55 +398,8 @@
                 AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
                 
                 [self.tableView reloadData];
-                
-                
-                
-//                NSDictionary *paraDict = [NSDictionary dictionaryWithObjectsAndKeys:@"getUserDetailById.json", @"path", userid, @"peoperid",  nil];
-//
-//
-//                [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
-//                    if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
-//                        [MBProgressHUD hideAllHUDsForView:kAppDelegate.window animated:YES];
-//                        username = [[json objForKey:@"UserDetail"] objForKey:@"username"];
-//                        NSLog(@"his json info %@", json);
-//                        [mailArray enumerateObjectsUsingBlock:^(CTCoreMessage *msg, NSUInteger idx, BOOL *stop) {
-//                            MailInfo *mail = [MailInfo createEntity];
-//                            mail.userid = userid;
-//                            mail.content = [msg body];
-//                            mail.username = username;
-////                            NSLog(@"msg from %@", [[[[msg from] allObjects] lastObject] email]);
-//                            mail.address = address;
-//                            //                    mail.date = [msg senderDate];
-//                            mail.date = [NSString stringWithFormat:@"%lf", [[msg senderDate] timeIntervalSince1970]];
-//                            NSLog(@"mail date %@", mail.date);
-//                            mail.loginid = kAppDelegate.userId;
-//                            mail.messageid = [msg messageId];
-//                            mail.subject = [msg subject];
-//                            mail.foldername = @"INBOX";
-//                            mail.flags = @"0";
-//                            mail.picturelinkurl = [[json objForKey:@"UserDetail"] objForKey:@"picturelinkurl"];
-//                            [self.inboxMails addObject:mail];
-//
-//                            DB_SAVE();
-//                            
-//                        }];
-//                        
-//                        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-//
-//                        [self.tableView reloadData];
-//
-//                    }
-//                    else{
-//                        [MBProgressHUD hideAllHUDsForView:kAppDelegate.window animated:YES];
-//                        [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
-//                    }
-//
-//                } failure:^(NSError *error) {
-//                    [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
-//                    [MBProgressHUD hideAllHUDsForView:kAppDelegate.window animated:YES];
-//                }];
 
-                NSLog(@"mails %@", self.inboxMails);
+//                NSLog(@"mails %@", self.inboxMails);
 
             }
         });
@@ -544,16 +488,22 @@
         mail = [self.outboxMails objectAtIndex:indexPath.row];
     }
     
-    
-    MailInfoViewController *mailInfoVC = [[MailInfoViewController alloc] init];
-    mailInfoVC.mailInfo = mail;
     if ([mail.flags isEqualToString:@"0"]) {
         mail.flags = @"1";
-//        cell.unreadImage.hidden = YES;
     }
     
-    
     DB_SAVE();
+    
+//    MailInfo *sendMail = [MailInfo createEntity];
+//    [[[[mail entity] attributesByName] allKeys] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//        NSString *value = [mail valueForKey:obj];
+//        [sendMail setValue:value forKey:obj];
+//    }];
+//    
+//    sendMail.foldername = @"OUTBOX";
+    MailInfoViewController *mailInfoVC = [[MailInfoViewController alloc] init];
+    mailInfoVC.mailInfo = mail;
+
     [self.navigationController pushViewController:mailInfoVC animated:YES];
     [mailInfoVC release];
 }

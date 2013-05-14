@@ -8,6 +8,7 @@
 
 #import "AllContactViewController.h"
 #import "ContactCell.h"
+#import "SearchContactCell.h"
 #import "Contact.h"
 #import "ProvinceViewController.h"
 #import "SendMessageViewController.h"
@@ -21,8 +22,8 @@
 
 #import "UIImageView+WebCache.h"
 #import "CityInfo.h"
-
 #import "AllContact.h"
+#import "SearchContact.h"
 
 #import "UIScrollView+SVInfiniteScrolling.h"
 #import "OtherHomepageViewController.h"
@@ -64,10 +65,10 @@
     [super viewDidLoad];
     self.title = [PersistenceHelper dataForKey:kCityName];
     self.page = 0;
+    self.searchPage = 0;
+    self.searchCount = 20;
 
     reloading = NO;
-//    [self setProvinceIdAndCityIdOfCity:[PersistenceHelper dataForKey:kCityName]];
-//    [self createTableFooter];
     
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"topmargin.png"] forBarMetrics:UIBarMetricsDefault];
     
@@ -162,21 +163,24 @@
     self.searchDC.delegate = self;
     [self.searchDC  setActive:NO];
     
-    self.searchTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    self.searchTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height+44)];
     self.searchTableView.dataSource = self;
     self.searchTableView.delegate = self;
     self.isSearching = NO;
+    self.canPullRefresh = YES;
 
     
 //    [self getAllContactFromDB];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveLoginNoti:) name:kLoginNotification object:nil];
-    self.canPullRefresh = YES;
+//    self.canPullRefresh = YES;
     
     [[NSUserDefaults standardUserDefaults] addObserver:self
                                             forKeyPath:kCityName
-                                               options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld
+                                               options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld | NSKeyValueObservingOptionInitial
                                                context:nil];
+    
+    self.sortid = 0;
     
 }
 
@@ -191,15 +195,24 @@
     
     if (self.isFetchingData == NO) {
         self.isFetchingData = YES;
+        
+        if (![[PersistenceHelper dataForKey:kCityName] isValid]) {
+            return;
+        }
+        
         [self getAllContactFromDB];
         [self setProvinceIdAndCityIdOfCity:[PersistenceHelper dataForKey:kCityName]];
     }
 }
 
-- (void)viewWillDisappear:(BOOL)animated
+- (void)viewDidDisappear:(BOOL)animated
 {
     self.isFetchingData = NO;
-    [super viewWillDisappear:animated];
+    self.canPullRefresh = YES;
+    [self.searchContactArray removeAllObjects];
+    [self.searchDC setActive:NO];
+//    [self.contactArray removeAllObjects];
+    [super viewDidDisappear:animated];
 }
 
 - (void)tapOnLocationIcon
@@ -209,36 +222,48 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    
     NSString *oldCity = [change objForKey:@"old"];
     NSString *newCity = [change objForKey:@"new"];
-    if (![oldCity isEqualToString:newCity]) {
-        self.canPullRefresh = YES;
-        reloading = NO;
-        [self.contactArray removeAllObjects];
+    
+    NSLog(@"oldcity %@ newCity %@", oldCity, newCity);
+    
+    if (![oldCity isValid] && [newCity isValid]) {
         [self getAllContactFromDB];
+        [self setProvinceIdAndCityIdOfCity:[PersistenceHelper dataForKey:kCityName]];
+//        [self getInvestmentUserListFromServer];
+    }
+    
+    if (![oldCity isEqualToString:newCity]) {
         self.title = [change objForKey:@"new"];
     }
 }
 
+//- (void)checkCity
+//{
+//    if ([[PersistenceHelper dataForKey:kCityName] isValid]) {
+//        
+//    }
+//}
+
 - (void)receiveLoginNoti:(NSNotification *)noti
 {
-    self.loginLabel.text = @"我的主页";
+    self.loginLabel.text = @"主页";
 }
 
 - (void)getAllContactFromDB
 {
     self.page = 0;
     [self.contactArray removeAllObjects];
-    [MBProgressHUD showHUDAddedTo:kAppDelegate.window animated:YES];
+//    [MBProgressHUD showHUDAddedTo:kAppDelegate.window animated:YES];
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"cityid == %@ AND loginid == %@", [PersistenceHelper dataForKey:kCityId], kAppDelegate.userId];
-    NSArray *contactArray = [AllContact findAllWithPredicate:pred];
+    NSArray *contactArray = [AllContact findAllSortedBy:@"sortid" ascending:YES withPredicate:pred];
     if (contactArray.count > 0) {
         self.page = ceil(((CGFloat)contactArray.count / 50));
         [self.contactArray addObjectsFromArray:contactArray];
         [self.mTableView reloadData];
-        [self createTableFooter];
-        [MBProgressHUD hideAllHUDsForView:kAppDelegate.window animated:YES];
+        [self createTableFooter:self.mTableView];
+        self.sortid = contactArray.count;
+//        [MBProgressHUD hideAllHUDsForView:kAppDelegate.window animated:YES];
     }
     else{
         [self getInvestmentUserListFromServer];
@@ -266,17 +291,18 @@
     //    MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
     //    hub.labelText = @"获取商家列表";
     
+    [MBProgressHUD showHUDAddedTo:kAppDelegate.window animated:YES];
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             
             if (![[json objForKey:@"InvestmentUserList"] isValid]) {
-                [self.contactArray removeAllObjects];
+//                [self.contactArray removeAllObjects];
                 [self.mTableView reloadData];
                 self.canPullRefresh = NO;
-                [self createFinishTableFooter];
+                [self createFinishTableFooter:self.mTableView];
                 [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
-                [kAppDelegate showWithCustomAlertViewWithText:@"该地区暂无商家" andImageName:nil];
-                NSLog(@"%@ 该地区暂无商家", [PersistenceHelper dataForKey:kCityName]);
+                [kAppDelegate showWithCustomAlertViewWithText:@"加载完毕" andImageName:nil];
+//                NSLog(@"%@ 该地区暂无商家", [PersistenceHelper dataForKey:kCityName]);
                 return;
             }
             
@@ -298,30 +324,31 @@
                 contact.cityid = [PersistenceHelper dataForKey:kCityId];
                 contact.loginid = [kAppDelegate userId];
                 contact.username_p = makePinYinOfName(contact.username);
-                
-                
+                contact.invagency = [[contactDict objForKey:@"invagency"] stringValue];
                 //                NSLog(@"name pinyin %@", contact.username_p);
                 
                 contact.sectionkey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
-                
+                contact.sortid = [NSString stringWithFormat:@"%d", self.sortid++];
                 [self.contactArray addObject:contact];
                 DB_SAVE();
             }];
             
+            NSLog(@"self.contactArray.count %d", self.contactArray.count);
+            
             self.page++;
             [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
-            [self loadDataEnd];
+            [self loadDataEnd:self.mTableView];
             [self.mTableView reloadData];
         } else {
             
             [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
-            [self loadDataEnd];
+            [self loadDataEnd:self.mTableView];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
         }
     } failure:^(NSError *error) {
         
         [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
-        [self loadDataEnd];
+        [self loadDataEnd:self.mTableView];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
     }];
 }
@@ -417,15 +444,17 @@
     // 下拉到最底部时显示更多数据
     if(!reloading && scrollView.contentOffset.y > ((scrollView.contentSize.height - scrollView.frame.size.height)+20))
     {
-        if (self.canPullRefresh && !self.searchDC.active)
-        {
-            [self loadDataBegin];
+        if (self.searchDC.isActive && self.canPullRefresh) {
+            [self loadDataBegin:self.searchDC.searchResultsTableView];
+        }
+        else if(!self.searchDC.isActive && self.canPullRefresh){
+            [self loadDataBegin:self.mTableView];
         }
     }
 }
 
 // 开始加载数据
-- (void)loadDataBegin
+- (void)loadDataBegin:(UITableView *)tableView
 {
     if (reloading == NO)
     {
@@ -433,19 +462,30 @@
         UIActivityIndicatorView *tableFooterActivityIndicator = [[[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(75.0f, 10.0f, 20.0f, 20.0f)] autorelease];
         [tableFooterActivityIndicator setActivityIndicatorViewStyle:UIActivityIndicatorViewStyleGray];
         [tableFooterActivityIndicator startAnimating];
-        [self.mTableView.tableFooterView addSubview:tableFooterActivityIndicator];
         
-        [self getInvestmentUserListFromServer];
+//        if (self.searchDC.isActive) {
+//            [self.searchDC.searchResultsTableView addSubview:tableFooterActivityIndicator];
+//        }
+//        else{
+//            [self.mTableView.tableFooterView addSubview:tableFooterActivityIndicator];
+//            [self getInvestmentUserListFromServer];
+//        }
+        
+        [tableView.tableFooterView addSubview:tableFooterActivityIndicator];
+        if (self.searchDC.isActive) {
+            [self getSearchUser:self.searchDC.searchBar.text];
+        }
+        else{
+            [self getInvestmentUserListFromServer];
+        }
     }
 }
 
 // 加载数据完毕
-- (void)loadDataEnd
+- (void)loadDataEnd:(UITableView *)tableView
 {
     reloading = NO;
-//    [self showLoadNum];
-    
-    [self createTableFooter];
+    [self createTableFooter:tableView];
 }
 
 - (void)showLoadNum
@@ -465,23 +505,23 @@
 }
 
 // 创建表格底部
-- (void)createTableFooter
+- (void)createTableFooter:(UITableView *)tableView
 {
-    self.mTableView.tableFooterView = nil;
-    UIView *tableFooterView = [[[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.mTableView.bounds.size.width, 40.0f)] autorelease];
+    tableView.tableFooterView = nil;
+    UIView *tableFooterView = [[[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, tableView.bounds.size.width, 40.0f)] autorelease];
     UILabel *loadMoreText = [[[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 116.0f, 40.0f)] autorelease];
     [loadMoreText setCenter:tableFooterView.center];
     [loadMoreText setFont:[UIFont systemFontOfSize:14]];
     [loadMoreText setText:@"上拉显示更多数据"];
     [tableFooterView addSubview:loadMoreText];
     
-    self.mTableView.tableFooterView = tableFooterView;
+    tableView.tableFooterView = tableFooterView;
 }
 
-- (void)createFinishTableFooter
+- (void)createFinishTableFooter:(UITableView *)tableView
 {
-    self.mTableView.tableFooterView = nil;
-    UIView *tableFooterView = [[[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.mTableView.bounds.size.width, 40.0f)] autorelease];
+    tableView.tableFooterView = nil;
+    UIView *tableFooterView = [[[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, tableView.bounds.size.width, 40.0f)] autorelease];
     UILabel *loadMoreText = [[[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 116.0f, 40.0f)] autorelease];
     [loadMoreText setCenter:tableFooterView.center];
     [loadMoreText setFont:[UIFont systemFontOfSize:14]];
@@ -489,11 +529,8 @@
     loadMoreText.textAlignment = NSTextAlignmentCenter;
     [tableFooterView addSubview:loadMoreText];
     
-    self.mTableView.tableFooterView = tableFooterView;
+    tableView.tableFooterView = tableFooterView;
 }
-
-
-
 
 #pragma mark - table view
 
@@ -525,12 +562,12 @@
     if (tableView == self.searchDC.searchResultsTableView) {
 //        NSLog(@"search tableview cell");
         tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-        static NSString *cellID = @"contactCell";
-        ContactCell *cell = (ContactCell *)[tableView dequeueReusableCellWithIdentifier:cellID];
+        static NSString *cellID = @"searchContactCell";
+        SearchContactCell *cell = (SearchContactCell *)[tableView dequeueReusableCellWithIdentifier:cellID];
         if (nil == cell) {
-            cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
+            cell = [[[NSBundle mainBundle] loadNibNamed:@"SearchContactCell" owner:self options:nil] objectAtIndex:0];
         }
-        [self configureCell:cell atIndexPath:indexPath OfTableView:(UITableView *)tableView];
+        [self configureCell:(UITableViewCell *)cell atIndexPath:indexPath OfTableView:(UITableView *)tableView];
         
         return cell;
     }
@@ -541,12 +578,12 @@
     if (nil == cell) {
         cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
     }
-    [self configureCell:cell atIndexPath:indexPath OfTableView:(UITableView *)tableView];
+    [self configureCell:(UITableViewCell *)cell atIndexPath:indexPath OfTableView:(UITableView *)tableView];
     
     return cell;
 }
 
-- (void)configureCell:(ContactCell *)cell atIndexPath:(NSIndexPath *)indexPath OfTableView:(UITableView *)tableView
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath OfTableView:(UITableView *)tableView
 {
     cell.selectionStyle = UITableViewCellEditingStyleNone;
     
@@ -555,27 +592,67 @@
     
     if (tableView == self.searchDC.searchResultsTableView) {
         userDetail = [self.searchContactArray objectAtIndex:indexPath.row];
+
+        ((SearchContactCell *)cell).headIcon.layer.cornerRadius = 4;
+        ((SearchContactCell *)cell).headIcon.layer.masksToBounds = YES;
+        [((SearchContactCell *)cell).headIcon setImageWithURL:[NSURL URLWithString:userDetail.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
+        
+        
+        if ([userDetail.remark isValid]) {
+            NSMutableString *userName = [NSMutableString stringWithFormat:@"%@(%@)", userDetail.username, userDetail.remark];
+            ((SearchContactCell *)cell).nameLabel.text = userName;
+        }
+        else{
+            ((SearchContactCell *)cell).nameLabel.text = userDetail.username;
+        }
+        
+        ((SearchContactCell *)cell).areaLabel.text = userDetail.areaname;
+        if ([userDetail.col2 isEqualToString:@"1"])
+        {
+            ((SearchContactCell *)cell).xun_VImage.hidden = NO;
+        }
+        
     }
     else{
         userDetail = [self.contactArray objectAtIndex:indexPath.row];
+        
+        switch (userDetail.invagency.intValue) {
+            case 1:
+                ((ContactCell *)cell).ZDLabel.text = @"招商";
+                break;
+            case 2:
+                ((ContactCell *)cell).ZDLabel.text = @"代理";
+                break;
+            case 3:
+                ((ContactCell *)cell).ZDLabel.text = @"招商、代理";
+                break;
+            default:
+                break;
+        }
+        
+        
+        ((ContactCell *)cell).headIcon.layer.cornerRadius = 4;
+        ((ContactCell *)cell).headIcon.layer.masksToBounds = YES;
+        [((ContactCell *)cell).headIcon setImageWithURL:[NSURL URLWithString:userDetail.picturelinkurl]
+                                       placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
+        
+        
+        if ([userDetail.remark isValid]) {
+            NSMutableString *userName = [NSMutableString stringWithFormat:@"%@(%@)", userDetail.username, userDetail.remark];
+            ((ContactCell *)cell).nameLabel.text = userName;
+        }
+        else{
+            ((ContactCell *)cell).nameLabel.text = userDetail.username;
+        }
+        
+        ((ContactCell *)cell).unSelectedImage.hidden = YES;
+        if ([userDetail.col2 isEqualToString:@"1"]) {
+            ((ContactCell *)cell).xun_VImage.hidden = NO;
+        }
+        else{
+            ((ContactCell *)cell).xun_VImage.hidden = YES;
+        }
     }
-    
-    
-    
-    cell.headIcon.layer.cornerRadius = 4;
-    cell.headIcon.layer.masksToBounds = YES;
-    [cell.headIcon setImageWithURL:[NSURL URLWithString:userDetail.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
-    
-    
-    if ([userDetail.remark isValid]) {
-        NSMutableString *userName = [NSMutableString stringWithFormat:@"%@(%@)", userDetail.username, userDetail.remark];
-        cell.nameLabel.text = userName;
-    }
-    else{
-        cell.nameLabel.text = userDetail.username;
-    }
-    
-    cell.unSelectedImage.hidden = YES;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -599,21 +676,17 @@
 - (void)searchDisplayControllerWillBeginSearch:(UISearchDisplayController *)controller
 {
     self.isSearching = YES;
+    [self.searchContactArray removeAllObjects];
     [self.searchBar setShowsCancelButton:YES animated:NO];
 }
 
--(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString {
-    // 当用户改变搜索字符串时，让列表的数据来源重新加载数据
-//    [self filterContentForSearchText:searchString scope:nil];
-    // 返回YES，让table view重新加载。
+-(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
+{
     return NO;
 }
 
--(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchScope:(NSInteger)searchOption {
-    // 当用户改变搜索范围时，让列表的数据来源重新加载数据
-//    [self filterContentForSearchText:self.searchDisplayController.searchBar.text scope:nil];
-    // 返回YES，让table view重新加载。
-    
+-(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchScope:(NSInteger)searchOption
+{
     return NO;
 }
 
@@ -621,13 +694,14 @@
 {
     NSLog(@"load result");
 
-    self.searchTableOverlayView = [[UIView alloc] initWithFrame:CGRectMake(0, 44, self.view.frame.size.width, self.view.frame.size.height)];
+    self.addOverLayer = NO;
+    self.searchTableOverlayView = [[UIView alloc] initWithFrame:CGRectMake(0, 44, self.view.frame.size.width, self.view.frame.size.height+44.f)];
     NSLog(@"frame %@", NSStringFromCGRect(self.searchTableOverlayView.frame));
     self.searchTableOverlayView.backgroundColor = [UIColor blackColor];
     self.searchTableOverlayView.alpha = 0.8;
-    self.searchTableView = tableView;
+//    self.searchTableView = tableView;
 }
-//
+
 - (void)searchDisplayController:(UISearchDisplayController *)controller willUnloadSearchResultsTableView:(UITableView *)tableView
 {
     NSLog(@"unload result");
@@ -638,18 +712,29 @@
     }];
     
 }
-//
+
+- (void)searchDisplayController:(UISearchDisplayController *)controller willHideSearchResultsTableView:(UITableView *)tableView
+{
+    NSLog(@"will hide");
+    self.addOverLayer = NO;
+}
+
+- (void)searchDisplayController:(UISearchDisplayController *)controller didHideSearchResultsTableView:(UITableView *)tableView
+{
+//    tableView.hidden = NO;
+}
+
+
 - (void)searchDisplayController:(UISearchDisplayController *)controller didShowSearchResultsTableView:(UITableView *)tableView
 {
     NSLog(@"show result");
     if (self.isSearching) {
-        [self.searchTableView.superview addSubview:self.searchTableOverlayView];
+        [tableView.superview addSubview:self.searchTableOverlayView];
 //        add seachTableOverlayView as a subview of searchTableVIew.superview
-        self.searchTableView.hidden = YES;
-//        tableView.hidden = YES;
+        tableView.hidden = YES;
     }
     else{
-        self.searchTableView.hidden = NO;
+        tableView.hidden = NO;
         self.searchTableOverlayView.hidden = YES;
     }
 }
@@ -659,39 +744,74 @@
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
 {
-    NSLog(@"cancel clicked!!!!!!!!!");    
+    NSLog(@"cancel clicked!!!!!!!!!");
+    [self.searchTableOverlayView removeFromSuperview];
+    self.searchPage = 0;
     [self.searchContactArray removeAllObjects];
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
-    NSLog(@"search clicked!!!!!!!!!");
+//    [self.searchContactArray removeAllObjects];
+//    [self.searchDC.searchResultsTableView reloadData];
+    if (self.searchContactArray.count > 0) {
+        self.searchPage = 0;
+        [self.searchContactArray removeAllObjects];
+        [self.searchDC.searchResultsTableView reloadData];
+        self.searchDC.searchResultsTableView.tableFooterView = nil;
+    }
+    
+    
+    [self getSearchUser:searchBar.text];
+}
 
+- (void)getSearchUser:(NSString *)searchText
+{
+    NSLog(@"search clicked!!!!!!!!!");
+    
     ///getZsUserByName.json, userid, proviceid, cityid, name
     self.isSearching = YES;
     
     NSDictionary *paraDict = @{@"path": @"getZsUserByName.json",
                                @"userid": kAppDelegate.userId,
-                               @"provinceid": self.curProvinceId,
-                               @"cityid": self.curCityId,
-                               @"name": searchBar.text};
-//    [self.searchDC setActive:NO];
+                               @"page": [NSString stringWithFormat:@"%d", self.searchPage],
+                               @"maxrow": [NSString stringWithFormat:@"%d", self.searchCount],
+                               @"name": searchText};
+    //    [self.searchDC setActive:NO];
     
     
-//    NSLog(@"search contact para dict %@", paraDict);
+    NSLog(@"search contact para dict %@", paraDict);
     
     [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-//    hud.labelText = @"搜索";
+    //    hud.labelText = @"搜索";
     [DreamFactoryClient getWithURLParameters:paraDict success:^(NSDictionary *json) {
         self.isSearching = NO;
         if ([GET_RETURNCODE(json) isEqualToString:@"0"]) {
             [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
 //            NSLog(@"search contact json %@", json);
             
-            [self.searchContactArray removeAllObjects];
+//            [self.searchContactArray removeAllObjects];
             NSArray *tmpArray = [Utility deCryptJsonDict:json OfJsonKey:@"DataList"];
+            if (self.searchContactArray.count == 0 && tmpArray.count == 0) {
+                self.searchDC.searchResultsTableView.hidden = NO;
+                self.searchTableOverlayView.hidden = YES;
+                self.searchDC.searchResultsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+                [self.searchDC.searchResultsTableView reloadData];
+                self.canPullRefresh = NO;
+                self.searchDC.searchResultsTableView.tableFooterView = nil;
+                return;
+            }
+            
+            if (self.searchContactArray.count > 0 && tmpArray.count == 0) {
+                [self createFinishTableFooter:self.searchDC.searchResultsTableView];
+                reloading = NO;
+                [kAppDelegate showWithCustomAlertViewWithText:@"加载完毕" andImageName:nil];
+                self.canPullRefresh = NO;
+                return;
+            }
+            
             [tmpArray enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
-                AllContact *contact = [AllContact createEntity];
+                SearchContact *contact = [SearchContact createEntity];
                 contact.userid = [[contactDict objForKey:@"id"] stringValue];
                 contact.username = [contactDict objForKey:@"username"];
                 contact.tel = [contactDict objForKey:@"tel"];
@@ -703,29 +823,33 @@
                 contact.cityid = [PersistenceHelper dataForKey:kCityId];
                 contact.loginid = [kAppDelegate userId];
                 contact.username_p = makePinYinOfName(contact.username);
+//                contact.areaname = [contactDict objForKey:@"areaname"];
                 [self.searchContactArray addObject:contact];
             }];
             
             if (self.searchContactArray.count == 0) {
                 self.searchDC.searchResultsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+                self.searchDC.searchResultsTableView.tableFooterView = nil;
+            }
+            else{
+                self.searchPage++;
+                [self loadDataEnd:self.searchDC.searchResultsTableView];
+                self.canPullRefresh = YES;
             }
             
-//            NSLog(@"searchContactArray %@", self.searchContactArray);
+
             
-//            NSLog(@"tableview %@", self.mTableView);
-//            [self.mTableView reloadData];
+            [UIView animateWithDuration:.2 animations:^{
+                self.searchDC.searchResultsTableView.hidden = NO;
+                self.searchTableOverlayView.hidden = YES;
+            }];
             
             [self.searchDC.searchResultsTableView reloadData];
             
-            [UIView animateWithDuration:.2 animations:^{
-                self.searchTableView.hidden = NO;
-                self.searchTableOverlayView.hidden = YES;
-            }];
-
         }
         else{
             [UIView animateWithDuration:.2 animations:^{
-                self.searchTableView.hidden = NO;
+                self.searchDC.searchResultsTableView.hidden = NO;
                 self.searchTableOverlayView.hidden = YES;
             }];
             
@@ -733,21 +857,49 @@
             [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
         }
+        if (self.searchContactArray.count > 0) {
+            [self loadDataEnd:self.searchDC.searchResultsTableView];
+        }
     } failure:^(NSError *error) {
         self.isSearching = NO;
         [UIView animateWithDuration:.2 animations:^{
-            self.searchTableView.hidden = NO;
+            self.searchDC.searchResultsTableView.hidden = NO;
             self.searchTableOverlayView.hidden = YES;
         }];
         
         [self.searchDC.searchResultsTableView reloadData];
         [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
+//        [self loadDataEnd:self.searchDC.searchResultsTableView];
     }];
-    
-    
-    
-    
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    if ([searchText length] == 0) {
+        NSLog(@"clear !!!!!!!!!!");
+        self.isSearching = YES;
+        reloading = NO;
+        self.searchPage = 0;
+        [self.searchContactArray removeAllObjects];
+        self.searchTableOverlayView.hidden = YES;
+//        [self.searchDC.searchResultsTableView reloadData];
+//        self.searchDC.searchResultsTableView.tableFooterView = nil;
+//        self.searchDC.searchResultsTableView.hidden = NO;
+//        self.searchTableOverlayView.hidden = NO;
+//        self.mTableView.hidden = NO;
+    }
+    else{
+        if (self.addOverLayer == NO) {
+            self.addOverLayer = YES;
+            self.searchTableOverlayView = [[UIView alloc] initWithFrame:CGRectMake(0, 44, self.view.frame.size.width, self.view.frame.size.height)];
+            NSLog(@"frame %@", NSStringFromCGRect(self.searchTableOverlayView.frame));
+            self.searchTableOverlayView.backgroundColor = [UIColor blackColor];
+            self.searchTableOverlayView.alpha = 0.8;
+            self.searchDC.searchResultsTableView.hidden = YES;
+            [self.searchDC.searchResultsTableView.superview addSubview:self.searchTableOverlayView];
+        }
+    }
 }
 
 #pragma mark Content Filtering

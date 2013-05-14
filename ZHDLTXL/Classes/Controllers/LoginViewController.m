@@ -121,13 +121,13 @@
     if (indexPath.row == 0) {
         userName = cell.rightTextField;
         cell.leftLabel.text = @"用户名";
-        cell.rightTextField.placeholder = @"请输入用户名";
+        cell.rightTextField.placeholder = @"宝通号或手机号";
     } 
     
     if (indexPath.row == 1) {
         password = cell.rightTextField;
         cell.leftLabel.text = @"密码";
-        cell.rightTextField.placeholder = @"请输入密码";
+        cell.rightTextField.placeholder = @"密码";
         cell.rightTextField.secureTextEntry = YES;
     }
     cell.isEditable = YES;

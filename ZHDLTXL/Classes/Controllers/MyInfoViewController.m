@@ -196,7 +196,7 @@
 - (void)configureCell:(MyMessageListCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
 //    ChatList *chatList = [self.chatListArray objectAtIndex:indexPath.row];
-    ChatList *chatList = [self.chatListArray objectAtIndex:self.chatListArray.count - indexPath.row - 1];
+    ChatList *chatList = [self.chatListArray objectAtIndex:indexPath.row];
     
     cell.headIcon.layer.cornerRadius = 4;
     cell.headIcon.layer.masksToBounds = YES;

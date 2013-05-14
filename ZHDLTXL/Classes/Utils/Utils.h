@@ -20,5 +20,6 @@
 #import "NSString+Size.h"
 #import "UIImage+RoundedCorner.h"
 #import "UIImage+Alpha.h"
+#import "NSString+Base64.h"
 
 #endif

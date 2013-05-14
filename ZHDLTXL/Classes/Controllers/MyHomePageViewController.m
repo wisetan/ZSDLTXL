@@ -65,7 +65,7 @@
         self.viewWillAppearing = YES;
         self.checkUnreadMailThread = [[[NSThread alloc] initWithTarget:self selector:@selector(checkUnreadMail) object:nil] autorelease];
         [self.checkUnreadMailThread start];
-        [self checkUnreadMessage];
+//        [self checkUnreadMessage];
     }
     
     [super viewWillAppear:animated];
@@ -160,16 +160,22 @@
     self.unreadMessageDict = [[[NSMutableDictionary alloc] init] autorelease];
 //    [self checkUnreadMessage];
     
-
+    
+    
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"userDetail.userid == %@", kAppDelegate.userId];
+    self.myInfo = [MyInfo findFirstWithPredicate:pred];
+    [self getPersonalInfoFromNet];
+    
+    
+    
+    
     [self getPersonalInfoFromDB];
     if (self.myInfo) {
         [self showBasicInfo];
-        [self showMessageBadge];
-        [self.infoTableView reloadData];
     }
-    else{
-        [self getPersonalInfoFromNet];
-    }
+//    else{
+//        [self getPersonalInfoFromNet];
+//    }
     
     //check unread mail
 
@@ -203,7 +209,6 @@
     } failure:^(NSError *error) {
         NSLog(@"%@", kNetworkError);
     }];
-    
 }
 
 - (void)checkUnreadMail
@@ -398,14 +403,18 @@
     [self.infoTableView reloadData];
 }
 
-
-
-
 - (void)showBasicInfo
 {
     self.nameLabel.text = self.myInfo.userDetail.username;
     self.telLabel.text = self.myInfo.userDetail.tel;
-    self.mailLabel.text = self.myInfo.userDetail.mailbox;
+    
+    if (![self.myInfo.userDetail.mailbox isValid]) {
+        self.mailNameLabel.hidden = YES;
+        self.mailLabel.hidden = YES;
+    }
+    else{
+        self.mailLabel.text = self.myInfo.userDetail.mailbox;
+    }
     
     UIImage *headIconImage = [UIImage imageWithData:[NSData dataWithContentsOfFile:self.myInfo.userDetail.headiconlocalurl]];
     if (headIconImage != nil) {
@@ -414,6 +423,8 @@
     else{
         [self.headIcon setImageWithURL:[NSURL URLWithString:self.myInfo.userDetail.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
     }
+    
+    self.userIdLabel.text = kAppDelegate.userId;
 }
 
 - (void)showMessageBadge
@@ -421,7 +432,8 @@
     //取得未读消息
 //    int unreadCount = self.myInfo.unreadCount.intValue;
 //    NSLog(@"unreadcount: %d", unreadCount);
-    NSString *unreadCount = [[self.unreadMessageDict objForKey:@"UnReadCount"] stringValue];
+//    NSString *unreadCount = [[self.unreadMessageDict objForKey:@"UnReadCount"] stringValue];
+    NSString *unreadCount = [NSString stringWithFormat:@"%d", self.myInfo.unreadCount.intValue];
     if ([unreadCount intValue] > 0) {
         
         self.chatBadge = [CustomBadge customBadgeWithString:unreadCount
@@ -442,7 +454,7 @@
         
     }
     
-    NSString * UnreadSMSCount = [[self.unreadMessageDict objForKey:@"UnReadSMSCount"] stringValue];
+    NSString * UnreadSMSCount = [NSString stringWithFormat:@"%d", self.myInfo.unreadSMSCount.intValue];
     if ([UnreadSMSCount intValue] > 0) {
         self.messageBadge = [CustomBadge customBadgeWithString:UnreadSMSCount
                                                 withStringColor:[UIColor whiteColor]
@@ -497,17 +509,24 @@
         if ([[json objectForKey:@"returnCode"] longValue] == 0) {
             NSLog(@"my info json %@", json);
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
-            NSDictionary *userDetailDict = [json objectForKey:@"UserDetail"];
+            NSDictionary *dict = [json objectForKey:@"UserDetail"];
             
 //            self.userDetail = [NSEntityDescription insertNewObjectForEntityForName:@"UserDetail" inManagedObjectContext:kAppDelegate.managedObjectContext];
             
-            self.name = [userDetailDict objectForKey:@"username"];
-            self.tel = [userDetailDict objectForKey:@"tel"];
-            self.mail = [userDetailDict objectForKey:@"mailbox"];
+//            self.name = [userDetailDict objectForKey:@"username"];
+//            self.tel = [userDetailDict objectForKey:@"tel"];
+//            self.mail = [userDetailDict objectForKey:@"mailbox"];
             
-            self.nameLabel.text = self.name;
-            self.telLabel.text = self.tel;
-            self.mailLabel.text = self.mail;
+            self.myInfo.account = [json objForKey:@"Account"];
+            self.myInfo.unreadCount = [json objForKey:@"UnreadCount"];
+            self.myInfo.unreadSMSCount = [json objForKey:@"UnreadSMSCount"];
+            self.myInfo.userDetail.username = [dict objForKey:@"username"];
+            self.myInfo.userDetail.tel = [dict objForKey:@"tel"];
+            self.myInfo.userDetail.mailbox = [dict objForKey:@"mailbox"];
+            
+            self.nameLabel.text = self.myInfo.userDetail.username;
+            self.telLabel.text = self.myInfo.userDetail.tel;
+            self.mailLabel.text = self.myInfo.userDetail.mailbox;
             
     //            id: 20086,
     //        username: "liuyue",
@@ -520,19 +539,20 @@
     //        col2: "",
     //        col3: ""
             
-            NSLog(@"my info %@", userDetailDict);
+//            NSLog(@"my info %@", dict);
             
-            self.userDetail.userid = [[userDetailDict objForKey:@"id"] stringValue];
-            self.userDetail.username = [userDetailDict objForKey:@"username"];
-            self.userDetail.tel = [userDetailDict objForKey:@"tel"];
-            self.userDetail.mailbox = [userDetailDict objForKey:@"mailbox"];
-            self.userDetail.picturelinkurl = [userDetailDict objForKey:@"picturelinkurl"];
-            self.userDetail.invagency = [[userDetailDict objForKey:@"invagency"] stringValue];
-            self.userDetail.autograph = [userDetailDict objForKey:@"autograph"];
-            self.userDetail.col1 = [userDetailDict objForKey:@"col1"];
-            self.userDetail.col2 = [userDetailDict objForKey:@"col2"];
-            self.userDetail.col3 = [userDetailDict objForKey:@"col3"];
+            self.myInfo.userDetail.userid = [[dict objForKey:@"id"] stringValue];
+            self.myInfo.userDetail.picturelinkurl = [dict objForKey:@"picturelinkurl"];
+            self.myInfo.userDetail.invagency = [[dict objForKey:@"invagency"] stringValue];
+            self.myInfo.userDetail.autograph = [dict objForKey:@"autograph"];
+            self.myInfo.userDetail.col1 = [dict objForKey:@"col1"];
+            self.myInfo.userDetail.col2 = [dict objForKey:@"col2"];
+            self.myInfo.userDetail.col3 = [dict objForKey:@"col3"];
             NSLog(@"picturelinkurl: %@", self.userDetail.picturelinkurl);
+            
+            if (![self.myInfo.userDetail.col2 isEqualToString:@"1"]) {
+                self.xun_VImage.hidden = YES;
+            }
             
 //            [self.headIcon setImageWithURL:[NSURL URLWithString:self.userDetail.picturelinkurl] placeholderImage:[UIImage imageNamed:@"AC_L_icon.png"]];
             
@@ -578,58 +598,62 @@
                 [self.view bringSubviewToFront:self.chatButton];
             }
             
+            [self.myInfo removeAreaList:self.myInfo.areaList];
             NSArray *residentArray = [json objectForKey:@"AreaList"];
-            NSMutableSet *residentSet = [[[NSMutableSet alloc] init] autorelease];
+//            NSMutableSet *residentSet = [[[NSMutableSet alloc] init] autorelease];
             NSLog(@"residentArray: %@", residentArray);
             [residentArray enumerateObjectsUsingBlock:^(NSDictionary *cityDict, NSUInteger idx, BOOL *stop) {
                 if (idx>1) {
                     *stop = YES;
                 }else{
-                    CityInfo *city = [[CityInfo alloc] init];
+                    CityInfo *city = [CityInfo  createEntity];
                     [city setValuesForKeysWithDictionary:cityDict];
-                    [self.residentArray addObject:city];
-                    [residentSet addObject:city];
-                    [city release];
+//                    [residentSet addObject:city];
+//                    [residentSet addObject:residentSet];
+                    [self.myInfo addAreaListObject:city];
                 }
             }];
             
+//            self.myInfo.areaList = nil;
+//            [self.myInfo addAreaList:residentSet];
             
+//            [self.myInfo addAreaList:residentSet];
+            
+            [self.myInfo removePharList:self.myInfo.pharList];
             NSArray *preferArray = [json objectForKey:@"PreferList"];
-            NSMutableSet *preferSet = [[[NSMutableSet alloc] init] autorelease];
+//            NSMutableSet *pharSet = [[[NSMutableSet alloc] init] autorelease];
             [preferArray enumerateObjectsUsingBlock:^(NSDictionary *preferDict, NSUInteger idx, BOOL *stop) {
-                PreferInfo *prefer = [[PreferInfo alloc] init];
-                prefer.prefername = [preferDict objForKey:@"prefername"];
-                prefer.preferid = [[preferDict objForKey:@"id"] stringValue];
-                [self.pharArray addObject:prefer];
-                [preferSet addObject:prefer];
-                [prefer release];
+                Pharmacology *phar = [Pharmacology createEntity];
+                phar.content = [preferDict objForKey:@"prefername"];
+                phar.pharid  = [[preferDict objForKey:@"id"] stringValue];
+                [self.myInfo addPharListObject:phar];
+//                [pharSet addObject:phar];
             }];
             
             
-
+            
+//            self.myInfo.pharList = nil;
+//            [self.myInfo addPharList:pharSet];
+//            [self.myInfo removePharList:self.myInfo.pharList];
+//            [self.myInfo addPharList:pharSet];
+            DB_SAVE();
+            
+            [self showBasicInfo];
+            [self showMessageBadge];
+            [self.infoTableView reloadData];
             
             
         } else{
+            [self.infoTableView reloadData];
             [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:GET_RETURNMESSAGE(json) andImageName:nil];
         }
     } failure:^(NSError *error) {
+        [self.infoTableView reloadData];
         [MBProgressHUD hideHUDForView:[kAppDelegate window] animated:YES];
         [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
     }];
 }
-
-//- (void)addObserver
-//{
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addResidentFinished:) name:kAddResidentNotification object:nil];
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(addPreferFinished:) name:kSelectPharFinished object:nil];
-//}
-//
-//- (void)removeObserver
-//{
-//    [[NSNotificationCenter defaultCenter] removeObserver:self name:kAddResidentNotification object:nil];
-//    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSelectPharFinished object:nil];
-//}
 
 #pragma mark - table view datasouce
 
@@ -660,9 +684,7 @@
     if (!cell) {
         cell = [[[NSBundle mainBundle] loadNibNamed:@"HomePageCell" owner:self options:nil] lastObject];
     }
-    
-    
-    
+
     switch (indexPath.row) {
         case 0:{
             int inva = self.myInfo.userDetail.invagency.intValue;
@@ -747,18 +769,6 @@
 {
     return 50.f;
 }
-
-//- (void)addResidentFinished:(NSNotification *)noti
-//{
-//    [self getPersonalInfoFromDB];
-//    [self.infoTableView reloadData];
-//}
-//
-//- (void)addPreferFinished:(NSNotification *)noti
-//{
-//    [self getPersonalInfoFromDB];
-//    [self.infoTableView reloadData];
-//}
 
 - (void)finishSelectPhar:(NSSet *)pharSet
 {
@@ -861,7 +871,7 @@
                 self.myInfo.userDetail.username = name;
                 self.myInfo.userDetail.mailbox = mail;
                 self.myInfo.userDetail.tel = tel;
-                
+                [self showBasicInfo];
                 DB_SAVE();
                 
             }
@@ -955,6 +965,7 @@
 }
 
 #pragma mark - tap on head icon
+
 - (void)tapOnHeadIcon:(UITapGestureRecognizer *)tap
 {
     NSLog(@"更换头像");
@@ -1148,6 +1159,15 @@
     [_messageButton release];
     [_mailButton release];
     [_chatButton release];
+    [_userIdLabel release];
+    [_mailNameLabel release];
+    [_xun_VImage release];
     [super dealloc];
+}
+- (void)viewDidUnload {
+    [self setUserIdLabel:nil];
+    [self setMailNameLabel:nil];
+    [self setXun_VImage:nil];
+    [super viewDidUnload];
 }
 @end

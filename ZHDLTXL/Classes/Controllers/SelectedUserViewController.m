@@ -48,16 +48,11 @@
 #pragma mark - table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    //    return [self.indexArray count];
-//    return [[self.contactDictSortByAlpha allKeys] count];
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
-//    NSInteger count = [[self.contactDictSortByAlpha objectForKey:indexKey] count];
-//    return count;
     return self.selectedArray.count;
 }
 
@@ -65,16 +60,6 @@
 {
     return 51.f;
 }
-
-//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-//{
-//    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
-//}
-//
-//- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
-//{
-//    return [[UILocalizedIndexedCollation currentCollation] sectionTitles];
-//}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -84,48 +69,38 @@
         cell = [[[NSBundle mainBundle] loadNibNamed:@"ContactCell" owner:self options:nil] objectAtIndex:0];
     }
     cell.selectionStyle = UITableViewCellEditingStyleNone;
-    //    cell.headIcon.image = [UIImage imageNamed:@"AC_talk_icon.png"];
+    AllContact *contact = [self.selectedArray objectAtIndex:indexPath.row];
     
-//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-//    NSString *imageUrl = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] picturelinkurl];
+    
+    
     NSString *imageUrl = [[self.selectedArray objectAtIndex:indexPath.row] picturelinkurl];
-    
-    
     [cell.headIcon setImageWithURL:[NSURL URLWithString:imageUrl] placeholderImage:[UIImage imageNamed:@"AC_talk_icon.png"]];
-    
-//    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] != 0) {
-//        
-//        cell.nameLabel.text = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
-//    }
     cell.nameLabel.text = [[self.selectedArray objectAtIndex:indexPath.row] username];
+    NSString *zd = nil;
+    switch (contact.invagency.integerValue) {
+        case 1:
+            zd = @"招商";
+            break;
+        case 2:
+            zd = @"代理";
+            break;
+        case 3:
+            zd = @"招商、代理";
+            break;
+        default:
+            break;
+    }
     
+    cell.ZDLabel.text = zd;
     cell.unSelectedImage.hidden = YES;
-    //    cell.selectButton = nil;
     
     return cell;
 }
 
-
-//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-//{
-//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
-//    if ([[self.contactDictSortByAlpha objectForKey:indexKey] count] == 0) {
-//        return 0.f;
-//    }
-//    return UITableViewAutomaticDimension;
-//}
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     OtherHomepageViewController *homeVC = [[OtherHomepageViewController alloc] init];
-//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-    
-//    homeVC.contact = [[self.contactDictSortByAlpha objForKey:indexKey] objectAtIndex:indexPath.row];
     homeVC.contact = [self.selectedArray objectAtIndex:indexPath.row];
-    
-//    NSString *indexKey = [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:indexPath.section];
-//    NSString *username = [[[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row] username];
-////    homeVC.contact = [[self.contactDictSortByAlpha objectForKey:indexKey] objectAtIndex:indexPath.row];
     [self.navigationController pushViewController:homeVC animated:YES];
     [homeVC release];
 }
@@ -133,7 +108,6 @@
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (void)dealloc {

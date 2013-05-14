@@ -30,5 +30,6 @@
 @property (nonatomic, retain) NSString * username_p;
 @property (nonatomic, retain) NSString * cityid;
 @property (nonatomic, retain) NSString * isreal;
+@property (nonatomic, retain) NSString * sortid;
 
 @end

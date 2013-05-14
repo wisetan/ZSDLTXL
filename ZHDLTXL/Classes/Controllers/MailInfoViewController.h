@@ -17,10 +17,13 @@
 @property (retain, nonatomic) IBOutlet UILabel *dateLabel;
 @property (retain, nonatomic) IBOutlet UILabel *subjectLabel;
 @property (retain, nonatomic) IBOutlet UITextView *contentTextView;
-
+@property (nonatomic, assign) BOOL deleteMail;
 
 @property (retain, nonatomic) MailInfo *mailInfo;
 
+@property (retain, nonatomic) IBOutlet UIButton *preMail;
+@property (retain, nonatomic) IBOutlet UIButton *nextMail;
+@property (retain, nonatomic) IBOutlet UIButton *deleteMailBtn;
 
 
 @end

@@ -28,5 +28,8 @@
 @dynamic username;
 @dynamic username_p;
 @dynamic isreal;
+@dynamic sortid;
+@dynamic areaname;
+@dynamic prefercontent;
 
 @end

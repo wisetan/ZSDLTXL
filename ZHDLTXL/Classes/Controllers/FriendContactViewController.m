@@ -254,12 +254,10 @@
                           userid, @"userid",
                           @"getZsAttentionUserByArea.json", @"path", nil];
     
-    
 //    NSLog(@"all contact dict %@", dict);
     
     
     [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-
     
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
@@ -286,16 +284,14 @@
                 contact.loginid = [kAppDelegate userId];
                 contact.type = @"1";
                 contact.username_p = makePinYinOfName(contact.username);
+                contact.invagency = [[contactDict objForKey:@"invagency"] stringValue];
                 
                 
 //                NSLog(@"pinyin %@", makePinYinOfName(contact.username));
                 
                 contact.sectionkey = [NSString stringWithFormat:@"%c", indexTitleOfString([contact.username characterAtIndex:0])];
                 [[self.contactDict objForKey:contact.sectionkey] addObject:contact];
-                
-                
                 DB_SAVE();
-
             }];
             
             [self.sectionArray removeAllObjects];
@@ -332,6 +328,21 @@
 //    FriendContact *userDetail = [self.fetchedResultsController objectAtIndexPath:indexPath];
     FriendContact *userDetail = [[self.contactDict objForKey:[self.sectionArray objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
     
+    switch (userDetail.invagency.intValue) {
+        case 1:
+            cell.ZDLabel.text = @"招商";
+            break;
+        case 2:
+            cell.ZDLabel.text = @"代理";
+            break;
+        case 3:
+            cell.ZDLabel.text = @"招商、代理";
+            break;
+        default:
+            break;
+    }
+    
+    
     cell.headIcon.layer.cornerRadius = 4;
     cell.headIcon.layer.masksToBounds = YES;
     [cell.headIcon setImageWithURL:[NSURL URLWithString:userDetail.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
@@ -345,6 +356,16 @@
     }
     
     cell.unSelectedImage.hidden = YES;
+    
+    if ([userDetail.col2 isEqualToString:@"1"]) {
+        cell.xun_VImage.hidden = NO;
+    }
+    else{
+        cell.xun_VImage.hidden = YES;
+    }
+    
+    
+    
 }
 
 

@@ -183,7 +183,7 @@
     NSLog(@"userid %@", kAppDelegate.userId);
         
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"loginid == %@ AND cityid == %@", kAppDelegate.userId, [PersistenceHelper dataForKey:kCityId]];
-    [self.commendContactArray addObjectsFromArray:[CommendContact findAllWithPredicate:pred]];
+    [self.commendContactArray addObjectsFromArray:[CommendContact findAllSortedBy:@"sortid" ascending:YES withPredicate:pred]];
     if (self.commendContactArray.count == 0) {
         [self getInvestmentUserListFromServer];
     }
@@ -224,9 +224,8 @@
     NSLog(@"all contact dict %@", dict);
     
     
+    __block int sortid = 0;
     [MBProgressHUD showHUDAddedTo:[kAppDelegate window] animated:YES];
-
-    
     [DreamFactoryClient getWithURLParameters:dict success:^(NSDictionary *json) {
         if ([[[json objForKey:@"returnCode"] stringValue] isEqualToString:@"0"]) {
             
@@ -234,9 +233,6 @@
             
             NSArray *friendArray = [Utility deCryptJsonDict:json OfJsonKey:@"DataList"];
             NSLog(@"friend arrat %@", friendArray);
-            
-            
-            
             [friendArray enumerateObjectsUsingBlock:^(NSDictionary *contactDict, NSUInteger idx, BOOL *stop) {
                 NSLog(@"contact Dict: %@", contactDict);
                 
@@ -252,6 +248,9 @@
                 contact.cityid = [PersistenceHelper dataForKey:kCityId];
                 contact.loginid = [kAppDelegate userId];
                 contact.username_p = makePinYinOfName(contact.username);
+                contact.invagency = [[contactDict objForKey:@"invagency"] stringValue];
+                contact.sortid = [NSString stringWithFormat:@"%d", sortid];
+                sortid++;
                 
                 NSLog(@"pinyin %@", makePinYinOfName(contact.username));
                 
@@ -342,6 +341,22 @@
     
     CommendContact *commendContact = [self.commendContactArray objectAtIndex:indexPath.row];
     
+    switch (commendContact.invagency.intValue) {
+        case 1:
+            cell.ZDLabel.text = @"招商";
+            break;
+        case 2:
+            cell.ZDLabel.text = @"代理";
+            break;
+        case 3:
+            cell.ZDLabel.text = @"招商、代理";
+            break;
+        default:
+            break;
+    }
+    
+    
+    
     cell.headIcon.layer.cornerRadius = 4;
     cell.headIcon.layer.masksToBounds = YES;
     [cell.headIcon setImageWithURL:[NSURL URLWithString:commendContact.picturelinkurl] placeholderImage:[UIImage imageByName:@"AC_talk_icon.png"]];
@@ -354,6 +369,13 @@
         cell.nameLabel.text = commendContact.username;
     }
     
+    if ([commendContact.col2 isEqualToString:@"1"]) {
+        cell.xun_VImage.hidden = NO;
+    }
+    else{
+        cell.xun_VImage.hidden = YES;
+    }
+    
     cell.unSelectedImage.hidden = YES;
 }
 
@@ -362,7 +384,6 @@
 {
     OtherHomepageViewController *otherProfileVC = [[OtherHomepageViewController alloc] init];
 
-    
     otherProfileVC.contact = [self.commendContactArray objectAtIndex:indexPath.row];
     [self.navigationController pushViewController:otherProfileVC animated:YES];
     [otherProfileVC release];

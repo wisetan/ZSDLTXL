@@ -19,6 +19,7 @@
 @property (nonatomic, retain) NSMutableArray *contactArray;
 @property (nonatomic, retain) NSMutableDictionary *contactDictSortByAlpha;
 @property (nonatomic, assign) BOOL isSelectAll;
+@property (nonatomic, assign) BOOL viewWillAppearing;
 
 @end
 
@@ -38,6 +39,7 @@
     [super viewDidLoad];
     self.title = @"筛选";
     self.hidesBottomBarWhenPushed = YES;
+    self.viewWillAppearing = NO;
     
     self.cateArray = [[[NSMutableArray alloc] init] autorelease];
     self.selectArray = [[[NSMutableArray alloc] init] autorelease];
@@ -86,29 +88,36 @@
     [self.view addSubview:bottomImage];
     
     self.confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.confirmButton.frame = CGRectMake(124, 5, 75, 34);
-    [self.confirmButton setImage:[UIImage imageNamed:@"button.png"] forState:UIControlStateNormal];
-    [self.confirmButton setImage:[UIImage imageNamed:@"button_p.png"] forState:UIControlStateHighlighted];
+    self.confirmButton.frame = CGRectMake(108, 6, 104, 34);
+    [self.confirmButton setImage:[UIImage imageNamed:@"bottom_button.png"] forState:UIControlStateNormal];
+    [self.confirmButton setImage:[UIImage imageNamed:@"bottom_button_p.png"] forState:UIControlStateHighlighted];
     [bottomImage addSubview:self.confirmButton];
     [self.confirmButton addTarget:self action:@selector(confirmSelect:) forControlEvents:UIControlEventTouchUpInside];
     
-    UILabel *confirmLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 75, 34)];
+    UILabel *confirmLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 104, 34)];
     confirmLabel.backgroundColor = [UIColor clearColor];
-    confirmLabel.text = @"确认";
+    confirmLabel.text = @"确认选择";
     confirmLabel.textAlignment = NSTextAlignmentCenter;
     confirmLabel.textColor = [UIColor whiteColor];
     [self.confirmButton addSubview:confirmLabel];
     
-//    [self getPharFromDB];
     [self getPreferJsonData];
 }
 
-//- (void)getPharFromDB
-//{
-//    if (self.cateArray.count == 0) {
-//        [self getPreferJsonData];
-//    }
-//}
+- (void)viewWillAppear:(BOOL)animated
+{
+    if (!self.viewWillAppearing) {
+        self.viewWillAppearing = YES;
+        [self.selectArray removeAllObjects];
+        [self.selectTableView reloadData];
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.viewWillAppearing = NO;
+}
+
 
 - (void)confirmSelect:(UIButton *)sender
 {
@@ -164,10 +173,8 @@
                     contact.invagency = [[contactDict objForKey:@"invagency"] stringValue];
                     [tmpArray addObject:contact];
                 }];
-//                [self friendListRefreshed:tmpArray];
                 
                 SelectedUserViewController *selectedVC = [[SelectedUserViewController alloc] init];
-//                selectedVC.contactDictSortByAlpha = self.contactDictSortByAlpha;
                 selectedVC.selectedArray = tmpArray;
                 [self.navigationController pushViewController:selectedVC animated:YES];
                 [selectedVC release];
@@ -176,8 +183,6 @@
                 [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
                 [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];
             }
-            
-            
         } failure:^(NSError *error) {
             [MBProgressHUD hideAllHUDsForView:[kAppDelegate window] animated:YES];
             [kAppDelegate showWithCustomAlertViewWithText:kNetworkError andImageName:kErrorIcon];

@@ -245,8 +245,7 @@
             chatRecord.time = [NSString stringWithFormat:@"%.lf", [[NSDate date] timeIntervalSince1970]*1000];
             chatRecord.userid = kAppDelegate.userId;
             chatRecord.loginid = kAppDelegate.userId;
-//            [self.dataSourceArray addObject:chatRecord];
-            [self.dataSourceArray insertObject:chatRecord atIndex:0];
+            [self.dataSourceArray addObject:chatRecord];
             DB_SAVE();
 
             [self.mTableView reloadData];

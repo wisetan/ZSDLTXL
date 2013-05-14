@@ -20,7 +20,7 @@
 @dynamic subject;
 @dynamic content;
 @dynamic date;
-@dynamic flags;         //0 未读 1 已读
+@dynamic flags;         //0 未读 1 已读 2 删除
 @dynamic messageid;
 @dynamic state;         //0 发送失败 1 发送成功
 @dynamic picturelinkurl;
